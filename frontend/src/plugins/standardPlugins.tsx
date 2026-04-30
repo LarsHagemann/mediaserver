@@ -60,6 +60,7 @@ export const videoPlugin: FileTypePlugin = {
   matcher: (type) => type.startsWith("video"),
   icon: (icons) => icons.FaVideo,
   description: "Plugin for rendering video files",
+  fetchMode: "stream",
   Render: ({ objectUrl }) => (
     <video className="w-full h-full" src={objectUrl} controls />
   ),
@@ -90,6 +91,7 @@ export const audioPlugin: FileTypePlugin = {
   matcher: (type) => type.startsWith("audio"),
   icon: (icons) => icons.FaFileAudio,
   description: "Plugin for rendering audio files",
+  fetchMode: "stream",
   Render: ({ objectUrl }) => (
     <audio className="w-full h-full" src={objectUrl} controls />
   ),

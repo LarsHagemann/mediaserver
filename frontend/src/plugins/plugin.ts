@@ -28,4 +28,5 @@ export type FileTypePlugin = {
   Render: React.FC<RenderContext>;
   Diashow: React.FC<DiashowContext>;
   description: string;
+  fetchMode?: "download" | "stream";
 };

@@ -14,9 +14,10 @@ type Props = {
   id: string;
   diashow: boolean;
   nextDocument: () => void;
+  mimeType?: string;
 };
 
-export const DocumentPreview = ({ id, diashow, nextDocument }: Props) => {
+export const DocumentPreview = ({ id, diashow, nextDocument, mimeType }: Props) => {
   const [tagInput, setTagInput] = useState("");
 
   const { t } = useTranslation();
@@ -61,7 +62,7 @@ export const DocumentPreview = ({ id, diashow, nextDocument }: Props) => {
     <>
       {diashow && (
         <div className="fixed z-10 bg-gray-800 w-screen h-screen left-0 top-0">
-          <DocumentDiashow documentId={id} nextDocument={nextDocument} />
+          <DocumentDiashow documentId={id} nextDocument={nextDocument} mimeType={mimeType} />
         </div>
       )}
       {!diashow && (
@@ -122,7 +123,7 @@ export const DocumentPreview = ({ id, diashow, nextDocument }: Props) => {
                 : "h-full sm:w-full sm:left-0",
             )}
           >
-            <DocumentRender documentId={id} />
+            <DocumentRender documentId={id} mimeType={mimeType} />
           </div>
         </>
       )}

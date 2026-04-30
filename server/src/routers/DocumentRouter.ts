@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { apiHandler, FileDownload } from "../ApiHandler.js";
+import { apiHandler, FileDownload, FileStream } from "../ApiHandler.js";
 import { ApiError } from "../common/ApiError.js";
 import { services } from "../DefaultDiContainer.js";
 import type { EmptyObject } from "../common/EmptyObject.js";
@@ -113,15 +113,15 @@ documentRouter.get(
 
 documentRouter.get(
   "/:id",
-  apiHandler<FileDownload, EmptyObject, EmptyObject, { id: string }>(
-    async ({ diContainer, params: { id } }) => {
+  apiHandler<FileDownload | FileStream, EmptyObject, EmptyObject, { id: string }>(
+    async ({ diContainer, params: { id }, headers  }) => {
       const documentService = diContainer.get<DocumentService>(
         services.document,
       );
-      const { path, mimeType } = await documentService.getDocument(id);
+      const result = await documentService.getDocument(id, headers.range);
       return {
         status: 200,
-        body: new FileDownload(path, mimeType),
+        body: result,
       };
     },
   ),

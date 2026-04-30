@@ -75,6 +75,7 @@ export const PreviewContainer = ({
   }, [diashowMode, wasFullscreen]);
 
   const documentDownloadUrl = useDocumentUrl(previewImageId);
+  const mimeType = data?.items.find((d) => d.id === previewImageId)?.mime;
 
   return (
     <>
@@ -92,6 +93,7 @@ export const PreviewContainer = ({
           id={previewImageId}
           diashow={diashowMode}
           nextDocument={nextPreviewImage}
+          mimeType={mimeType}
         />
         <DocumentPreviewControls
           nextDocument={nextPreviewImage}
