@@ -14,6 +14,8 @@ import { RedisClient } from "./redis/RedisClient.js";
 import { BackendStateService } from "./state/BackendStateService.js";
 import { BackendStateRepository } from "./state/BackendStateRepository.js";
 import { UploadService } from "./files/UploadService.js";
+import { CollectionRepository } from "./collections/CollectionRepository.js";
+import { CollectionService } from "./collections/CollectionService.js";
 
 export const services = {
   environment: "service.environment",
@@ -27,6 +29,7 @@ export const services = {
   redis: "service.redis",
   backendState: "service.backendState",
   upload: "service.upload",
+  collection: "service.collection",
 };
 
 export const repositories = {
@@ -34,6 +37,7 @@ export const repositories = {
   tag: "repository.tag",
   tagCache: "repository.tagCache",
   backendState: "repository.backendState",
+  collection: "repository.collection",
 };
 
 export const defaultDiContainer = (diContainer: ContainerBuilder) => {
@@ -104,6 +108,14 @@ export const defaultDiContainer = (diContainer: ContainerBuilder) => {
     .addArgument(new Reference(services.document))
     .addArgument(new Reference(services.tag))
     .addArgument(new Reference(services.websocket));
+
+  diContainer
+    .register(repositories.collection, CollectionRepository)
+    .addArgument(new Reference(services.db));
+
+  diContainer
+    .register(services.collection, CollectionService)
+    .addArgument(new Reference(repositories.collection));
 
   return diContainer;
 };

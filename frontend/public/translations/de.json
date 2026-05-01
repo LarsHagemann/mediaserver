@@ -41,7 +41,30 @@
     "upload": "Hochladen",
     "settings": "Einstellungen",
     "tags": "Tags",
+    "collections": "Sammlungen",
     "serverState": "Server Status"
+  },
+  "collections": {
+    "title": "Sammlungen",
+    "newCollection": "Neue Sammlung",
+    "editCollection": "Sammlung bearbeiten",
+    "saveAsCollection": "Als Sammlung speichern",
+    "favorites": "Favoriten",
+    "all": "Alle Sammlungen",
+    "empty": "Noch keine Sammlungen. Erstellen Sie eine, um einen Filterausdruck zu speichern.",
+    "confirmDelete": "Möchten Sie diese Sammlung wirklich löschen?",
+    "emptyFilter": "(kein Filter)",
+    "docCount": "{{count}} Dokumente",
+    "form": {
+      "name": "Name",
+      "namePlaceholder": "Meine Sammlung",
+      "description": "Beschreibung",
+      "descriptionPlaceholder": "Optionale Beschreibung",
+      "filterExpression": "Filterausdruck",
+      "filterPlaceholder": "tag1 & tag2",
+      "save": "Speichern",
+      "cancel": "Abbrechen"
+    }
   },
   "document": {
     "addTagPlaceholder": "Tag hinzufügen..."

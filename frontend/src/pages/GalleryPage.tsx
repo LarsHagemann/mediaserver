@@ -8,8 +8,10 @@ import { useEasySearchParams } from "../hooks/useEasySearchParams";
 import { usePageOffsetAndLimitParams } from "../hooks/usePageOffsetAndLimitParams";
 import { TagInput } from "../sections/TagInput";
 import { FiGrid, FiList } from "react-icons/fi";
+import { MdBookmarkAdd } from "react-icons/md";
 import { twMerge } from "tailwind-merge";
 import { useIsMobileScreen } from "../hooks/useIsMobileScreen";
+import { CollectionFormModal } from "../sections/CollectionFormModal";
 
 const remToPixel = (rem: number) => {
   return rem * parseFloat(getComputedStyle(document.documentElement).fontSize);
@@ -33,6 +35,8 @@ export const GalleryPage = () => {
   const { t } = useTranslation();
 
   const [layoutType, setLayoutType] = useState<"grid" | "list">("grid");
+  const [collectionModalOpen, setCollectionModalOpen] = useState(false);
+  const [createCollection] = enhancedApi.useCreateCollectionMutation();
 
   const { limit, offset, page, setPage, setLimit } =
     usePageOffsetAndLimitParams();
@@ -161,6 +165,13 @@ export const GalleryPage = () => {
           onPageChange={setPage}
         />
         <div className="relative text-right mr-2 sm:absolute sm:right-8 sm:top-2">
+          {query && (
+            <MdBookmarkAdd
+              className="inline text-xl mb-1 mr-2 cursor-pointer hover:text-blue-400"
+              title={t("collections.saveAsCollection")}
+              onClick={() => setCollectionModalOpen(true)}
+            />
+          )}
           <FiGrid
             className={twMerge(
               "inline text-xl mb-1 mr-1",
@@ -215,6 +226,15 @@ export const GalleryPage = () => {
         currentPage={page}
         onPageChange={setPage}
         className="mb-4"
+      />
+      <CollectionFormModal
+        isOpen={collectionModalOpen}
+        onClose={() => setCollectionModalOpen(false)}
+        onSave={async (data) => {
+          await createCollection(data);
+          setCollectionModalOpen(false);
+        }}
+        initialFilterExpression={query}
       />
       {previewDocument && (
         <PreviewContainer

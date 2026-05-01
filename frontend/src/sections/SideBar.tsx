@@ -8,7 +8,7 @@ import { FaCaretRight } from "react-icons/fa6";
 import { useState } from "react";
 import { twMerge } from "tailwind-merge";
 import { useTranslation } from "react-i18next";
-import { MdSettings } from "react-icons/md";
+import { MdSettings, MdCollections } from "react-icons/md";
 
 export const SideBar = () => {
   const navigate = useNavigate();
@@ -48,6 +48,15 @@ export const SideBar = () => {
         }}
         collapsed={collapsed}
         text={t("sidebar.tags")}
+      />
+      <SideBarButton
+        Icon={MdCollections}
+        pathPrefix="/collections"
+        onClick={() => {
+          navigate("/collections");
+        }}
+        collapsed={collapsed}
+        text={t("sidebar.collections")}
       />
       <SideBarButton
         Icon={BiSolidServer}

@@ -1,0 +1,39 @@
+import { type ReactNode } from "react";
+import { MdClose } from "react-icons/md";
+import { twMerge } from "tailwind-merge";
+
+type Props = {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  children: ReactNode;
+  className?: string;
+};
+
+export const Modal = ({ isOpen, onClose, title, children, className }: Props) => {
+  if (!isOpen) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+      onClick={onClose}
+    >
+      <div
+        className={twMerge(
+          "bg-gray-800 rounded-lg p-6 w-full max-w-lg mx-4 relative",
+          className,
+        )}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold text-white">{title}</h2>
+          <MdClose
+            className="text-2xl cursor-pointer hover:text-red-400 transition-colors"
+            onClick={onClose}
+          />
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+};

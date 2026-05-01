@@ -42,6 +42,16 @@ export type ApiTag = {
   type: string;
 };
 
+export type Collection = {
+  id: string;
+  name: string;
+  description?: string;
+  filterExpression: string;
+  isFavorite: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
 type ApiTagWithCount = ApiTag & {
   usageCount: number;
 };
@@ -150,6 +160,71 @@ export const api = baseApi.injectEndpoints({
         url: `/state`,
         method: "GET",
       }),
+    }),
+
+    listCollections: build.query<
+      PaginatedResponse<Collection>,
+      { limit?: number; offset?: number }
+    >({
+      query: ({ limit = 20, offset = 0 }) => ({
+        url: `/collections?limit=${limit}&offset=${offset}`,
+        method: "GET",
+      }),
+      providesTags: (response) => [
+        "collection",
+        ...(response?.items.map((c) => ({
+          type: "collection" as const,
+          id: c.id,
+        })) ?? []),
+      ],
+    }),
+
+    createCollection: build.mutation<
+      Collection,
+      {
+        name: string;
+        description: string | null;
+        filterExpression: string;
+        isFavorite: boolean;
+      }
+    >({
+      query: (body) => ({
+        url: `/collections`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["collection"],
+    }),
+
+    updateCollection: build.mutation<
+      Collection,
+      {
+        id: string;
+        name: string;
+        description: string | null;
+        filterExpression: string;
+        isFavorite: boolean;
+      }
+    >({
+      query: ({ id, ...body }) => ({
+        url: `/collections/${encodeURIComponent(id)}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: (_result, _error, arg) => [
+        { type: "collection", id: arg.id },
+      ],
+    }),
+
+    deleteCollection: build.mutation<void, string>({
+      query: (id) => ({
+        url: `/collections/${encodeURIComponent(id)}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (_result, _error, id) => [
+        "collection",
+        { type: "collection", id },
+      ],
     }),
   }),
 });

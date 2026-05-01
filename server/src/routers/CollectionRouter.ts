@@ -1,0 +1,101 @@
+import { Router } from "express";
+import { apiHandler } from "../ApiHandler.js";
+import { services } from "../DefaultDiContainer.js";
+import type { CollectionService } from "../collections/CollectionService.js";
+import type { Collection } from "../collections/CollectionRepository.js";
+import type { PaginatedResponse } from "../util/PaginatedResponse.js";
+import type { EmptyObject } from "../common/EmptyObject.js";
+
+export const collectionRouter = Router();
+
+collectionRouter.get(
+  "/",
+  apiHandler<
+    PaginatedResponse<Collection>,
+    { limit?: number; offset?: number }
+  >(async ({ diContainer, query: { limit = 20, offset = 0 } }) => {
+    const collectionService = diContainer.get<CollectionService>(
+      services.collection,
+    );
+    const response = await collectionService.listCollections({ limit, offset });
+    return { status: 200, body: response };
+  }),
+);
+
+collectionRouter.post(
+  "/",
+  apiHandler<
+    Collection,
+    EmptyObject,
+    {
+      name: string;
+      description?: string;
+      filterExpression: string;
+      isFavorite?: boolean;
+    }
+  >(async ({ diContainer, body }) => {
+    const collectionService = diContainer.get<CollectionService>(
+      services.collection,
+    );
+    const collection = await collectionService.createCollection({
+      name: body.name,
+      ...(body.description !== undefined && { description: body.description }),
+      filterExpression: body.filterExpression,
+      isFavorite: body.isFavorite ?? false,
+    });
+    return { status: 201, body: collection };
+  }),
+);
+
+collectionRouter.get(
+  "/:id",
+  apiHandler<Collection, EmptyObject, EmptyObject, { id: string }>(
+    async ({ diContainer, params: { id } }) => {
+      const collectionService = diContainer.get<CollectionService>(
+        services.collection,
+      );
+      const collection = await collectionService.getCollection(id);
+      return { status: 200, body: collection };
+    },
+  ),
+);
+
+collectionRouter.put(
+  "/:id",
+  apiHandler<
+    Collection,
+    EmptyObject,
+    {
+      name: string;
+      description: string | null;
+      filterExpression: string;
+      isFavorite: boolean;
+    },
+    { id: string }
+  >(async ({ diContainer, params: { id }, body }) => {
+    const collectionService = diContainer.get<CollectionService>(
+      services.collection,
+    );
+    const collection = await collectionService.updateCollection({
+      id,
+      name: body.name,
+      description: body.description,
+      filterExpression: body.filterExpression,
+      isFavorite: body.isFavorite,
+    });
+    return { status: 200, body: collection };
+  }),
+);
+
+collectionRouter.delete(
+  "/:id",
+  apiHandler<EmptyObject, EmptyObject, EmptyObject, { id: string }>(
+    async ({ diContainer, params: { id } }) => {
+      const collectionService = diContainer.get<CollectionService>(
+        services.collection,
+      );
+      await collectionService.deleteCollection(id);
+      return { status: 204, body: {} };
+    },
+  ),
+);

@@ -13,6 +13,7 @@ import { tagRouter } from "./routers/TagRouter.js";
 import { TagService } from "./tags/TagService.js";
 import { RedisClient } from "./redis/RedisClient.js";
 import { stateRouter } from "./routers/StateRouter.js";
+import { collectionRouter } from "./routers/CollectionRouter.js";
 import type { LoggingService } from "./common/LoggingService.js";
 import { loadPlugins } from "./plugins/pluginLoader.js";
 import { addFileTypePlugin } from "./plugins/fileTypes.js";
@@ -54,6 +55,7 @@ async function run(envService: EnvironmentService) {
   app.use("/documents", documentRouter);
   app.use("/tags", tagRouter);
   app.use("/state", stateRouter);
+  app.use("/collections", collectionRouter);
 
   const logger = DI_CONTAINER.get<LoggingService>(services.logger);
 

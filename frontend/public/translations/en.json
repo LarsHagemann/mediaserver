@@ -41,7 +41,30 @@
     "upload": "Upload",
     "settings": "Settings",
     "tags": "Tags",
+    "collections": "Collections",
     "serverState": "Server Status"
+  },
+  "collections": {
+    "title": "Collections",
+    "newCollection": "New Collection",
+    "editCollection": "Edit Collection",
+    "saveAsCollection": "Save as Collection",
+    "favorites": "Favorites",
+    "all": "All Collections",
+    "empty": "No collections yet. Create one to save a filter expression.",
+    "confirmDelete": "Are you sure you want to delete this collection?",
+    "emptyFilter": "(empty filter)",
+    "docCount": "{{count}} documents",
+    "form": {
+      "name": "Name",
+      "namePlaceholder": "My collection",
+      "description": "Description",
+      "descriptionPlaceholder": "Optional description",
+      "filterExpression": "Filter Expression",
+      "filterPlaceholder": "tag1 & tag2",
+      "save": "Save",
+      "cancel": "Cancel"
+    }
   },
   "document": {
     "addTagPlaceholder": "Add a tag..."
