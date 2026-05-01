@@ -140,6 +140,7 @@ export const buildQueryFromInsertStatement = (stmt: InsertStatement) => {
 
 export type TagSqlBuilderResult<
   T = SelectStatement,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   Parameters extends string[] = [],
 > =
   | {

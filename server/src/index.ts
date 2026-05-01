@@ -5,7 +5,6 @@ import { DI_CONTAINER, setupDiContainer } from "./DiContainer.js";
 import { MigrationService } from "./sql/MigrationService.js";
 import { DbService } from "./sql/DbService.js";
 import fileUpload from "express-fileupload";
-import { ApiError } from "./common/ApiError.js";
 import { documentRouter } from "./routers/DocumentRouter.js";
 import * as cors from "cors";
 import { apiHandler } from "./ApiHandler.js";

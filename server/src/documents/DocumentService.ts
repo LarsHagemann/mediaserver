@@ -7,11 +7,6 @@ import type { TagService } from "../tags/TagService.js";
 import { FileDownload, FileStream, parseRangeHeader } from "../ApiHandler.js";
 import { stat } from "fs/promises";
 
-type GetDocumentResponse = {
-  path: string;
-  mimeType: string;
-};
-
 export class DocumentService {
   constructor(
     private readonly documentRepository: DocumentRepository,
@@ -38,17 +33,23 @@ export class DocumentService {
     return path.join(document.base_path, "thumbnails", `${id}.jpg`);
   }
 
-  public async getDocument(id: string, rangeHeader: string | undefined): Promise<FileDownload | FileStream> {    
+  public async getDocument(
+    id: string,
+    rangeHeader: string | undefined,
+  ): Promise<FileDownload | FileStream> {
     const document = await this.documentRepository.getDocumentWithPathInfo(id);
-    const filePath = path.join(document.base_path, "documents", document.filename);
+    const filePath = path.join(
+      document.base_path,
+      "documents",
+      document.filename,
+    );
 
     const documentSize = (await stat(filePath)).size;
     const range = parseRangeHeader(rangeHeader ?? "", documentSize);
 
     if (!range) {
       return new FileDownload(filePath, document.mime);
-    }
-    else {
+    } else {
       return new FileStream(
         filePath,
         document.mime,

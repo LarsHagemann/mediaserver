@@ -1,41 +1,89 @@
-on: 
+on:
   push:
 
 jobs:
-  ci:
-    name: CI
+  lint-server:
+    name: Lint Server
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
 
-      - uses: paulhatch/semantic-version@v5.4.0
-        id: version
-        with:
-          version_format: "v${major}.${minor}.${patch}${{ github.ref_name == 'main' && '' || '-beta' }}"
-
-      - name: Install server dependencies
+      - name: Install dependencies
         working-directory: ./server
         run: npm install
 
-      - name: Build server
+      - name: Lint
         working-directory: ./server
-        run: npm run build
+        run: npm run lint:check
 
-      # - name: Run server tests
-      #   working-directory: ./server
-      #   run: npm test
+      - name: Style
+        working-directory: ./server
+        run: npm run style:check
 
-      - name: Install frontend dependencies
+  lint-frontend:
+    name: Lint Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
         working-directory: ./frontend
         run: npm install
 
-      - name: Build frontend
+      - name: Lint
+        working-directory: ./frontend
+        run: npm run lint:check
+
+      - name: Style
+        working-directory: ./frontend
+        run: npm run style:check
+
+  build-server:
+    name: Build Server
+    needs: lint-server
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: ./server
+        run: npm install
+
+      - name: Build
+        working-directory: ./server
+        run: npm run build
+
+  build-frontend:
+    name: Build Frontend
+    needs: lint-frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: npm install
+
+      - name: Build
         working-directory: ./frontend
         run: npm run build

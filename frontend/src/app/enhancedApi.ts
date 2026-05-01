@@ -13,6 +13,7 @@ export const enhancedApi = api.enhanceEndpoints({
         );
         try {
           await queryFulfilled;
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (_err) {
           patchResult.undo();
         }
@@ -30,6 +31,7 @@ export const enhancedApi = api.enhanceEndpoints({
         );
         try {
           await queryFulfilled;
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (_err) {
           patchResult.undo();
         }

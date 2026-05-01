@@ -16,7 +16,7 @@ export class EnvironmentService {
     if (key in process.env) {
       return process.env[key];
     }
-    
+
     const fileKey = `${key}_FILE`;
     if (fileKey in process.env) {
       try {

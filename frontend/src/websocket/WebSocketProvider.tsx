@@ -57,6 +57,7 @@ export const WebSocketContextProvider: React.FC<{
         );
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastMessage]);
 
   const registerMessageHandler = useCallback(

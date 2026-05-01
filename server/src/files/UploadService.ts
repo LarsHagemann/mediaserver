@@ -39,9 +39,7 @@ export class UploadService {
     private readonly webSocketServer: WebSocketService,
   ) {}
 
-  async processUploadDocument(
-    upload: ProcessUploadDocument,
-  ): Promise<void> {
+  async processUploadDocument(upload: ProcessUploadDocument): Promise<void> {
     try {
       const { id, basePath, filename } = await this.fileService.moveDocument(
         upload.file,
@@ -85,7 +83,9 @@ export class UploadService {
     }
   }
 
-  private async notifyUploadSuccess(message: UploadFinishedMessage): Promise<void> {
+  private async notifyUploadSuccess(
+    message: UploadFinishedMessage,
+  ): Promise<void> {
     await this.webSocketServer.send(
       JSON.stringify({
         type: "upload-finished",
@@ -95,7 +95,9 @@ export class UploadService {
     );
   }
 
-  private async notifyUploadFailed(message: UploadFailedMessage): Promise<void> {
+  private async notifyUploadFailed(
+    message: UploadFailedMessage,
+  ): Promise<void> {
     await this.webSocketServer.send(
       JSON.stringify({
         type: "upload-failed",

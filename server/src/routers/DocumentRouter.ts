@@ -46,9 +46,7 @@ documentRouter.post(
         throw new ApiError("BadRequest", 400, "Missing extension");
       }
 
-      const uploadService = diContainer.get<UploadService>(
-        services.upload,
-      );
+      const uploadService = diContainer.get<UploadService>(services.upload);
       // Process the upload asynchronously
       void uploadService.processUploadDocument({
         name: file.name,
@@ -113,16 +111,17 @@ documentRouter.get(
 
 documentRouter.get(
   "/:id",
-  apiHandler<FileDownload | FileStream, EmptyObject, EmptyObject, { id: string }>(
-    async ({ diContainer, params: { id }, headers  }) => {
-      const documentService = diContainer.get<DocumentService>(
-        services.document,
-      );
-      const result = await documentService.getDocument(id, headers.range);
-      return {
-        status: 200,
-        body: result,
-      };
-    },
-  ),
+  apiHandler<
+    FileDownload | FileStream,
+    EmptyObject,
+    EmptyObject,
+    { id: string }
+  >(async ({ diContainer, params: { id }, headers }) => {
+    const documentService = diContainer.get<DocumentService>(services.document);
+    const result = await documentService.getDocument(id, headers.range);
+    return {
+      status: 200,
+      body: result,
+    };
+  }),
 );

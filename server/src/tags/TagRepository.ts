@@ -148,7 +148,7 @@ export class TagRepository {
       })
       .join(", ");
 
-      console.log(tags);
+    console.log(tags);
 
     const result = await this.dbService.any(
       z.object({ id: z.number() }),
