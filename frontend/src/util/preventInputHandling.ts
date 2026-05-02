@@ -3,12 +3,10 @@ export const preventInputHandling = () => {
 
   const isTypingElement =
     active &&
-    (
-      active.tagName === "INPUT" ||
+    (active.tagName === "INPUT" ||
       active.tagName === "TEXTAREA" ||
       active.tagName === "SELECT" ||
-      active.isContentEditable
-    );
+      active.isContentEditable);
 
   return isTypingElement;
 };
