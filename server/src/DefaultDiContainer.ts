@@ -115,7 +115,8 @@ export const defaultDiContainer = (diContainer: ContainerBuilder) => {
 
   diContainer
     .register(services.collection, CollectionService)
-    .addArgument(new Reference(repositories.collection));
+    .addArgument(new Reference(repositories.collection))
+    .addArgument(new Reference(services.tag));
 
   return diContainer;
 };

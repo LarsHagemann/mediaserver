@@ -30,18 +30,21 @@ collectionRouter.post(
     {
       name: string;
       description?: string;
-      filterExpression: string;
+      filterExpression?: string;
       isFavorite?: boolean;
+      type?: "dynamic" | "static";
     }
   >(async ({ diContainer, body }) => {
     const collectionService = diContainer.get<CollectionService>(
       services.collection,
     );
+    const type = body.type ?? "dynamic";
     const collection = await collectionService.createCollection({
       name: body.name,
       ...(body.description !== undefined && { description: body.description }),
-      filterExpression: body.filterExpression,
+      filterExpression: body.filterExpression ?? "",
       isFavorite: body.isFavorite ?? false,
+      type,
     });
     return { status: 201, body: collection };
   }),
@@ -68,7 +71,7 @@ collectionRouter.put(
     {
       name: string;
       description: string | null;
-      filterExpression: string;
+      filterExpression?: string;
       isFavorite: boolean;
     },
     { id: string }
@@ -80,7 +83,7 @@ collectionRouter.put(
       id,
       name: body.name,
       description: body.description,
-      filterExpression: body.filterExpression,
+      filterExpression: body.filterExpression ?? "",
       isFavorite: body.isFavorite,
     });
     return { status: 200, body: collection };
@@ -95,6 +98,35 @@ collectionRouter.delete(
         services.collection,
       );
       await collectionService.deleteCollection(id);
+      return { status: 204, body: {} };
+    },
+  ),
+);
+
+collectionRouter.post(
+  "/:id/members",
+  apiHandler<
+    EmptyObject,
+    EmptyObject,
+    { documentId: string },
+    { id: string }
+  >(async ({ diContainer, params: { id }, body }) => {
+    const collectionService = diContainer.get<CollectionService>(
+      services.collection,
+    );
+    await collectionService.addMember(id, body.documentId);
+    return { status: 204, body: {} };
+  }),
+);
+
+collectionRouter.delete(
+  "/:id/members/:documentId",
+  apiHandler<EmptyObject, EmptyObject, EmptyObject, { id: string; documentId: string }>(
+    async ({ diContainer, params: { id, documentId } }) => {
+      const collectionService = diContainer.get<CollectionService>(
+        services.collection,
+      );
+      await collectionService.removeMember(id, documentId);
       return { status: 204, body: {} };
     },
   ),

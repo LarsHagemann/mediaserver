@@ -65,6 +65,10 @@ export class TagService {
     await this.tagRepository.removeTagFromDocument(documentId, tagObject);
   }
 
+  public async deleteTag(key: string, value: string): Promise<void> {
+    await this.tagRepository.deleteTag(key, value);
+  }
+
   public async initIdCache(): Promise<void> {
     const tags = await this.tagRepository.enumerateTags();
     this.tagCache.init(

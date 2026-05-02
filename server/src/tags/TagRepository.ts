@@ -214,6 +214,18 @@ export class TagRepository {
     }
   }
 
+  public async deleteTag(key: string, value: string): Promise<void> {
+    await this.dbService.none(
+      `DELETE FROM userdata_tags WHERE tag_id = (SELECT id FROM tags WHERE key = $key AND value = $value)`,
+      { key, value },
+    );
+    await this.dbService.none(
+      `DELETE FROM tags WHERE key = $key AND value = $value`,
+      { key, value },
+    );
+    await this.tagCache.onTagDeleted({ key, value } as Tag);
+  }
+
   public async enumerateTags() {
     const rows = await this.dbService.any(tagRowSchema, `SELECT * FROM tags`);
     return rows;

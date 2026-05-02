@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Modal } from "../components/Modal";
 import { TagInput } from "./TagInput";
 import { enhancedApi } from "../app/enhancedApi";
-import type { Collection } from "../app/api";
+import type { Collection, CollectionType } from "../app/api";
 import { useTranslation } from "react-i18next";
 import { Button } from "../components/Button";
 
@@ -11,6 +11,7 @@ type SaveData = {
   description: string | null;
   filterExpression: string;
   isFavorite: boolean;
+  type: CollectionType;
 };
 
 type Props = {
@@ -33,6 +34,11 @@ export const CollectionFormModal = ({
   const [description, setDescription] = useState("");
   const [filterExpression, setFilterExpression] = useState("");
   const [isFilterValid, setIsFilterValid] = useState(true);
+  const [type, setType] = useState<CollectionType>("dynamic");
+
+  const isEditing = !!initialCollection;
+  const effectiveType = isEditing ? initialCollection.type : type;
+  const showTypeSelector = !isEditing && !initialFilterExpression;
 
   useEffect(() => {
     if (isOpen) {
@@ -42,15 +48,23 @@ export const CollectionFormModal = ({
         initialCollection?.filterExpression ?? initialFilterExpression,
       );
       setIsFilterValid(true);
+      setType(initialCollection?.type ?? "dynamic");
     }
   }, [isOpen, initialCollection, initialFilterExpression]);
 
   const { data: previewData } = enhancedApi.useListDocumentsQuery(
     { limit: 1, offset: 0, query: filterExpression },
-    { skip: !isFilterValid || filterExpression === "" },
+    {
+      skip:
+        effectiveType === "static" ||
+        !isFilterValid ||
+        filterExpression === "",
+    },
   );
 
-  const isValid = name.trim().length > 0 && isFilterValid;
+  const isValid =
+    name.trim().length > 0 &&
+    (effectiveType === "static" || isFilterValid);
 
   const handleSave = () => {
     if (!isValid) return;
@@ -59,16 +73,54 @@ export const CollectionFormModal = ({
       description: description.trim() || null,
       filterExpression,
       isFavorite: initialCollection?.isFavorite ?? false,
+      type: effectiveType,
     });
   };
 
-  const title = initialCollection
+  const title = isEditing
     ? t("collections.editCollection")
     : t("collections.newCollection");
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title}>
       <div className="flex flex-col gap-4">
+        {showTypeSelector && (
+          <div>
+            <label className="block text-sm text-gray-400 mb-1">
+              {t("collections.form.type")}
+            </label>
+            <div className="flex rounded overflow-hidden border border-gray-600">
+              <button
+                type="button"
+                className={`flex-1 py-2 text-sm transition-colors ${
+                  type === "dynamic"
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                }`}
+                onClick={() => setType("dynamic")}
+              >
+                {t("collections.form.typeDynamic")}
+              </button>
+              <button
+                type="button"
+                className={`flex-1 py-2 text-sm transition-colors ${
+                  type === "static"
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                }`}
+                onClick={() => setType("static")}
+              >
+                {t("collections.form.typeStatic")}
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              {type === "dynamic"
+                ? t("collections.form.typeDynamicHint")
+                : t("collections.form.typeStaticHint")}
+            </p>
+          </div>
+        )}
+
         <div>
           <label className="block text-sm text-gray-400 mb-1">
             {t("collections.form.name")} *
@@ -94,23 +146,31 @@ export const CollectionFormModal = ({
           />
         </div>
 
-        <div>
-          <label className="block text-sm text-gray-400 mb-1">
-            {t("collections.form.filterExpression")} *
-          </label>
-          <TagInput
-            value={filterExpression}
-            onChange={setFilterExpression}
-            onSubmit={() => {}}
-            onValidChange={setIsFilterValid}
-            placeholder={t("collections.form.filterPlaceholder")}
-          />
-          {isFilterValid && filterExpression !== "" && (
-            <p className="text-sm text-gray-400 mt-1">
-              {t("collections.docCount", { count: previewData?.total ?? 0 })}
-            </p>
-          )}
-        </div>
+        {effectiveType === "dynamic" && (
+          <div>
+            <label className="block text-sm text-gray-400 mb-1">
+              {t("collections.form.filterExpression")} *
+            </label>
+            <TagInput
+              value={filterExpression}
+              onChange={setFilterExpression}
+              onSubmit={() => {}}
+              onValidChange={setIsFilterValid}
+              placeholder={t("collections.form.filterPlaceholder")}
+            />
+            {isFilterValid && filterExpression !== "" && (
+              <p className="text-sm text-gray-400 mt-1">
+                {t("collections.docCount", { count: previewData?.total ?? 0 })}
+              </p>
+            )}
+          </div>
+        )}
+
+        {effectiveType === "static" && isEditing && (
+          <p className="text-xs text-gray-500">
+            {t("collections.form.staticFilterNote")}
+          </p>
+        )}
 
         <div className="flex justify-end gap-3 mt-2">
           <Button variant="ghost" onClick={onClose}>

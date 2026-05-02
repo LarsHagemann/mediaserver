@@ -10,7 +10,7 @@ import { IconButton } from "../components/IconButton";
 type Props = {
   collection: Collection;
   onEdit: (collection: Collection) => void;
-  onDelete: (id: string) => void;
+  onDelete: (collection: Collection) => void;
   onToggleFavorite: (collection: Collection) => void;
 };
 
@@ -44,9 +44,25 @@ export const CollectionCard = ({
       }
     >
       <div className="flex justify-between items-start">
-        <h3 className="text-white font-semibold text-lg truncate flex-1 mr-2">
-          {collection.name}
-        </h3>
+        <div className="flex items-center gap-2 flex-1 min-w-0 mr-2">
+          <h3 className="text-white font-semibold text-lg truncate">
+            {collection.name}
+          </h3>
+          <span
+            className={twMerge(
+              "flex-shrink-0 text-xs px-1.5 py-0.5 rounded font-medium",
+              collection.type === "static"
+                ? "bg-purple-900/60 text-purple-300"
+                : "bg-blue-900/60 text-blue-300",
+            )}
+          >
+            {t(
+              collection.type === "static"
+                ? "collections.typeStatic"
+                : "collections.typeDynamic",
+            )}
+          </span>
+        </div>
         <IconButton
           onClick={(e) => {
             e.stopPropagation();
@@ -64,9 +80,11 @@ export const CollectionCard = ({
         </p>
       )}
 
-      <div className="bg-gray-700 rounded px-2 py-1 text-sm text-blue-300 font-mono truncate">
-        {collection.filterExpression || t("collections.emptyFilter")}
-      </div>
+      {collection.type === "dynamic" && (
+        <div className="bg-gray-700 rounded px-2 py-1 text-sm text-blue-300 font-mono truncate">
+          {collection.filterExpression || t("collections.emptyFilter")}
+        </div>
+      )}
 
       <div className="flex justify-between items-center mt-1">
         <span className="text-gray-400 text-sm">
@@ -81,7 +99,7 @@ export const CollectionCard = ({
           </IconButton>
           <IconButton
             className="text-lg text-gray-400 hover:text-red-400"
-            onClick={() => onDelete(collection.id)}
+            onClick={() => onDelete(collection)}
           >
             <MdDelete />
           </IconButton>

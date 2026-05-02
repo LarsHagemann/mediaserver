@@ -1,5 +1,4 @@
 import z from "zod";
-import { v4 as uuidv4 } from "uuid";
 import type { DbService } from "../sql/DbService.js";
 import {
   paginated,
@@ -7,12 +6,15 @@ import {
   type PaginatedResponse,
 } from "../util/PaginatedResponse.js";
 
+export type CollectionType = "dynamic" | "static";
+
 const collectionRowSchema = z.object({
   id: z.string(),
   name: z.string(),
   description: z.string().nullable(),
   filter_expression: z.string(),
   is_favorite: z.boolean(),
+  type: z.enum(["dynamic", "static"]),
   created_at: z.date(),
   updated_at: z.date(),
 });
@@ -23,6 +25,7 @@ export type Collection = {
   description: string | undefined;
   filterExpression: string;
   isFavorite: boolean;
+  type: CollectionType;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -33,10 +36,12 @@ export interface ListCollectionsRequest {
 }
 
 export interface CreateCollectionRequest {
+  id: string;
   name: string;
   description?: string;
   filterExpression: string;
   isFavorite: boolean;
+  type: CollectionType;
 }
 
 export interface UpdateCollectionRequest {
@@ -55,6 +60,7 @@ const toCollection = (
   description: row.description ?? undefined,
   filterExpression: row.filter_expression,
   isFavorite: row.is_favorite,
+  type: row.type,
   createdAt: row.created_at,
   updatedAt: row.updated_at,
 });
@@ -68,7 +74,7 @@ export class CollectionRepository {
   }: ListCollectionsRequest): Promise<PaginatedResponse<Collection>> {
     const rows = await this.dbService.any(
       paginated(collectionRowSchema),
-      `SELECT id, name, description, filter_expression, is_favorite, created_at, updated_at,
+      `SELECT id, name, description, filter_expression, is_favorite, type, created_at, updated_at,
               COUNT(*) OVER()::int AS __total
        FROM collections
        ORDER BY is_favorite DESC, created_at DESC
@@ -83,7 +89,7 @@ export class CollectionRepository {
   public async getCollection(id: string): Promise<Collection | null> {
     const row = await this.dbService.oneOrNone(
       collectionRowSchema,
-      `SELECT id, name, description, filter_expression, is_favorite, created_at, updated_at
+      `SELECT id, name, description, filter_expression, is_favorite, type, created_at, updated_at
        FROM collections WHERE id = $id`,
       { id },
     );
@@ -93,18 +99,18 @@ export class CollectionRepository {
   public async createCollection(
     request: CreateCollectionRequest,
   ): Promise<Collection> {
-    const id = uuidv4();
     const row = await this.dbService.one(
       collectionRowSchema,
-      `INSERT INTO collections (id, name, description, filter_expression, is_favorite)
-       VALUES ($id, $name, $description, $filterExpression, $isFavorite)
-       RETURNING id, name, description, filter_expression, is_favorite, created_at, updated_at`,
+      `INSERT INTO collections (id, name, description, filter_expression, is_favorite, type)
+       VALUES ($id, $name, $description, $filterExpression, $isFavorite, $type)
+       RETURNING id, name, description, filter_expression, is_favorite, type, created_at, updated_at`,
       {
-        id,
+        id: request.id,
         name: request.name,
         description: request.description ?? null,
         filterExpression: request.filterExpression,
         isFavorite: request.isFavorite,
+        type: request.type,
       },
     );
     return toCollection(row);
@@ -119,7 +125,7 @@ export class CollectionRepository {
        SET name = $name, description = $description, filter_expression = $filterExpression,
            is_favorite = $isFavorite, updated_at = NOW()
        WHERE id = $id
-       RETURNING id, name, description, filter_expression, is_favorite, created_at, updated_at`,
+       RETURNING id, name, description, filter_expression, is_favorite, type, created_at, updated_at`,
       {
         id: request.id,
         name: request.name,

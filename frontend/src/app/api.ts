@@ -42,12 +42,15 @@ export type ApiTag = {
   type: string;
 };
 
+export type CollectionType = "dynamic" | "static";
+
 export type Collection = {
   id: string;
   name: string;
   description?: string;
   filterExpression: string;
   isFavorite: boolean;
+  type: CollectionType;
   createdAt: string;
   updatedAt: string;
 };
@@ -184,8 +187,9 @@ export const api = baseApi.injectEndpoints({
       {
         name: string;
         description: string | null;
-        filterExpression: string;
+        filterExpression?: string;
         isFavorite: boolean;
+        type: CollectionType;
       }
     >({
       query: (body) => ({
@@ -224,6 +228,37 @@ export const api = baseApi.injectEndpoints({
       invalidatesTags: (_result, _error, id) => [
         "collection",
         { type: "collection", id },
+      ],
+    }),
+
+    addCollectionMember: build.mutation<
+      void,
+      { collectionId: string; documentId: string }
+    >({
+      query: ({ collectionId, documentId }) => ({
+        url: `/collections/${encodeURIComponent(collectionId)}/members`,
+        method: "POST",
+        body: { documentId },
+      }),
+      invalidatesTags: (_result, _error, arg) => [
+        { type: "collection", id: arg.collectionId },
+        { type: "document", id: arg.documentId },
+        "tag",
+      ],
+    }),
+
+    removeCollectionMember: build.mutation<
+      void,
+      { collectionId: string; documentId: string }
+    >({
+      query: ({ collectionId, documentId }) => ({
+        url: `/collections/${encodeURIComponent(collectionId)}/members/${encodeURIComponent(documentId)}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (_result, _error, arg) => [
+        { type: "collection", id: arg.collectionId },
+        { type: "document", id: arg.documentId },
+        "tag",
       ],
     }),
   }),

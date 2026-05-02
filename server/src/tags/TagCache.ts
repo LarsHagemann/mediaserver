@@ -27,4 +27,8 @@ export class TagCache {
   public async onTagAdded(tag: Tag | MetaTag, tagId: string): Promise<void> {
     await this.redisClient.set(`tag:${TagService.toString(tag)}`, tagId);
   }
+
+  public async onTagDeleted(tag: Tag | MetaTag): Promise<void> {
+    await this.redisClient.del(`tag:${TagService.toString(tag)}`);
+  }
 }

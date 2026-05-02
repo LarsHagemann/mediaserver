@@ -8,6 +8,7 @@ import { CollectionFormModal } from "../sections/CollectionFormModal";
 import { usePageOffsetAndLimitParams } from "../hooks/usePageOffsetAndLimitParams";
 import { Pagination } from "../components/Pagination";
 import { Button } from "../components/Button";
+import { Modal } from "../components/Modal";
 
 export const CollectionsPage = () => {
   const { t } = useTranslation();
@@ -15,6 +16,9 @@ export const CollectionsPage = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCollection, setEditingCollection] = useState<
+    Collection | undefined
+  >(undefined);
+  const [deletingCollection, setDeletingCollection] = useState<
     Collection | undefined
   >(undefined);
 
@@ -43,9 +47,10 @@ export const CollectionsPage = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm(t("collections.confirmDelete"))) {
-      await deleteCollection(id);
+  const handleDeleteConfirm = async () => {
+    if (deletingCollection) {
+      await deleteCollection(deletingCollection.id);
+      setDeletingCollection(undefined);
     }
   };
 
@@ -64,6 +69,7 @@ export const CollectionsPage = () => {
     description: string | null;
     filterExpression: string;
     isFavorite: boolean;
+    type: "dynamic" | "static";
   }) => {
     if (editingCollection) {
       await updateCollection({ ...saveData, id: editingCollection.id });
@@ -102,7 +108,7 @@ export const CollectionsPage = () => {
                 key={collection.id}
                 collection={collection}
                 onEdit={handleEdit}
-                onDelete={handleDelete}
+                onDelete={setDeletingCollection}
                 onToggleFavorite={handleToggleFavorite}
               />
             ))}
@@ -123,7 +129,7 @@ export const CollectionsPage = () => {
                 key={collection.id}
                 collection={collection}
                 onEdit={handleEdit}
-                onDelete={handleDelete}
+                onDelete={setDeletingCollection}
                 onToggleFavorite={handleToggleFavorite}
               />
             ))}
@@ -145,6 +151,43 @@ export const CollectionsPage = () => {
         onSave={handleSave}
         initialCollection={editingCollection}
       />
+
+      <Modal
+        isOpen={!!deletingCollection}
+        onClose={() => setDeletingCollection(undefined)}
+        title={t("collections.deleteModal.title")}
+      >
+        <div className="flex flex-col gap-4">
+          <p className="text-gray-300">
+            {deletingCollection?.type === "static"
+              ? t("collections.deleteModal.bodyStatic", {
+                  name: deletingCollection.name,
+                })
+              : t("collections.deleteModal.body", {
+                  name: deletingCollection?.name,
+                })}
+          </p>
+          {deletingCollection?.type === "static" && (
+            <p className="text-yellow-400 text-sm">
+              {t("collections.deleteModal.staticWarning")}
+            </p>
+          )}
+          <div className="flex justify-end gap-3">
+            <Button
+              variant="ghost"
+              onClick={() => setDeletingCollection(undefined)}
+            >
+              {t("collections.form.cancel")}
+            </Button>
+            <Button
+              className="bg-red-600 hover:bg-red-500"
+              onClick={handleDeleteConfirm}
+            >
+              {t("collections.deleteModal.confirm")}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

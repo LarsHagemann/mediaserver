@@ -58,7 +58,7 @@ export const GalleryPage = () => {
         const containerWidth = containerEntry.contentBoxSize[0].inlineSize;
         const thumbnailsPerRow = Math.floor(
           (containerWidth - thumbnailMargin - containerPadding) /
-            (120 + thumbnailMargin * 2),
+          (120 + thumbnailMargin * 2),
         );
         setDocumentsPerRow(thumbnailsPerRow);
 
@@ -71,8 +71,8 @@ export const GalleryPage = () => {
 
         setThumbnailContainerWidth(
           thumbnailsPerRow * (120 + thumbnailMargin * 2) +
-            thumbnailMargin +
-            containerPadding,
+          thumbnailMargin +
+          containerPadding,
         );
       }
     });
@@ -146,56 +146,56 @@ export const GalleryPage = () => {
   return (
     <div
       ref={containerRef}
-      className="relative h-full flex flex-col items-center overflow-hidden"
+      className="h-full relative flex flex-col gap-1 overflow-hidden"
     >
       <TagInput
         value={tagInput}
         onChange={setTagInput}
-        onValidChange={() => {}}
+        onValidChange={() => { }}
         onSubmit={(value) => addSearchParam("q", value)}
-        className="mb-2 p-2 w-full"
+        className="flex flex-row mb-2 p-2 w-full"
         placeholder={t("pages.gallery.tagInputPlaceholder")}
         blurOnSubmit
       />
-      <div className="relative w-full">
+      <div className="flex flex-row justify-end gap-2 pr-2">
+        {query && (
+          <MdBookmarkAdd
+            className="inline text-xl cursor-pointer hover:text-blue-400"
+            title={t("collections.saveAsCollection")}
+            onClick={() => setCollectionModalOpen(true)}
+          />
+        )}
+        <FiGrid
+          className={twMerge(
+            "inline text-xl",
+            layoutType === "grid" && "text-blue-400",
+            layoutType === "list" && "cursor-pointer",
+          )}
+          onClick={() => {
+            setLayoutType("grid");
+          }}
+        />
+        <FiList
+          className={twMerge(
+            "inline text-xl",
+            layoutType === "list" && "text-blue-400",
+            layoutType === "grid" && "cursor-pointer",
+          )}
+          onClick={() => {
+            setLayoutType("list");
+          }}
+        />
+      </div>
+      <div className="flex flex-row justify-center">
         <Pagination
           total={total}
           limit={limit}
           currentPage={page}
           onPageChange={setPage}
         />
-        <div className="relative text-right mr-2 sm:absolute sm:right-8 sm:top-2">
-          {query && (
-            <MdBookmarkAdd
-              className="inline text-xl mb-1 mr-2 cursor-pointer hover:text-blue-400"
-              title={t("collections.saveAsCollection")}
-              onClick={() => setCollectionModalOpen(true)}
-            />
-          )}
-          <FiGrid
-            className={twMerge(
-              "inline text-xl mb-1 mr-1",
-              layoutType === "grid" && "text-blue-400",
-              layoutType === "list" && "cursor-pointer",
-            )}
-            onClick={() => {
-              setLayoutType("grid");
-            }}
-          />
-          <FiList
-            className={twMerge(
-              "inline text-xl mb-1",
-              layoutType === "list" && "text-blue-400",
-              layoutType === "grid" && "cursor-pointer",
-            )}
-            onClick={() => {
-              setLayoutType("list");
-            }}
-          />
-        </div>
       </div>
       <div
-        className="p-2 max-w-full max-h-[calc(100%-210px)] flex-grow overflow-auto"
+        className="p-2 max-w-full max-h-[calc(100%-210px)] mt-8 flex-grow overflow-auto"
         style={{
           width:
             layoutType === "grid" && !isMobile
@@ -231,7 +231,7 @@ export const GalleryPage = () => {
         isOpen={collectionModalOpen}
         onClose={() => setCollectionModalOpen(false)}
         onSave={async (data) => {
-          await createCollection(data);
+          await createCollection({ ...data, type: "dynamic" });
           setCollectionModalOpen(false);
         }}
         initialFilterExpression={query}
