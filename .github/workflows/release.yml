@@ -112,7 +112,9 @@ jobs:
           cd ../plugin/frontend-types
           npm version ${{ needs.version.outputs.version }} --no-git-tag-version
           npm install
-          npm publish --provenance --ignore-scripts --access public
+          npm publish --provenance --ignore-scripts --access public ${{
+            github.ref_name == 'main' && '--tag stable' || '--tag beta'
+          }}
 
       - name: Publish backend plugin types
         run: |
@@ -121,7 +123,9 @@ jobs:
           cd ../plugin/backend-types
           npm version ${{ needs.version.outputs.version }} --no-git-tag-version
           npm install
-          npm publish --provenance --ignore-scripts --access public
+          npm publish --provenance --ignore-scripts --access public ${{
+            github.ref_name == 'main' && '--tag stable' || '--tag beta'
+          }}
 
       - name: Publish plugin creation tool
         run: |
@@ -129,7 +133,9 @@ jobs:
           npm version ${{ needs.version.outputs.version }} --no-git-tag-version
           npm install
           npm run build
-          npm publish --provenance --access public
+          npm publish --provenance --access public ${{
+            github.ref_name == 'main' && '--tag stable' || '--tag beta'
+          }}
 
   release:
     name: Release
