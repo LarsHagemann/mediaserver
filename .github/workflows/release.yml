@@ -114,8 +114,6 @@ jobs:
           npm version ${{ needs.version.outputs.version }} --no-git-tag-version
           npm install
           npm publish --provenance --ignore-scripts --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish backend plugin types
         run: |
@@ -125,8 +123,6 @@ jobs:
           npm version ${{ needs.version.outputs.version }} --no-git-tag-version
           npm install
           npm publish --provenance --ignore-scripts --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish plugin creation tool
         run: |
@@ -135,8 +131,6 @@ jobs:
           npm install
           npm run build
           npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   release:
     name: Release
