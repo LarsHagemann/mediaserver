@@ -105,29 +105,29 @@ collectionRouter.delete(
 
 collectionRouter.post(
   "/:id/members",
-  apiHandler<
-    EmptyObject,
-    EmptyObject,
-    { documentId: string },
-    { id: string }
-  >(async ({ diContainer, params: { id }, body }) => {
-    const collectionService = diContainer.get<CollectionService>(
-      services.collection,
-    );
-    await collectionService.addMember(id, body.documentId);
-    return { status: 204, body: {} };
-  }),
+  apiHandler<EmptyObject, EmptyObject, { documentId: string }, { id: string }>(
+    async ({ diContainer, params: { id }, body }) => {
+      const collectionService = diContainer.get<CollectionService>(
+        services.collection,
+      );
+      await collectionService.addMember(id, body.documentId);
+      return { status: 204, body: {} };
+    },
+  ),
 );
 
 collectionRouter.delete(
   "/:id/members/:documentId",
-  apiHandler<EmptyObject, EmptyObject, EmptyObject, { id: string; documentId: string }>(
-    async ({ diContainer, params: { id, documentId } }) => {
-      const collectionService = diContainer.get<CollectionService>(
-        services.collection,
-      );
-      await collectionService.removeMember(id, documentId);
-      return { status: 204, body: {} };
-    },
-  ),
+  apiHandler<
+    EmptyObject,
+    EmptyObject,
+    EmptyObject,
+    { id: string; documentId: string }
+  >(async ({ diContainer, params: { id, documentId } }) => {
+    const collectionService = diContainer.get<CollectionService>(
+      services.collection,
+    );
+    await collectionService.removeMember(id, documentId);
+    return { status: 204, body: {} };
+  }),
 );

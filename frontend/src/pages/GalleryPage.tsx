@@ -89,6 +89,7 @@ export const GalleryPage = () => {
 
   const {
     params: { preview: previewDocumentSearchParam, q: query },
+    setSearchParams,
     addSearchParam,
     removeSearchParam,
   } = useEasySearchParams(["preview", "q"]);
@@ -133,15 +134,40 @@ export const GalleryPage = () => {
 
   const nextPreviewImage = useCallback(() => {
     if (previewDocument?.nextId) {
-      setPreviewDocument(previewDocument.nextId);
+      const nextId = previewDocument.nextId;
+      const indexOnPage = previewDocument.queryIndex % limit;
+      console.log({ indexOnPage, queryIndex: previewDocument.queryIndex, limit });
+      if (indexOnPage === limit - 1) {
+        const newPage = page + 1;
+        setSearchParams((prev) => {
+          const newParams = new URLSearchParams(prev);
+          newParams.set("page", String(newPage + 1));
+          newParams.set("preview", nextId);
+          return newParams;
+        });
+      } else {
+        setPreviewDocument(nextId);
+      }
     }
-  }, [setPreviewDocument, previewDocument]);
+  }, [setPreviewDocument, previewDocument, setSearchParams, page, limit]);
 
   const prevPreviewImage = useCallback(() => {
     if (previewDocument?.previousId) {
-      setPreviewDocument(previewDocument.previousId);
+      const previousId = previewDocument.previousId;
+      const indexOnPage = previewDocument.queryIndex % limit;
+      if (indexOnPage === 0) {
+        const newPage = Math.max(page - 1, 0);
+        setSearchParams((prev) => {
+          const newParams = new URLSearchParams(prev);
+          newParams.set("page", String(newPage + 1));
+          newParams.set("preview", previousId);
+          return newParams;
+        });
+      } else {
+        setPreviewDocument(previewDocument.previousId);
+      }
     }
-  }, [setPreviewDocument, previewDocument]);
+  }, [setPreviewDocument, previewDocument, setSearchParams, page, limit]);
 
   return (
     <div
