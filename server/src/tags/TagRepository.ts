@@ -186,7 +186,7 @@ export class TagRepository {
     documentId: string,
     tag: Tag | MetaTag,
   ): Promise<void> {
-    const a = this.sqlBuilder.buildRemoveTagFromEntityQuery(tag);
+    const a = await this.sqlBuilder.buildRemoveTagFromEntityQuery(tag);
     if (a.success) {
       await this.dbService.none(buildQueryFromDeleteStatement(a.stmt), {
         entityId: documentId,

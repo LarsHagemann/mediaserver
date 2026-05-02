@@ -20,19 +20,21 @@ export const Modal = ({ isOpen, onClose, title, children, className }: Props) =>
     >
       <div
         className={twMerge(
-          "bg-gray-800 rounded-lg p-6 w-full max-w-lg mx-4 relative",
+          "bg-gray-800 rounded-lg w-full max-w-lg mx-4 relative max-h-[90vh] overflow-y-hidden",
           className,
         )}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex justify-between items-center mb-4 px-6 pt-6">
           <h2 className="text-xl font-semibold text-white">{title}</h2>
           <MdClose
             className="text-2xl cursor-pointer hover:text-red-400 transition-colors"
             onClick={onClose}
           />
         </div>
-        {children}
+        <div className="overflow-y-auto max-h-[70vh]">
+          <div className="p-6">{children}</div>
+        </div>
       </div>
     </div>
   );

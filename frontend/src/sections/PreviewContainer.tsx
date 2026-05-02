@@ -8,6 +8,7 @@ import { useDocumentUrl } from "../hooks/useDocumentUrl";
 import { twMerge } from "tailwind-merge";
 import { DocumentDiashow } from "../components/DocumentDiashow";
 import { preventInputHandling } from "../util/preventInputHandling";
+import { AddToCollectionModal } from "./AddToCollectionModal";
 
 type Props = {
   previewImageId: string;
@@ -44,6 +45,7 @@ export const PreviewContainer = ({
 
   const [diashowMode, setDiashowMode] = useState<boolean>(false);
   const [wasFullscreen, setWasFullscreen] = useState<boolean>(false);
+  const [addToCollectionModalOpen, setAddToCollectionModalOpen] = useState(false);
 
   useEffect(() => {
     const keyDownHandler = (event: KeyboardEvent) => {
@@ -83,7 +85,9 @@ export const PreviewContainer = ({
   const mimeType = data?.items.find((d) => d.id === previewImageId)?.mime;
 
   // Todo: Show "AddToCollectionModal" here
-  const onBookmark = () => { };
+  const onBookmark = () => {
+    setAddToCollectionModalOpen(true);
+  };
 
   const onCloseImpl = useCallback(() => {
     if (diashowMode) {
@@ -118,7 +122,7 @@ export const PreviewContainer = ({
               onBookmark={onBookmark}
             />
           </div>
-          <div className="flex flex-1 w-full bg-red-400">
+          <div className="flex flex-1 w-full">
             {diashowMode && (
               <div className="fixed z-10 bg-gray-800 w-screen h-screen left-0 top-0">
                 <DocumentDiashow documentId={previewImageId} nextDocument={nextPreviewImage} mimeType={mimeType} />
@@ -145,6 +149,11 @@ export const PreviewContainer = ({
           size="small"
         />
       </div>
+      <AddToCollectionModal
+        documentId={previewImageId}
+        isOpen={addToCollectionModalOpen}
+        onClose={() => setAddToCollectionModalOpen(false)}
+      />
     </>
   );
 };

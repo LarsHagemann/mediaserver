@@ -33,6 +33,7 @@ export type Collection = {
 export interface ListCollectionsRequest {
   limit: number;
   offset: number;
+  type: CollectionType | undefined;
 }
 
 export interface CreateCollectionRequest {
@@ -71,15 +72,17 @@ export class CollectionRepository {
   public async listCollections({
     limit,
     offset,
+    type,
   }: ListCollectionsRequest): Promise<PaginatedResponse<Collection>> {
     const rows = await this.dbService.any(
       paginated(collectionRowSchema),
       `SELECT id, name, description, filter_expression, is_favorite, type, created_at, updated_at,
               COUNT(*) OVER()::int AS __total
        FROM collections
+        ${type ? `WHERE type = $type` : ""}
        ORDER BY is_favorite DESC, created_at DESC
        LIMIT $limit OFFSET $offset`,
-      { limit, offset },
+      type ? { limit, offset, type } : { limit, offset },
     );
     return toPaginatedResponse(
       rows.map((row) => ({ ...toCollection(row), __total: row.__total })),

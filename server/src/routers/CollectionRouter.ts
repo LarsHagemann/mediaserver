@@ -12,14 +12,23 @@ collectionRouter.get(
   "/",
   apiHandler<
     PaginatedResponse<Collection>,
-    { limit?: number; offset?: number }
-  >(async ({ diContainer, query: { limit = 20, offset = 0 } }) => {
-    const collectionService = diContainer.get<CollectionService>(
-      services.collection,
-    );
-    const response = await collectionService.listCollections({ limit, offset });
-    return { status: 200, body: response };
-  }),
+    { limit?: number; offset?: number; type: "dynamic" | "static" | undefined }
+  >(
+    async ({
+      diContainer,
+      query: { limit = 20, offset = 0, type = undefined },
+    }) => {
+      const collectionService = diContainer.get<CollectionService>(
+        services.collection,
+      );
+      const response = await collectionService.listCollections({
+        limit,
+        offset,
+        type,
+      });
+      return { status: 200, body: response };
+    },
+  ),
 );
 
 collectionRouter.post(
