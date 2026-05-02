@@ -114,7 +114,7 @@ jobs:
           npm install
           npm publish --provenance --ignore-scripts --access public ${{
             github.ref_name == 'main' && '--tag stable' || '--tag beta'
-          }}
+          }} || exit 0
 
       - name: Publish backend plugin types
         run: |
@@ -125,7 +125,7 @@ jobs:
           npm install
           npm publish --provenance --ignore-scripts --access public ${{
             github.ref_name == 'main' && '--tag stable' || '--tag beta'
-          }}
+          }} || exit 0
 
       - name: Publish plugin creation tool
         run: |
@@ -135,7 +135,7 @@ jobs:
           npm run build
           npm publish --provenance --access public ${{
             github.ref_name == 'main' && '--tag stable' || '--tag beta'
-          }}
+          }} || exit 0
 
   release:
     name: Release
