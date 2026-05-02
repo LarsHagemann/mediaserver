@@ -34,7 +34,8 @@
     "totalDocuments": "Total Documents",
     "totalStorageUsed": "Total Storage Used",
     "storage": "Storage",
-    "backendPlugins": "Backend Plugins"
+    "backendPlugins": "Backend Plugins",
+    "version": "Version"
   },
   "sidebar": {
     "gallery": "Gallery",

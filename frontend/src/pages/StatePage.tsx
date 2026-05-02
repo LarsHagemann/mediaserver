@@ -116,6 +116,8 @@ export const StatePage = () => {
           )}
         />
       </Value>
+      <Key translationKey="state.version" />
+      <Value>{backendState?.version ?? "N/A"} ({backendState?.commit ?? "N/A"})</Value>
       <Key translationKey="state.uptime" />
       <Value>{uptime.toFormat("hhhh:mm:ss")}</Value>
       <Key translationKey="state.totalDocuments" />
