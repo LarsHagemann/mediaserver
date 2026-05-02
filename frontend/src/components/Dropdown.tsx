@@ -58,7 +58,7 @@ export const Dropdown = <T,>({
   return (
     <div
       className={twMerge(
-        "absolute block bg-gray-800 -mt-2 border-b border-gray-300 max-h-60 overflow-y-auto w-full z-90 text-gray-300",
+        "absolute block bg-surface-1 -mt-2 border-b border-border-strong max-h-60 overflow-y-auto w-full z-90 text-text-secondary",
         direction === "up"
           ? "bottom-full rounded-t-md"
           : "top-full rounded-b-md",
@@ -69,8 +69,8 @@ export const Dropdown = <T,>({
         <div
           key={key}
           className={twMerge(
-            "px-2 py-1 block hover:bg-gray-600 cursor-pointer",
-            index === highlightedIndex ? "bg-gray-600" : "",
+            "px-2 py-1 block hover:bg-surface-3 cursor-pointer",
+            index === highlightedIndex ? "bg-surface-3" : "",
           )}
           onMouseEnter={() => setHighlightedIndex(index)}
           onMouseDown={(e) => {

@@ -15,7 +15,7 @@ export const TagList = ({
   onClick,
   onDelete,
   className,
-  groupHeadingBackgroundColor = "bg-gray-800",
+  groupHeadingBackgroundColor = "bg-surface-1",
 }: Props) => {
   const groupedTags = groupBy(tags, "type");
 
@@ -45,13 +45,13 @@ export const TagList = ({
                 key={`${tag.key}:${tag.value}`}
                 onClick={() => onClick?.(tag)}
                 className={twMerge(
-                  "px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded-full text-sm duration-200 h-8 basis-8 flex items-center z-100",
+                  "px-2 py-1 bg-chip-bg rounded-full text-sm duration-200 h-8 basis-8 flex items-center z-100",
                   onClick
-                    ? "cursor-pointer hover:bg-blue-400 dark:hover:bg-blue-600  "
+                    ? "cursor-pointer hover:bg-chip-hover"
                     : "cursor-default",
                 )}
               >
-                <span className="text-gray-600 dark:text-gray-300">
+                <span className="text-chip-text">
                   {tag.key}
                   {tag.value ? `:${tag.value}` : ""}
                 </span>

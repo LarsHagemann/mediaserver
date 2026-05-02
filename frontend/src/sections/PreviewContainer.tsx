@@ -100,12 +100,12 @@ export const PreviewContainer = ({
     <>
       <div
         className={twMerge(
-          "absolute top-0 w-full h-[calc(100%-60px-2rem)] sm:h-[calc(100%-120px-2rem)] bg-gray-900 bg-opacity-75 flex items-center justify-center overflow-visible",
+          "absolute top-0 w-full h-[calc(100%-60px-2rem)] sm:h-[calc(100%-120px-2rem)] bg-bg-base/75 flex items-center justify-center overflow-visible",
           diashowMode ? "z-50" : "z-30",
         )}
       >
         <div className="flex flex-col items-center justify-center top-0 left-0 w-full h-full">
-          <div className="flex basis-8 w-full bg-gray-800">
+          <div className="flex basis-8 w-full bg-surface-1">
             <DocumentPreviewControls
               nextDocument={nextPreviewImage}
               previousDocument={previousPreviewImage}
@@ -124,7 +124,7 @@ export const PreviewContainer = ({
           </div>
           <div className="flex flex-1 w-full">
             {diashowMode && (
-              <div className="fixed z-10 bg-gray-800 w-screen h-screen left-0 top-0">
+              <div className="fixed z-10 bg-surface-1 w-screen h-screen left-0 top-0">
                 <DocumentDiashow documentId={previewImageId} nextDocument={nextPreviewImage} mimeType={mimeType} />
               </div>
             )}
@@ -137,7 +137,7 @@ export const PreviewContainer = ({
           </div>
         </div>
       </div>
-      <div className="absolute flex flex-row flex-wrap bottom-0 right-0 w-full h-[calc(60px+2rem)] sm:h-[calc(120px+2rem)] z-30 p-2 bg-gray-800 overflow-y-hidden justify-center">
+      <div className="absolute flex flex-row flex-wrap bottom-0 right-0 w-full h-[calc(60px+2rem)] sm:h-[calc(120px+2rem)] z-30 p-2 bg-surface-1 overflow-y-hidden justify-center">
         <ThumbnailContainer
           alignment="center"
           thumbnails={data?.items || []}

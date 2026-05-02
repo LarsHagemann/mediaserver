@@ -82,7 +82,7 @@ export const CollectionsPage = () => {
   return (
     <div className="p-4">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-white">
+        <h1 className="text-2xl font-bold text-text-primary">
           {t("collections.title")}
         </h1>
         <Button onClick={handleOpenCreate}>
@@ -91,14 +91,14 @@ export const CollectionsPage = () => {
       </div>
 
       {data?.items.length === 0 && (
-        <div className="text-gray-400 text-center py-12">
+        <div className="text-text-muted text-center py-12">
           {t("collections.empty")}
         </div>
       )}
 
       {favorites.length > 0 && (
         <div className="mb-6">
-          <h2 className="flex items-center gap-2 text-lg font-semibold text-yellow-400 mb-3">
+          <h2 className="flex items-center gap-2 text-lg font-semibold text-warning mb-3">
             <FaStar />
             {t("collections.favorites")}
           </h2>
@@ -119,7 +119,7 @@ export const CollectionsPage = () => {
       {nonFavorites.length > 0 && (
         <div>
           {favorites.length > 0 && (
-            <h2 className="text-lg font-semibold text-gray-300 mb-3">
+            <h2 className="text-lg font-semibold text-text-secondary mb-3">
               {t("collections.all")}
             </h2>
           )}
@@ -158,17 +158,17 @@ export const CollectionsPage = () => {
         title={t("collections.deleteModal.title")}
       >
         <div className="flex flex-col gap-4">
-          <p className="text-gray-300">
+          <p className="text-text-secondary">
             {deletingCollection?.type === "static"
               ? t("collections.deleteModal.bodyStatic", {
-                  name: deletingCollection.name,
-                })
+                name: deletingCollection.name,
+              })
               : t("collections.deleteModal.body", {
-                  name: deletingCollection?.name,
-                })}
+                name: deletingCollection?.name,
+              })}
           </p>
           {deletingCollection?.type === "static" && (
-            <p className="text-yellow-400 text-sm">
+            <p className="text-warning text-sm">
               {t("collections.deleteModal.staticWarning")}
             </p>
           )}
@@ -180,7 +180,7 @@ export const CollectionsPage = () => {
               {t("collections.form.cancel")}
             </Button>
             <Button
-              className="bg-red-600 hover:bg-red-500"
+              className="bg-danger hover:bg-danger-hover"
               onClick={handleDeleteConfirm}
             >
               {t("collections.deleteModal.confirm")}

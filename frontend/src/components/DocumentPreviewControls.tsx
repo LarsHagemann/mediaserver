@@ -34,7 +34,7 @@ export const DocumentPreviewControls: React.FC<Props> = ({
       <div />
       <div className="flex flex-row justify-center items-center gap-4">
         <div
-          className="rounded-md p-2 cursor-pointer hover:text-gray-400 duration-200"
+          className="rounded-md p-2 cursor-pointer hover:text-text-muted duration-200"
           onClick={() => {
             previousDocument();
           }}
@@ -42,7 +42,7 @@ export const DocumentPreviewControls: React.FC<Props> = ({
           <FaCaretLeft size={normalControlSize} />
         </div>
         <div
-          className="rounded-md p-3 cursor-pointer hover:text-gray-400 duration-200"
+          className="rounded-md p-3 cursor-pointer hover:text-text-muted duration-200"
           onClick={() => {
             downloadDocument();
           }}
@@ -50,7 +50,7 @@ export const DocumentPreviewControls: React.FC<Props> = ({
           <FaDownload size={smallControlSize} />
         </div>
         <div
-          className="rounded-md p-2 cursor-pointer hover:text-gray-400 duration-200"
+          className="rounded-md p-2 cursor-pointer hover:text-text-muted duration-200"
           onClick={() => {
             toggleDiashow();
           }}
@@ -58,7 +58,7 @@ export const DocumentPreviewControls: React.FC<Props> = ({
           <LuPresentation size={smallControlSize} />
         </div>
         <div
-          className="rounded-md p-2 cursor-pointer hover:text-gray-400 duration-200"
+          className="rounded-md p-2 cursor-pointer hover:text-text-muted duration-200"
           onClick={() => {
             onBookmark();
           }}
@@ -66,7 +66,7 @@ export const DocumentPreviewControls: React.FC<Props> = ({
           <FaBookmark size={smallControlSize} />
         </div>
         <div
-          className="rounded-md p-2 cursor-pointer hover:text-gray-400 duration-200"
+          className="rounded-md p-2 cursor-pointer hover:text-text-muted duration-200"
           onClick={() => {
             nextDocument();
           }}
@@ -75,7 +75,7 @@ export const DocumentPreviewControls: React.FC<Props> = ({
         </div>
       </div>
       <MdClose
-        className="z-100 text-3xl cursor-pointer hover:rotate-180 duration-200 hover:text-red-400"
+        className="z-100 text-3xl cursor-pointer hover:rotate-180 duration-200 hover:text-danger-subtle"
         onClick={onClose}
       />
     </div>

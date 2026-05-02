@@ -92,6 +92,7 @@
   "settings": {
     "title": "Einstellungen",
     "selectLanguage": "Sprache auswählen",
+    "themes": "Themes",
     "loadedTranslations": "Geladene Übersetzungen",
     "loadedPlugins": "Geladene Plugins",
     "languageExtension": {
@@ -102,7 +103,8 @@
     "plugin": {
       "trusted": "Vertrauenswürdig",
       "yes": "Ja",
-      "no": "Nein"
+      "no": "Nein",
+      "untrusted": "Nicht vertrauenswürdig"
     }
   }
 }

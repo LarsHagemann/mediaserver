@@ -10011,4 +10011,15 @@ export type FileTypePlugin = {
     Diashow: React.FC<DiashowContext>;
     description: string;
     fetchMode?: "download" | "stream";
+    theme?: ThemeTokens;
+};
+export type ThemeTokens = Record<string, string>;
+export type ThemePlugin = {
+    name: string;
+    description: string;
+    tokens: ThemeTokens;
+    preview?: {
+        accent: string;
+        background: string;
+    };
 };

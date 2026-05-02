@@ -24,8 +24,8 @@ export const SideBarButton = ({
     <div
       onClick={onClick}
       className={twMerge(
-        `cursor-pointer p-2 hover:bg-gray-800 rounded-sm transition-colors duration-200 sm:mb-2 flex flex-row items-center overflow-hidden`,
-        isActive && "bg-gray-800",
+        `cursor-pointer p-2 hover:bg-surface-1 rounded-sm transition-colors duration-200 sm:mb-2 flex flex-row items-center overflow-hidden`,
+        isActive && "bg-surface-1",
       )}
     >
       <IconComponent className="w-8 h-8 min-h-8 min-w-8" />

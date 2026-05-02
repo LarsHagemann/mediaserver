@@ -1,6 +1,7 @@
 import i18n from "i18next";
 import z from "zod";
 import { addFileTypePlugin } from "./addFileTypePlugin";
+import { addThemePlugin } from "./addThemePlugin";
 
 const pluginManifestSchema = z.object({
   plugins: z.array(
@@ -9,6 +10,14 @@ const pluginManifestSchema = z.object({
       url: z.string(),
     }),
   ),
+  themePlugins: z
+    .array(
+      z.object({
+        name: z.string(),
+        url: z.string(),
+      }),
+    )
+    .default([]),
   translations: z.array(
     z.object({
       name: z.string(),
@@ -38,6 +47,7 @@ async function loadPluginManifest(
     console.error("Error loading plugin manifest:", error);
     return {
       plugins: [],
+      themePlugins: [],
       translations: [],
     };
   }
@@ -50,6 +60,16 @@ async function loadPlugin(plugin: PluginEntry) {
     console.log(`Loaded plugin: ${plugin.name}`);
   } catch (error) {
     console.error(`Error loading plugin ${plugin.name}:`, error);
+  }
+}
+
+async function loadThemePlugin(plugin: PluginEntry) {
+  try {
+    const module = await import(/* @vite-ignore */ plugin.url);
+    addThemePlugin(module.default);
+    console.log(`Loaded theme plugin: ${plugin.name}`);
+  } catch (error) {
+    console.error(`Error loading theme plugin ${plugin.name}:`, error);
   }
 }
 
@@ -71,11 +91,12 @@ async function loadTranslation(translation: TranslationEntry) {
 
 export async function loadExternalPlugins(manifestUrl = "/manifest.json") {
   const manifest = await loadPluginManifest(manifestUrl);
-  // Load each plugin
   for (const plugin of manifest.plugins) {
     await loadPlugin(plugin);
   }
-
+  for (const plugin of manifest.themePlugins) {
+    await loadThemePlugin(plugin);
+  }
   for (const lang of manifest.translations) {
     await loadTranslation(lang);
   }

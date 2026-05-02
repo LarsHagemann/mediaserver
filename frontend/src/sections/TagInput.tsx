@@ -89,7 +89,7 @@ export const TagInput = ({
   return (
     <>
       <div
-        className={twMerge("text-gray-200 relative", className)}
+        className={twMerge("text-text-primary relative", className)}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
       >
@@ -100,7 +100,7 @@ export const TagInput = ({
           onKeyDown={onKeyDown}
           className={twMerge(
             "p-2 outline-0 w-full border-1",
-            !isValid[0] ? "border-red-500" : "border-gray-600",
+            !isValid[0] ? "border-danger-strong" : "border-border-subtle",
             focused
               ? direction === "up"
                 ? "rounded-b-md"
