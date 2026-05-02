@@ -1,7 +1,7 @@
 import { FileTypePlugin } from "@lars_hagemann/mediaserver-backend-plugin-types";
 import * as fs from "fs";
 
-const plainPlugin: FileTypePlugin = {
+const plugin: FileTypePlugin = {
   matcher: (file) => file.startsWith("text/plain"),
   thumbnailCreator: async ({ uuidv4 }) => {
     const tmpId = uuidv4();
@@ -14,4 +14,4 @@ const plainPlugin: FileTypePlugin = {
   description: "Plain text file support",
 };
 
-export default plainPlugin;
+export default plugin;

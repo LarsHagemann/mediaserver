@@ -10004,10 +10004,22 @@ export type DiashowContext = RenderContext & {
     nextDocument: () => void;
     defaultTimeout: number;
 };
+export type ThemeTokens = Record<string, string>;
 export type FileTypePlugin = {
     matcher: (fileType: string) => boolean;
     icon: (ReactIcons: ReactIcons) => IconType;
     Render: React.FC<RenderContext>;
     Diashow: React.FC<DiashowContext>;
     description: string;
+    fetchMode?: "download" | "stream";
+    theme?: ThemeTokens;
+};
+export type ThemePlugin = {
+    name: string;
+    description: string;
+    tokens: ThemeTokens;
+    preview?: {
+        accent: string;
+        background: string;
+    };
 };

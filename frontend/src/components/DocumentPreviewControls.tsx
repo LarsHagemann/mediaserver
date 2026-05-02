@@ -1,15 +1,17 @@
 import type React from "react";
-import { useState } from "react";
 import { FaCaretLeft, FaCaretRight, FaDownload } from "react-icons/fa";
 import { LuPresentation } from "react-icons/lu";
-import { twMerge } from "tailwind-merge";
 import { useIsMobileScreen } from "../hooks/useIsMobileScreen";
+import { MdClose } from "react-icons/md";
+import { FaBookmark } from "react-icons/fa6";
 
 type Props = {
   nextDocument: () => void;
   previousDocument: () => void;
   downloadDocument: () => void;
   toggleDiashow: () => void;
+  onBookmark: () => void;
+  onClose: () => void;
 };
 
 export const DocumentPreviewControls: React.FC<Props> = ({
@@ -17,9 +19,9 @@ export const DocumentPreviewControls: React.FC<Props> = ({
   previousDocument,
   downloadDocument,
   toggleDiashow,
+  onBookmark,
+  onClose,
 }) => {
-  const [hovered, setHovered] = useState(false);
-
   const isMobile = useIsMobileScreen();
 
   const normalControlSize = isMobile ? "1.25rem" : "2rem";
@@ -27,47 +29,55 @@ export const DocumentPreviewControls: React.FC<Props> = ({
 
   return (
     <div
-      className={twMerge(
-        "absolute bg-gray-700 bottom-0 right-0.25 w-2/5 sm:right-[initial] sm:bottom-4 sm:w-1/3 sm:h-16 rounded-tl-lg sm:rounded-lg outline-offset-2 z-60",
-        "sm:outline-gray-600 sm:outline-2 duration-200 transition-all",
-        "flex flex-row justify-around items-center",
-        hovered ? "sm:opacity-80" : "sm:opacity-0",
-      )}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      className="flex flex-row justify-between px-2 items-center w-full h-full"
     >
-      <div
-        className="hover:bg-gray-600 rounded-md p-2 cursor-pointer"
-        onClick={() => {
-          previousDocument();
-        }}
-      >
-        <FaCaretLeft size={normalControlSize} />
+      <div />
+      <div className="flex flex-row justify-center items-center gap-4">
+        <div
+          className="rounded-md p-2 cursor-pointer hover:text-text-muted duration-200"
+          onClick={() => {
+            previousDocument();
+          }}
+        >
+          <FaCaretLeft size={normalControlSize} />
+        </div>
+        <div
+          className="rounded-md p-3 cursor-pointer hover:text-text-muted duration-200"
+          onClick={() => {
+            downloadDocument();
+          }}
+        >
+          <FaDownload size={smallControlSize} />
+        </div>
+        <div
+          className="rounded-md p-2 cursor-pointer hover:text-text-muted duration-200"
+          onClick={() => {
+            toggleDiashow();
+          }}
+        >
+          <LuPresentation size={smallControlSize} />
+        </div>
+        <div
+          className="rounded-md p-2 cursor-pointer hover:text-text-muted duration-200"
+          onClick={() => {
+            onBookmark();
+          }}
+        >
+          <FaBookmark size={smallControlSize} />
+        </div>
+        <div
+          className="rounded-md p-2 cursor-pointer hover:text-text-muted duration-200"
+          onClick={() => {
+            nextDocument();
+          }}
+        >
+          <FaCaretRight size={normalControlSize} />
+        </div>
       </div>
-      <div
-        className="hover:bg-gray-600 rounded-md p-3 cursor-pointer"
-        onClick={() => {
-          downloadDocument();
-        }}
-      >
-        <FaDownload size={smallControlSize} />
-      </div>
-      <div
-        className="hover:bg-gray-600 rounded-md p-2 cursor-pointer"
-        onClick={() => {
-          toggleDiashow();
-        }}
-      >
-        <LuPresentation size={smallControlSize} />
-      </div>
-      <div
-        className="hover:bg-gray-600 rounded-md p-2 cursor-pointer"
-        onClick={() => {
-          nextDocument();
-        }}
-      >
-        <FaCaretRight size={normalControlSize} />
-      </div>
+      <MdClose
+        className="z-100 text-3xl cursor-pointer hover:rotate-180 duration-200 hover:text-danger-subtle"
+        onClick={onClose}
+      />
     </div>
-  );
+  )
 };

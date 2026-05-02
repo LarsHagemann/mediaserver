@@ -51,6 +51,7 @@ export const useEasySearchParams = <RelevantSearchParams extends string>(
 
   return {
     searchParams,
+    setSearchParams,
     params,
     getSearchParam,
     addSearchParam,

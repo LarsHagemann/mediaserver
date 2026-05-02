@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import {
   UploadContext,
   type FileProxy,
@@ -131,6 +131,9 @@ export const UploadContextProvider: React.FC<{
 
   const [uploadDocument] = enhancedApi.useDocumentUploadMutation();
 
+  const markFileAsFailedRef = useRef(markFileAsFailed);
+  markFileAsFailedRef.current = markFileAsFailed;
+
   useEffect(() => {
     if (toBeUploaded.size > 0 && webSocketClientId) {
       const { file, tags } = Array.from(toBeUploaded)[0];
@@ -138,7 +141,11 @@ export const UploadContextProvider: React.FC<{
         file,
         webSocketClientId,
         tags,
-      });
+      })
+        .unwrap()
+        .catch((err) => {
+          markFileAsFailedRef.current(file.name, err.message || "Upload failed");
+        });
       markFileAsBeingProcessed(file.name);
     }
   }, [

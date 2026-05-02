@@ -76,7 +76,7 @@ export class MigrationService {
     const { migrationsDir } = this.envService.migrationServiceConfig;
     const migrationFiles = await fs.readdir(migrationsDir);
 
-    return Promise.all(
+    const allMigrations = await Promise.all(
       migrationFiles
         .filter((file) => file.endsWith(".sql"))
         .map(async (file) => {
@@ -85,6 +85,26 @@ export class MigrationService {
           return { name: file, checksum };
         }),
     );
+
+    // Early migrations are of the form <migration-name>.sql whilst later
+    // migrations are prefixed with a timestamp <YYYY-MM-DD>-<Counter>-<migration-name>.sql
+    // Both forms sort correctly lexicographically, but we need to move all the
+    // earlier migrations to the start of the list.
+    allMigrations.sort((a, b) => {
+      const aIsEarly = /^\d{4}-\d{2}-\d{2}-\d+-/.test(a.name) === false;
+      const bIsEarly = /^\d{4}-\d{2}-\d{2}-\d+-/.test(b.name) === false;
+
+      if (aIsEarly && !bIsEarly) {
+        return -1;
+      } else if (!aIsEarly && bIsEarly) {
+        return 1;
+      } else {
+        return a.name.localeCompare(b.name);
+      }
+    });
+
+    console.log(allMigrations);
+    return allMigrations;
   }
 
   private async validateExistingMigrations(): Promise<Migration[]> {

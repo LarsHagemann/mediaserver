@@ -14,12 +14,18 @@
     "lint:check": "eslint .",
     "lint:fix": "eslint . --fix",
     "style:check": "prettier --check src/**/*.ts",
-    "style:fix": "prettier --write src/**/*.ts"
+    "style:fix": "prettier --write src/**/*.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:unit": "vitest run src/__tests__/unit",
+    "test:integration": "vitest run src/__tests__/integration"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@eslint/js": "^9.34.0",
+    "@testcontainers/postgresql": "^11.14.0",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/express-fileupload": "^1.5.1",
@@ -28,17 +34,20 @@
     "@types/pdf-thumbnail": "^1.0.4",
     "@types/pg": "^8.15.5",
     "@types/ws": "^8.18.1",
+    "@vitest/coverage-v8": "^4.1.5",
     "eslint": "^9.34.0",
     "globals": "^16.3.0",
     "jiti": "^2.5.1",
     "prettier": "^3.6.2",
+    "testcontainers": "^11.14.0",
     "tsc-watch": "^7.1.1",
     "tsx": "^4.20.5",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.41.0"
+    "typescript-eslint": "^8.41.0",
+    "vitest": "^4.1.5"
   },
   "dependencies": {
-    "@lars_hagemann/tags": "^1.0.4",
+    "@lars_hagemann/tags": "^1.0.6",
     "check-disk-space": "^3.4.0",
     "cors": "^2.8.5",
     "express": "^5.1.0",

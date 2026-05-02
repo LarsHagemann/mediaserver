@@ -9,6 +9,7 @@
     "types"
   ],
   "repository": {
+    "type": "git",
     "url": "https://github.com/de-treelab/mediaserver"
   },
   "scripts": {

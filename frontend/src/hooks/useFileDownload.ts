@@ -7,13 +7,18 @@ type ObjectMetadata = {
 
 const objectMap: Map<string, ObjectMetadata> = new Map();
 
-export const useFileDownload = (url: string) => {
+export const useFileDownload = (url: string, skip = false) => {
   const [objectUrl, setObjectUrl] = useState<string | undefined>(undefined);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(!skip);
   const [error, setError] = useState<unknown | undefined>(undefined);
   const [blob, setBlob] = useState<Blob | undefined>(undefined);
 
   useEffect(() => {
+    if (skip) {
+      setIsLoading(false);
+      return;
+    }
+
     if (objectMap.has(url)) {
       const metadata = objectMap.get(url)!;
       const { blob, url: objectUrl } = metadata;
@@ -33,7 +38,7 @@ export const useFileDownload = (url: string) => {
       })
       .catch((error) => setError(error))
       .finally(() => setIsLoading(false));
-  }, [url]);
+  }, [url, skip]);
 
   return { objectUrl, isLoading, error, blob, remoteUrl: url };
 };

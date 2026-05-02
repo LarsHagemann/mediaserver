@@ -34,11 +34,27 @@ interface BackendState {
   stores: StoreState[];
   uptime: number;
   plugins: BackendPlugin[];
+  version: string;
+  commit: string;
 }
 
 export type ApiTag = {
   key: string;
   value?: string;
+  type: string;
+};
+
+export type CollectionType = "dynamic" | "static";
+
+export type Collection = {
+  id: string;
+  name: string;
+  description?: string;
+  filterExpression: string;
+  isFavorite: boolean;
+  type: CollectionType;
+  createdAt: string;
+  updatedAt: string;
 };
 
 type ApiTagWithCount = ApiTag & {
@@ -82,6 +98,7 @@ export const api = baseApi.injectEndpoints({
       }),
       providesTags: (response) => [
         "document",
+        "tag",
         ...(response?.items.map(
           (doc) => ({ type: "document", id: doc.id }) as const,
         ) || []),
@@ -149,6 +166,103 @@ export const api = baseApi.injectEndpoints({
         url: `/state`,
         method: "GET",
       }),
+    }),
+
+    listCollections: build.query<
+      PaginatedResponse<Collection>,
+      { limit?: number; offset?: number; type?: CollectionType }
+    >({
+      query: ({ limit = 20, offset = 0, type }) => ({
+        url: `/collections?limit=${limit}&offset=${offset}${type ? `&type=${type}` : ""}`,
+        method: "GET",
+      }),
+      providesTags: (response) => [
+        "collection",
+        ...(response?.items.map((c) => ({
+          type: "collection" as const,
+          id: c.id,
+        })) ?? []),
+      ],
+    }),
+
+    createCollection: build.mutation<
+      Collection,
+      {
+        name: string;
+        description: string | null;
+        filterExpression?: string;
+        isFavorite: boolean;
+        type: CollectionType;
+      }
+    >({
+      query: (body) => ({
+        url: `/collections`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["collection"],
+    }),
+
+    updateCollection: build.mutation<
+      Collection,
+      {
+        id: string;
+        name: string;
+        description: string | null;
+        filterExpression: string;
+        isFavorite: boolean;
+      }
+    >({
+      query: ({ id, ...body }) => ({
+        url: `/collections/${encodeURIComponent(id)}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: (_result, _error, arg) => [
+        { type: "collection", id: arg.id },
+      ],
+    }),
+
+    deleteCollection: build.mutation<void, string>({
+      query: (id) => ({
+        url: `/collections/${encodeURIComponent(id)}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (_result, _error, id) => [
+        "collection",
+        { type: "collection", id },
+      ],
+    }),
+
+    addCollectionMember: build.mutation<
+      void,
+      { collectionId: string; documentId: string }
+    >({
+      query: ({ collectionId, documentId }) => ({
+        url: `/collections/${encodeURIComponent(collectionId)}/members`,
+        method: "POST",
+        body: { documentId },
+      }),
+      invalidatesTags: (_result, _error, arg) => [
+        { type: "collection", id: arg.collectionId },
+        { type: "document", id: arg.documentId },
+        "tag",
+      ],
+    }),
+
+    removeCollectionMember: build.mutation<
+      void,
+      { collectionId: string; documentId: string }
+    >({
+      query: ({ collectionId, documentId }) => ({
+        url: `/collections/${encodeURIComponent(collectionId)}/members/${encodeURIComponent(documentId)}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (_result, _error, arg) => [
+        { type: "collection", id: arg.collectionId },
+        { type: "document", id: arg.documentId },
+        "tag",
+      ],
     }),
   }),
 });

@@ -15,7 +15,7 @@
     "style:fix": "prettier --write src/**/*.ts"
   },
   "dependencies": {
-    "@lars_hagemann/tags": "^1.0.4",
+    "@lars_hagemann/tags": "^1.0.6",
     "@reduxjs/toolkit": "^2.9.2",
     "@tailwindcss/vite": "^4.1.12",
     "luxon": "^3.7.2",

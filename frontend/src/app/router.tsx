@@ -6,6 +6,7 @@ import { TagsPage } from "../pages/TagsPage";
 import { NavigateToGalleryPage } from "../pages/NavigateToGalleryPage";
 import { StatePage } from "../pages/StatePage";
 import { SettingsPage } from "../pages/SettingsPage";
+import { CollectionsPage } from "../pages/CollectionsPage";
 
 export const router = createBrowserRouter([
   {
@@ -35,6 +36,10 @@ export const router = createBrowserRouter([
       {
         path: "settings",
         Component: SettingsPage,
+      },
+      {
+        path: "collections",
+        Component: CollectionsPage,
       },
     ],
   },

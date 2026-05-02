@@ -5,17 +5,5 @@ RUN apt-get update && apt-get install -y \
     ghostscript \
     ffmpeg
 
-# Append at the end of <policymap> in /etc/ImageMagick-6/policy.xml
-#   <policy domain="coder" rights="read | write" pattern="PDF" />
-
-# RUN xmlstarlet val -e /etc/ImageMagick-6/policy.xml
-
-# RUN xmlstarlet ed -L -s "/policymap" -t elem -n "policyTMP" -v "" \
-#     -i "/policymap/policyTMP" -t attr -n "domain" -v "coder" \
-#     -i "/policymap/policyTMP" -t attr -n "rights" -v "read | write" \
-#     -i "/policymap/policyTMP" -t attr -n "pattern" -v "PDF" \
-#     -r "/policymap/policyTMP" -v "policy" \
-#     /etc/ImageMagick-6/policy.xml
-
 RUN sed 's/<\/policymap>/  <policy domain="coder" rights="read | write" pattern="PDF" \/>\n<\/policymap>/' \ 
     -i /etc/ImageMagick-6/policy.xml

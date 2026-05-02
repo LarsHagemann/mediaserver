@@ -1,39 +1,170 @@
-on: 
+on:
   push:
 
 jobs:
-  ci:
-    name: CI
+  lint-server:
+    name: Lint Server
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
 
-      - uses: paulhatch/semantic-version@v5.4.0
-        id: version
+      - name: Install dependencies
+        working-directory: ./server
+        run: npm install
+
+      - name: Lint
+        working-directory: ./server
+        run: npm run lint:check
+
+      - name: Style
+        working-directory: ./server
+        run: npm run style:check
+
+  lint-frontend:
+    name: Lint Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: npm install
+
+      - name: Lint
+        working-directory: ./frontend
+        run: npm run lint:check
+
+      - name: Style
+        working-directory: ./frontend
+        run: npm run style:check
+
+  build-server:
+    name: Build Server
+    needs: lint-server
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: ./server
+        run: npm install
+
+      - name: Build
+        working-directory: ./server
+        run: npm run build
+
+      - name: Run tests
+        working-directory: ./server
+        run: npm test
+
+  build-frontend:
+    name: Build Frontend
+    needs: lint-frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: npm install
+
+      - name: Build
+        working-directory: ./frontend
+        run: npm run build
+
+  build-plugin-types:
+    name: Build Plugin Types
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
 
       - name: Install server dependencies
         working-directory: ./server
         run: npm install
 
-      - name: Build server
-        working-directory: ./server
-        run: npm run build
-
-      # - name: Run server tests
-      #   working-directory: ./server
-      #   run: npm test
-
       - name: Install frontend dependencies
         working-directory: ./frontend
         run: npm install
 
-      - name: Build frontend
-        working-directory: ./frontend
+      - name: Install backend plugin types
+        working-directory: ./plugin/backend-types
+        run: npm install
+
+      - name: Install frontend plugin types
+        working-directory: ./plugin/frontend-types
+        run: npm install
+
+      - name: Install create-plugin dependencies
+        working-directory: ./plugin/create-plugin
+        run: npm install
+
+      - name: Check plugin folder dirty state
+        run: |
+          if [[ -n "$(git status --porcelain plugin/)" ]]; then
+            echo "Plugin folder is dirty. Please commit the changes."
+            git status plugin/
+            exit 1
+          fi
+
+      - name: Build create-plugin
+        working-directory: ./plugin/create-plugin
         run: npm run build
+
+  docker-server:
+    name: Docker Server (build)
+    needs: build-server
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build
+        uses: docker/build-push-action@v7
+        with:
+          push: false
+          context: ./server
+          file: ./server/Dockerfile
+
+  docker-frontend:
+    name: Docker Frontend (build)
+    needs: build-frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build
+        uses: docker/build-push-action@v7
+        with:
+          push: false
+          context: .
+          file: ./frontend/Dockerfile

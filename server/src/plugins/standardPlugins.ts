@@ -31,6 +31,9 @@ export const pdfPlugin: FileTypePlugin = {
     fs2.writeFileSync(tmpPath, thumbnailBuffer);
     return { path: tmpPath };
   },
+  initialTags: async () => {
+    return [];
+  },
 };
 
 export const imagePlugin: FileTypePlugin = {
@@ -50,6 +53,9 @@ export const imagePlugin: FileTypePlugin = {
 
     return { path: tmpPath };
   },
+  initialTags: async () => {
+    return [];
+  },
 };
 
 export const videoPlugin: FileTypePlugin = {
@@ -66,6 +72,9 @@ export const videoPlugin: FileTypePlugin = {
     });
 
     return { path: "/tmp/" + filename + "_1.jpg" };
+  },
+  initialTags: async () => {
+    return [];
   },
 };
 
@@ -87,6 +96,9 @@ export const audioPlugin: FileTypePlugin = {
     await process.save("/tmp/" + filename + ".jpg");
 
     return { path: "/tmp/" + filename + ".jpg" };
+  },
+  initialTags: async () => {
+    return [];
   },
 };
 

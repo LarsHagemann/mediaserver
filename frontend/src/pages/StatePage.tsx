@@ -20,9 +20,9 @@ const Value = ({ children }: { children: React.ReactNode }) => {
 };
 
 const percentageToColor = (percentage: number) => {
-  if (percentage < 0.7) return "bg-green-400";
-  if (percentage < 0.9) return "bg-yellow-400";
-  return "bg-red-400";
+  if (percentage < 0.7) return "bg-success-subtle";
+  if (percentage < 0.9) return "bg-warning";
+  return "bg-danger-subtle";
 };
 
 const StorageProgressBar = ({
@@ -112,10 +112,12 @@ export const StatePage = () => {
         <div
           className={twMerge(
             "inline-block w-4 rounded-full ml-2 h-4 translate-y-0.5",
-            health?.status === "healthy" ? "bg-green-500" : "bg-red-500",
+            health?.status === "healthy" ? "bg-success" : "bg-danger-strong",
           )}
         />
       </Value>
+      <Key translationKey="state.version" />
+      <Value>{backendState?.version ?? "N/A"} ({backendState?.commit ?? "N/A"})</Value>
       <Key translationKey="state.uptime" />
       <Value>{uptime.toFormat("hhhh:mm:ss")}</Value>
       <Key translationKey="state.totalDocuments" />

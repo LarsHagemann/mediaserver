@@ -6,10 +6,6 @@ import { LoggingService } from "./common/LoggingService.js";
 import { DocumentRepository } from "./documents/DocumentRepository.js";
 import { DocumentService } from "./documents/DocumentService.js";
 import { FileService } from "./files/FileService.js";
-import {
-  MainMessageService,
-  MessageServiceClient,
-} from "./common/MessageService.js";
 import { WebSocketService } from "./websocket/WebSocketService.js";
 import { TagRepository } from "./tags/TagRepository.js";
 import { TagService } from "./tags/TagService.js";
@@ -17,6 +13,9 @@ import { TagCache } from "./tags/TagCache.js";
 import { RedisClient } from "./redis/RedisClient.js";
 import { BackendStateService } from "./state/BackendStateService.js";
 import { BackendStateRepository } from "./state/BackendStateRepository.js";
+import { UploadService } from "./files/UploadService.js";
+import { CollectionRepository } from "./collections/CollectionRepository.js";
+import { CollectionService } from "./collections/CollectionService.js";
 
 export const services = {
   environment: "service.environment",
@@ -25,12 +24,12 @@ export const services = {
   logger: "service.logger",
   document: "service.document",
   file: "service.file",
-  messageClient: "service.messageClient",
-  messageServer: "service.messageServer",
   websocket: "service.websocket",
   tag: "service.tag",
   redis: "service.redis",
   backendState: "service.backendState",
+  upload: "service.upload",
+  collection: "service.collection",
 };
 
 export const repositories = {
@@ -38,6 +37,7 @@ export const repositories = {
   tag: "repository.tag",
   tagCache: "repository.tagCache",
   backendState: "repository.backendState",
+  collection: "repository.collection",
 };
 
 export const defaultDiContainer = (diContainer: ContainerBuilder) => {
@@ -72,13 +72,6 @@ export const defaultDiContainer = (diContainer: ContainerBuilder) => {
     .addArgument(new Reference(services.environment))
     .addArgument(new Reference(services.logger));
 
-  diContainer.register(services.messageClient, MessageServiceClient);
-
-  diContainer
-    .register(services.messageServer, MainMessageService)
-    .addArgument(new Reference(services.websocket))
-    .addArgument(new Reference(services.document));
-
   diContainer
     .register(services.tag, TagService)
     .addArgument(new Reference(repositories.tag))
@@ -109,6 +102,21 @@ export const defaultDiContainer = (diContainer: ContainerBuilder) => {
     .register(repositories.backendState, BackendStateRepository)
     .addArgument(new Reference(services.db))
     .addArgument(new Reference(services.file));
+
+  diContainer.register(services.upload, UploadService)
+    .addArgument(new Reference(services.file))
+    .addArgument(new Reference(services.document))
+    .addArgument(new Reference(services.tag))
+    .addArgument(new Reference(services.websocket));
+
+  diContainer
+    .register(repositories.collection, CollectionRepository)
+    .addArgument(new Reference(services.db));
+
+  diContainer
+    .register(services.collection, CollectionService)
+    .addArgument(new Reference(repositories.collection))
+    .addArgument(new Reference(services.tag));
 
   return diContainer;
 };

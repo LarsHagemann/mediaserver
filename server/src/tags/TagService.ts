@@ -20,12 +20,12 @@ export class TagService {
     private readonly tagCache: TagCache,
   ) {}
 
-  public static normalizeTag(tag: string): Tag | MetaTag {
+  public static normalizeTag(tag: string, type: string = "default"): ApiTag {
     const parts = tag.split(":", 2);
     if (parts.length === 1) {
-      return new Tag(parts[0]!.trim());
+      return { key: parts[0]!.trim(), value: undefined, type };
     } else {
-      return new MetaTag(parts[0]!.trim(), parts[1]!.trim());
+      return { key: parts[0]!.trim(), value: parts[1]!.trim(), type };
     }
   }
 
@@ -50,8 +50,12 @@ export class TagService {
     return await this.tagRepository.getTagsForDocument(documentId);
   }
 
-  public async addTagToDocument(documentId: string, tag: string) {
-    const tagObject = TagService.normalizeTag(tag);
+  public async addTagToDocument(
+    documentId: string,
+    tag: string,
+    type: string = "default",
+  ) {
+    const tagObject = TagService.normalizeTag(tag, type);
     await this.tagRepository.addTags([tagObject]);
     await this.tagRepository.addTagToDocument(documentId, tagObject);
   }
@@ -59,6 +63,10 @@ export class TagService {
   public async removeTagFromDocument(documentId: string, tag: string) {
     const tagObject = TagService.normalizeTag(tag);
     await this.tagRepository.removeTagFromDocument(documentId, tagObject);
+  }
+
+  public async deleteTag(key: string, value: string): Promise<void> {
+    await this.tagRepository.deleteTag(key, value);
   }
 
   public async initIdCache(): Promise<void> {

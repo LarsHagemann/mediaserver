@@ -1,7 +1,7 @@
 import { useFileDownload } from "./useFileDownload";
 import { useDocumentUrl } from "./useDocumentUrl";
 
-export const useDocument = (id: string) => {
+export const useDocument = (id: string, skip = false) => {
   const url = useDocumentUrl(id);
-  return useFileDownload(url);
+  return useFileDownload(url, skip);
 };

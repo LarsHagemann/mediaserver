@@ -34,14 +34,57 @@
     "totalDocuments": "Gesamtanzahl der Dokumente",
     "totalStorageUsed": "Gesamter Speicherplatz",
     "storage": "Speicher",
-    "backendPlugins": "Backend Plugins"
+    "backendPlugins": "Backend Plugins",
+    "version": "Version"
   },
   "sidebar": {
     "gallery": "Galerie",
     "upload": "Hochladen",
     "settings": "Einstellungen",
     "tags": "Tags",
+    "collections": "Sammlungen",
     "serverState": "Server Status"
+  },
+  "collections": {
+    "title": "Sammlungen",
+    "newCollection": "Neue Sammlung",
+    "editCollection": "Sammlung bearbeiten",
+    "saveAsCollection": "Als Sammlung speichern",
+    "favorites": "Favoriten",
+    "all": "Alle Sammlungen",
+    "empty": "Noch keine Sammlungen. Erstellen Sie eine, um einen Filterausdruck zu speichern.",
+    "emptyFilter": "(kein Filter)",
+    "docCount": "{{count}} Dokumente",
+    "typeDynamic": "Dynamisch",
+    "typeStatic": "Statisch",
+    "deleteModal": {
+      "title": "Sammlung löschen",
+      "body": "\"{{name}}\" löschen? Dies kann nicht rückgängig gemacht werden.",
+      "bodyStatic": "\"{{name}}\" löschen?",
+      "staticWarning": "Alle Dokumente werden aus dieser Sammlung entfernt (ihre Sammlungs-Tags werden gelöscht).",
+      "confirm": "Löschen"
+    },
+    "form": {
+      "type": "Typ",
+      "typeDynamic": "Dynamisch",
+      "typeStatic": "Statisch",
+      "typeDynamicHint": "Mitglieder werden durch einen Tag-Filterausdruck bestimmt.",
+      "typeStaticHint": "Mitglieder werden manuell hinzugefügt und entfernt.",
+      "staticFilterNote": "Der Filterausdruck wird bei statischen Sammlungen automatisch verwaltet.",
+      "name": "Name",
+      "namePlaceholder": "Meine Sammlung",
+      "description": "Beschreibung",
+      "descriptionPlaceholder": "Optionale Beschreibung",
+      "filterExpression": "Filterausdruck",
+      "filterPlaceholder": "tag1 & tag2",
+      "save": "Speichern",
+      "cancel": "Abbrechen"
+    },
+    "addForm": {
+      "add": "Zur Sammlung hinzufügen",
+      "remove": "Aus der Sammlung entfernen",
+      "cancel": "Abbrechen"
+    }
   },
   "document": {
     "addTagPlaceholder": "Tag hinzufügen..."
@@ -49,6 +92,7 @@
   "settings": {
     "title": "Einstellungen",
     "selectLanguage": "Sprache auswählen",
+    "themes": "Themes",
     "loadedTranslations": "Geladene Übersetzungen",
     "loadedPlugins": "Geladene Plugins",
     "languageExtension": {
@@ -59,7 +103,8 @@
     "plugin": {
       "trusted": "Vertrauenswürdig",
       "yes": "Ja",
-      "no": "Nein"
+      "no": "Nein",
+      "untrusted": "Nicht vertrauenswürdig"
     }
   }
 }

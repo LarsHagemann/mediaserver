@@ -66,7 +66,7 @@ export const UploadPage = () => {
         id="fileInput"
       />
       <div
-        className="flex flex-col bg-gray-700 grow justify-center text-center rounded-sm cursor-pointer"
+        className="flex flex-col bg-surface-2 grow justify-center text-center rounded-sm cursor-pointer"
         onClick={() => {
           (document.querySelector("#fileInput") as HTMLInputElement).click();
         }}

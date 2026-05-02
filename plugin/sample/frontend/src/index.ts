@@ -1,6 +1,6 @@
 import type { FileTypePlugin } from "@lars_hagemann/mediaserver-frontend-plugin-types";
 
-const plainPlugin: FileTypePlugin = {
+const plugin: FileTypePlugin = {
   matcher: (fileType) => fileType === "text/plain",
   icon: (ReactIcons) => ReactIcons.FaFileAlt,
   Render: (context) => {
@@ -18,4 +18,4 @@ const plainPlugin: FileTypePlugin = {
   description: "Renderer plugin for plain text files",
 };
 
-export default plainPlugin;
+export default plugin;

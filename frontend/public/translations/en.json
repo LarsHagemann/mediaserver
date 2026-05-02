@@ -34,14 +34,57 @@
     "totalDocuments": "Total Documents",
     "totalStorageUsed": "Total Storage Used",
     "storage": "Storage",
-    "backendPlugins": "Backend Plugins"
+    "backendPlugins": "Backend Plugins",
+    "version": "Version"
   },
   "sidebar": {
     "gallery": "Gallery",
     "upload": "Upload",
     "settings": "Settings",
     "tags": "Tags",
+    "collections": "Collections",
     "serverState": "Server Status"
+  },
+  "collections": {
+    "title": "Collections",
+    "newCollection": "New Collection",
+    "editCollection": "Edit Collection",
+    "saveAsCollection": "Save as Collection",
+    "favorites": "Favorites",
+    "all": "All Collections",
+    "empty": "No collections yet. Create one to save a filter expression.",
+    "emptyFilter": "(empty filter)",
+    "docCount": "{{count}} documents",
+    "typeDynamic": "Dynamic",
+    "typeStatic": "Static",
+    "deleteModal": {
+      "title": "Delete Collection",
+      "body": "Delete \"{{name}}\"? This cannot be undone.",
+      "bodyStatic": "Delete \"{{name}}\"?",
+      "staticWarning": "All documents will be removed from this collection (their collection tags will be deleted).",
+      "confirm": "Delete"
+    },
+    "form": {
+      "type": "Type",
+      "typeDynamic": "Dynamic",
+      "typeStatic": "Static",
+      "typeDynamicHint": "Members are determined by a tag filter expression.",
+      "typeStaticHint": "Members are added and removed manually.",
+      "staticFilterNote": "Filter expression is managed automatically for static collections.",
+      "name": "Name",
+      "namePlaceholder": "My collection",
+      "description": "Description",
+      "descriptionPlaceholder": "Optional description",
+      "filterExpression": "Filter Expression",
+      "filterPlaceholder": "tag1 & tag2",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "addForm": {
+      "add": "Add to Collection",
+      "remove": "Remove from Collection",
+      "cancel": "Cancel"
+    }
   },
   "document": {
     "addTagPlaceholder": "Add a tag..."
@@ -49,6 +92,7 @@
   "settings": {
     "title": "Settings",
     "selectLanguage": "Select Language",
+    "themes": "Themes",
     "loadedTranslations": "Loaded Translations",
     "loadedPlugins": "Loaded Plugins",
     "languageExtension": {
@@ -59,7 +103,8 @@
     "plugin": {
       "trusted": "Trusted",
       "yes": "Yes",
-      "no": "No"
+      "no": "No",
+      "untrusted": "Untrusted"
     }
   }
 }

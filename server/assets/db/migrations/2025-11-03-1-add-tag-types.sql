@@ -1,0 +1,3 @@
+
+ALTER TABLE tags ADD COLUMN IF NOT EXISTS type TEXT NOT NULL;
+UPDATE tags SET type = 'default' WHERE type IS NULL;

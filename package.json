@@ -1,0 +1,16 @@
+{
+  "scripts": {
+    "lint:backend": "cd server && npm run lint",
+    "lint:frontend": "cd frontend && npm run lint",
+    "lint": "npm run lint:backend && npm run lint:frontend",
+    "lint:fix:backend": "cd server && npm run lint:fix",
+    "lint:fix:frontend": "cd frontend && npm run lint:fix",
+    "lint:fix": "npm run lint:fix:backend && npm run lint:fix:frontend",
+    "style:backend": "cd server && npm run style",
+    "style:frontend": "cd frontend && npm run style",
+    "style": "npm run style:backend && npm run style:frontend",
+    "style:fix:backend": "cd server && npm run style:fix",
+    "style:fix:frontend": "cd frontend && npm run style:fix",
+    "style:fix": "npm run style:fix:backend && npm run style:fix:frontend"
+  }
+}

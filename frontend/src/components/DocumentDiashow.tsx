@@ -1,22 +1,33 @@
 import React from "react";
 import { useDocument } from "../hooks/useDocument";
 import { useDocumentPlugin } from "../hooks/useDocumentPlugin";
+import { useDocumentUrl } from "../hooks/useDocumentUrl";
 
 type Props = {
   documentId: string;
   nextDocument: () => void;
   defaultTimeout?: number;
+  mimeType?: string;
 };
 
 export const DocumentDiashow = ({
   documentId,
   nextDocument,
   defaultTimeout = 3000,
+  mimeType,
 }: Props) => {
-  const { objectUrl, blob } = useDocument(documentId);
-  const plugin = useDocumentPlugin(blob?.type);
+  const pluginFromProp = useDocumentPlugin(mimeType);
+  const isStream = pluginFromProp.fetchMode === "stream";
 
-  if (!blob || !objectUrl) {
+  const { objectUrl: blobUrl, blob } = useDocument(documentId, isStream);
+  const streamUrl = useDocumentUrl(documentId);
+
+  const effectiveMimeType = mimeType ?? blob?.type;
+  const plugin = useDocumentPlugin(effectiveMimeType);
+
+  const objectUrl = isStream ? streamUrl : blobUrl;
+
+  if (!objectUrl) {
     return null;
   }
 

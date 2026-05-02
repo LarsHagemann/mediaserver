@@ -5,12 +5,33 @@ import {
   InvalidEnvironmentVariableError,
   MissingEnvironmentVariableError,
 } from "./EnvironmentError.js";
+import * as fs from "fs";
 
 const validStages = ["development", "staging", "production"] as const;
 
 export class EnvironmentService {
   private getStringEnvVar(key: string): string | undefined {
-    return process.env[key];
+    // Direct value from environment variable
+    // takes precedence over file-based value
+    if (key in process.env) {
+      return process.env[key];
+    }
+
+    const fileKey = `${key}_FILE`;
+    if (fileKey in process.env) {
+      try {
+        const data = fs.readFileSync(process.env[fileKey]!, "utf-8");
+        return data.trim();
+      } catch (err) {
+        throw new InvalidEnvironmentVariableError(
+          fileKey,
+          `Could not read file: ${(err as Error).message}`,
+          "valid file path",
+        );
+      }
+    }
+
+    return undefined;
   }
   private getRequiredStringEnvVar(key: string): string {
     const value = this.getStringEnvVar(key);

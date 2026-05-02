@@ -1,14 +1,14 @@
 import { Router } from "express";
-import { apiHandler, FileDownload } from "../ApiHandler.js";
+import { apiHandler, FileDownload, FileStream } from "../ApiHandler.js";
 import { ApiError } from "../common/ApiError.js";
 import { services } from "../DefaultDiContainer.js";
-import type { MessageServiceClient } from "../common/MessageService.js";
 import type { EmptyObject } from "../common/EmptyObject.js";
 import type { DocumentService } from "../documents/DocumentService.js";
 import type { PaginatedResponse } from "../util/PaginatedResponse.js";
 import type { Document } from "../documents/DocumentRepository.js";
 import type { TagService } from "../tags/TagService.js";
 import z from "zod";
+import type { UploadService } from "../files/UploadService.js";
 
 export const documentRouter = Router();
 
@@ -46,11 +46,9 @@ documentRouter.post(
         throw new ApiError("BadRequest", 400, "Missing extension");
       }
 
-      const messageService = diContainer.get<MessageServiceClient>(
-        services.messageClient,
-      );
-      messageService.sendMessage({
-        type: "process-upload",
+      const uploadService = diContainer.get<UploadService>(services.upload);
+      // Process the upload asynchronously
+      void uploadService.processUploadDocument({
         name: file.name,
         file: file.tempFilePath,
         size: file.size,
@@ -59,13 +57,17 @@ documentRouter.post(
         extension,
         tags: z
           .array(
-            z.object({ key: z.string(), value: z.string().or(z.undefined()) }),
+            z.object({
+              key: z.string(),
+              value: z.string().or(z.undefined()),
+              type: z.string(),
+            }),
           )
           .parse(JSON.parse(tags)),
       });
 
       return {
-        status: 200,
+        status: 204,
         body: {},
       };
     },
@@ -109,16 +111,17 @@ documentRouter.get(
 
 documentRouter.get(
   "/:id",
-  apiHandler<FileDownload, EmptyObject, EmptyObject, { id: string }>(
-    async ({ diContainer, params: { id } }) => {
-      const documentService = diContainer.get<DocumentService>(
-        services.document,
-      );
-      const { path, mimeType } = await documentService.getDocument(id);
-      return {
-        status: 200,
-        body: new FileDownload(path, mimeType),
-      };
-    },
-  ),
+  apiHandler<
+    FileDownload | FileStream,
+    EmptyObject,
+    EmptyObject,
+    { id: string }
+  >(async ({ diContainer, params: { id }, headers }) => {
+    const documentService = diContainer.get<DocumentService>(services.document);
+    const result = await documentService.getDocument(id, headers.range);
+    return {
+      status: 200,
+      body: result,
+    };
+  }),
 );

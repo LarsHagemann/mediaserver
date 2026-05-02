@@ -2,11 +2,13 @@ import type { SkipToken } from "@reduxjs/toolkit/query";
 import { enhancedApi } from "../app/enhancedApi";
 import { ThumbnailContainer } from "../components/ThumbnailContainer";
 import { DocumentPreview } from "./DocumentPreview";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { DocumentPreviewControls } from "../components/DocumentPreviewControls";
 import { useDocumentUrl } from "../hooks/useDocumentUrl";
 import { twMerge } from "tailwind-merge";
-import { MdClose } from "react-icons/md";
+import { DocumentDiashow } from "../components/DocumentDiashow";
+import { preventInputHandling } from "../util/preventInputHandling";
+import { AddToCollectionModal } from "./AddToCollectionModal";
 
 type Props = {
   previewImageId: string;
@@ -43,9 +45,14 @@ export const PreviewContainer = ({
 
   const [diashowMode, setDiashowMode] = useState<boolean>(false);
   const [wasFullscreen, setWasFullscreen] = useState<boolean>(false);
+  const [addToCollectionModalOpen, setAddToCollectionModalOpen] = useState(false);
 
   useEffect(() => {
     const keyDownHandler = (event: KeyboardEvent) => {
+      if (preventInputHandling()) {
+        return;
+      }
+
       if (event.key === "ArrowRight") {
         nextPreviewImage();
       } else if (event.key === "ArrowLeft") {
@@ -75,39 +82,62 @@ export const PreviewContainer = ({
   }, [diashowMode, wasFullscreen]);
 
   const documentDownloadUrl = useDocumentUrl(previewImageId);
+  const mimeType = data?.items.find((d) => d.id === previewImageId)?.mime;
+
+  // Todo: Show "AddToCollectionModal" here
+  const onBookmark = () => {
+    setAddToCollectionModalOpen(true);
+  };
+
+  const onCloseImpl = useCallback(() => {
+    if (diashowMode) {
+      setDiashowMode(false);
+    }
+    else { onClose?.(); }
+  }, [onClose, diashowMode]);
 
   return (
     <>
-      <MdClose
-        className="absolute top-4 right-4 z-100 text-3xl cursor-pointer hover:rotate-180 duration-200 hover:text-red-400"
-        onClick={onClose}
-      />
       <div
         className={twMerge(
-          "absolute top-0 w-full h-[calc(100%-60px-2rem)] sm:h-[calc(100%-120px-2rem)] bg-gray-900 bg-opacity-75 flex items-center justify-center overflow-visible",
+          "absolute top-0 w-full h-[calc(100%-60px-2rem)] sm:h-[calc(100%-120px-2rem)] bg-bg-base/75 flex items-center justify-center overflow-visible",
           diashowMode ? "z-50" : "z-30",
         )}
       >
-        <DocumentPreview
-          id={previewImageId}
-          diashow={diashowMode}
-          nextDocument={nextPreviewImage}
-        />
-        <DocumentPreviewControls
-          nextDocument={nextPreviewImage}
-          previousDocument={previousPreviewImage}
-          downloadDocument={() => {
-            const link = document.createElement("a");
-            link.href = documentDownloadUrl;
-            link.download = "";
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-          }}
-          toggleDiashow={() => setDiashowMode(!diashowMode)}
-        />
+        <div className="flex flex-col items-center justify-center top-0 left-0 w-full h-full">
+          <div className="flex basis-8 w-full bg-surface-1">
+            <DocumentPreviewControls
+              nextDocument={nextPreviewImage}
+              previousDocument={previousPreviewImage}
+              downloadDocument={() => {
+                const link = document.createElement("a");
+                link.href = documentDownloadUrl;
+                link.download = "";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+              }}
+              toggleDiashow={() => setDiashowMode(!diashowMode)}
+              onClose={onCloseImpl}
+              onBookmark={onBookmark}
+            />
+          </div>
+          <div className="flex flex-1 w-full">
+            {diashowMode && (
+              <div className="fixed z-10 bg-surface-1 w-screen h-screen left-0 top-0">
+                <DocumentDiashow documentId={previewImageId} nextDocument={nextPreviewImage} mimeType={mimeType} />
+              </div>
+            )}
+            {!diashowMode && (
+              <DocumentPreview
+                id={previewImageId}
+                mimeType={mimeType}
+              />
+            )}
+          </div>
+        </div>
       </div>
-      <div className="absolute flex flex-row flex-wrap bottom-0 right-0 w-full h-[calc(60px+2rem)] sm:h-[calc(120px+2rem)] z-30 p-2 bg-gray-800 overflow-y-hidden justify-center">
+      <div className="absolute flex flex-row flex-wrap bottom-0 right-0 w-full h-[calc(60px+2rem)] sm:h-[calc(120px+2rem)] z-30 p-2 bg-surface-1 overflow-y-hidden justify-center">
         <ThumbnailContainer
           alignment="center"
           thumbnails={data?.items || []}
@@ -119,6 +149,11 @@ export const PreviewContainer = ({
           size="small"
         />
       </div>
+      <AddToCollectionModal
+        documentId={previewImageId}
+        isOpen={addToCollectionModalOpen}
+        onClose={() => setAddToCollectionModalOpen(false)}
+      />
     </>
   );
 };

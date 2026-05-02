@@ -17,6 +17,8 @@ export const TagsPage = () => {
 
   const navigate = useNavigate();
 
+  const tags = useMemo(() => data?.items.filter(tag => tag.key !== 'collection') || [], [data?.items]);
+
   return (
     <div className="p-4">
       <Pagination
@@ -26,7 +28,8 @@ export const TagsPage = () => {
         onPageChange={setPage}
       />
       <TagList
-        tags={data?.items ?? []}
+        tags={tags}
+        groupHeadingBackgroundColor="bg-bg-base"
         onClick={(tag) =>
           navigate(`../gallery?q=${tag.key}${tag.value ? `:${tag.value}` : ""}`)
         }

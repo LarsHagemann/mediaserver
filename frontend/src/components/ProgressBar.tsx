@@ -11,12 +11,12 @@ export const ProgressBar: React.FC<Props> = ({
   min = 0,
   max,
   value,
-  color = "bg-blue-400",
+  color = "bg-accent-subtle",
 }) => {
   const percentage = ((value - min) / (max - min)) * 100;
 
   return (
-    <div className="w-full bg-gray-200 rounded-full h-4">
+    <div className="w-full bg-progress-track rounded-full h-4">
       <div
         className={twMerge(
           color,
