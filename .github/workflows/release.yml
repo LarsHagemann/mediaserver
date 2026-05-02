@@ -25,6 +25,7 @@ jobs:
         id: version
         with:
           version_format: "v${major}.${minor}.${patch}${{ github.ref_name == 'main' && '' || '-beta' }}"
+          minor_pattern: "/^feat/"
 
   docker-server:
     name: Docker Server
