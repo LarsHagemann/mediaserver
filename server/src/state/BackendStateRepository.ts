@@ -23,6 +23,8 @@ export interface BackendState {
   stores: StoreState[];
   plugins: PluginState[];
   uptime: number;
+  version: string;
+  commit: string;
 }
 
 export class BackendStateRepository {
@@ -79,6 +81,8 @@ export class BackendStateRepository {
         trusted: Object.values(standardPlugins).includes(plugin),
         description: plugin.description,
       })),
+      version: process.env.APP_VERSION || "unknown",
+      commit: process.env.COMMITHASH || "unknown",
     };
   }
 }

@@ -34,6 +34,8 @@ interface BackendState {
   stores: StoreState[];
   uptime: number;
   plugins: BackendPlugin[];
+  version: string;
+  commit: string;
 }
 
 export type ApiTag = {

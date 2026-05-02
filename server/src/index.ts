@@ -23,6 +23,20 @@ async function run(envService: EnvironmentService) {
   const app = express.default();
   const port = envService.backendPort;
 
+  if (!process.env.APP_VERSION) {
+    try {
+      const packageJson = await import("../package.json");
+      process.env.APP_VERSION = packageJson.default.version;
+    } catch (err) {
+      console.warn("Could not read version from package.json", err);
+      process.env.APP_VERSION = "unknown";
+    }
+  }
+
+  if (!process.env.COMMITHASH) {
+    process.env.COMMITHASH = "unknown";
+  }
+
   app.use(express.json());
   app.use(cors.default());
 
