@@ -1,5 +1,6 @@
 import { ApiError } from "../common/ApiError.js";
 import type { DocumentService } from "../documents/DocumentService.js";
+import { getFileTypePluginByType } from "../plugins/fileTypes.js";
 import type { ApiTag } from "../tags/TagRepository.js";
 import type { TagService } from "../tags/TagService.js";
 import { tagToString } from "../util/tag.js";
@@ -55,8 +56,15 @@ export class UploadService {
         type: upload.mimeType,
       });
 
+      const tags = upload.tags;
+      const plugin = getFileTypePluginByType(upload.mimeType);
+      if (plugin) {
+        const initialTags = await plugin.initialTags(upload.file);
+        tags.push(...initialTags);
+      }
+
       await Promise.all(
-        upload.tags.map((tag) =>
+        tags.map((tag) =>
           this.tagService.addTagToDocument(id, tagToString(tag)),
         ),
       );

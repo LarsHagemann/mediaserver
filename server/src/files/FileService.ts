@@ -1,7 +1,7 @@
 import { ApiError } from "../common/ApiError.js";
 import { v4 as uuidv4 } from "uuid";
 import * as fs from "fs/promises";
-import { fileTypes } from "../plugins/fileTypes.js";
+import { getFileTypePluginByType } from "../plugins/fileTypes.js";
 import { EnvironmentService } from "../common/EnvironmentService.js";
 import z from "zod";
 import checkDiskSpace from "check-disk-space";
@@ -79,15 +79,13 @@ export class FileService {
     source: string,
     type: string,
   ): Promise<ThumbnailResult> {
-    console.log(type, Object.keys(fileTypes));
-    for (const plugin of Object.values(fileTypes)) {
-      if (plugin.matcher(type)) {
-        const { path } = await plugin.thumbnailCreator({
-          path: source,
-          uuidv4,
-        });
-        return { path, removeAfterCopy: true };
-      }
+    const plugin = getFileTypePluginByType(type);
+    if (plugin) {
+      const { path } = await plugin.thumbnailCreator({
+        path: source,
+        uuidv4,
+      });
+      return { path, removeAfterCopy: true };
     }
 
     return {

@@ -72,6 +72,9 @@ export const plugin: FileTypePlugin = {
   thumbnailCreator: async (context) => {
     throw new Error("Not implemented");
   },
+  initialTags: async (path) => {
+    return [];
+  },
   description: "Your plugin description here",
 };
 
@@ -221,7 +224,7 @@ async function main() {
       `${pluginFolderPath}/package.json`,
       JSON.stringify(packageJsonContent, null, 2)
     );
-    
+
     const pluginConfig = config[pluginType];
     const tsConfigContent = pluginConfig.tsConfig;
 

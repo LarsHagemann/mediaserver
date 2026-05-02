@@ -1,3 +1,5 @@
+import type { ApiTag } from "../tags/TagRepository.js";
+
 export type ThumbnailResult = {
   path: string;
 };
@@ -12,5 +14,6 @@ export type FileTypePlugin = {
   thumbnailCreator: (
     context: ThumbnailCreationContext,
   ) => Promise<ThumbnailResult>;
+  initialTags: (path: string) => Promise<ApiTag[]>;
   description: string;
 };
