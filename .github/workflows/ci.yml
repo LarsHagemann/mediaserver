@@ -68,6 +68,10 @@ jobs:
         working-directory: ./server
         run: npm run build
 
+      - name: Run tests
+        working-directory: ./server
+        run: npm test
+
   build-frontend:
     name: Build Frontend
     needs: lint-frontend
