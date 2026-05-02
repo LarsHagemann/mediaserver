@@ -3,11 +3,11 @@ import { twMerge } from "tailwind-merge";
 
 const variants = {
   primary:
-    "bg-blue-600 hover:enabled:bg-blue-500 text-white rounded",
+    "bg-accent hover:enabled:bg-accent-hover text-text-primary rounded",
   ghost:
-    "text-gray-400 hover:enabled:text-white",
+    "text-text-muted hover:enabled:text-text-primary",
   danger:
-    "bg-red-700 hover:enabled:bg-red-600 text-white rounded",
+    "bg-danger hover:enabled:bg-danger-hover text-text-primary rounded",
 };
 
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {

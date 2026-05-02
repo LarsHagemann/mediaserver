@@ -64,6 +64,71 @@ const frontendDependencies = [
   "@lars_hagemann/mediaserver-frontend-plugin-types",
 ];
 
+const themeDependencies = [
+  "typescript",
+  "@lars_hagemann/mediaserver-frontend-plugin-types",
+];
+
+const themeTsConfig = {
+  compilerOptions: {
+    target: "ES2023",
+    lib: ["ES2023", "DOM"],
+    module: "ESNext",
+    skipLibCheck: true,
+    moduleResolution: "bundler",
+    verbatimModuleSyntax: true,
+    moduleDetection: "force",
+    noEmit: false,
+    outDir: "dist",
+    strict: true,
+    noUnusedLocals: true,
+    noUnusedParameters: true,
+    erasableSyntaxOnly: true,
+    noFallthroughCasesInSwitch: true,
+    noUncheckedSideEffectImports: true,
+  },
+  include: ["src/**/*.ts"],
+};
+
+const themeSkeleton = `
+import type { ThemePlugin } from "@lars_hagemann/mediaserver-frontend-plugin-types";
+
+const theme: ThemePlugin = {
+  name: "my-theme",
+  description: "My custom theme",
+  tokens: {
+    "--color-bg-base": "#0f172a",
+    "--color-surface-1": "#1e293b",
+    "--color-surface-2": "#334155",
+    "--color-surface-3": "#475569",
+    "--color-overlay": "rgb(0 0 0 / 0.7)",
+    "--color-text-primary": "rgba(248, 250, 252, 0.9)",
+    "--color-text-secondary": "#cbd5e1",
+    "--color-text-muted": "#94a3b8",
+    "--color-text-faint": "#64748b",
+    "--color-accent": "#7c3aed",
+    "--color-accent-hover": "#6d28d9",
+    "--color-accent-subtle": "#a78bfa",
+    "--color-accent-muted": "#c4b5fd",
+    "--color-accent-dim": "rgb(109 40 217 / 0.4)",
+    "--color-border": "#334155",
+    "--color-border-subtle": "#475569",
+    "--color-border-strong": "#64748b",
+    "--color-chip-bg": "#334155",
+    "--color-chip-text": "#cbd5e1",
+    "--color-chip-hover": "#a78bfa",
+    "--color-link": "#a78bfa",
+    "--color-link-hover": "#c4b5fd",
+  },
+  preview: {
+    accent: "#7c3aed",
+    background: "#0f172a",
+  },
+};
+
+export default theme;
+`;
+
 const backendSkeleton = `
 import { FileTypePlugin } from "@lars_hagemann/mediaserver-backend-plugin-types";
 
@@ -119,6 +184,11 @@ const config = {
     tsConfig: backendTsConfig,
     dependencies: backendDependencies,
     skeleton: backendSkeleton,
+  },
+  theme: {
+    tsConfig: themeTsConfig,
+    dependencies: themeDependencies,
+    skeleton: themeSkeleton,
   },
 };
 
@@ -201,7 +271,7 @@ async function main() {
   await fs.mkdir(folderPath + `/${pluginName}`, { recursive: true });
   const basePath = await fs.realpath(folderPath + `/${pluginName}`);
 
-  for (const pluginType of ["frontend", "backend"] as const) {
+  for (const pluginType of ["frontend", "backend", "theme"] as const) {
     process.chdir(basePath);
     const path = basePath + `/${pluginType}`;
 

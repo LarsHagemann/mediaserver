@@ -21,7 +21,7 @@ const fileProxyStatusToIcon = (file: FileProxy) => {
         <Icon
           Icon={BiErrorAlt}
           size="xxlarge"
-          className="text-red-500 mr-4 basis-12"
+          className="text-danger-strong mr-4 basis-12"
           title={file.errorReason}
         />
       );
@@ -30,7 +30,7 @@ const fileProxyStatusToIcon = (file: FileProxy) => {
         <Icon
           Icon={MdDoneAll}
           size="xxlarge"
-          className="text-green-600 mr-4 basis-12"
+          className="text-success-strong mr-4 basis-12"
         />
       );
     case "prepared":
@@ -38,7 +38,7 @@ const fileProxyStatusToIcon = (file: FileProxy) => {
         <Icon
           Icon={AiOutlineUpload}
           size="xxlarge"
-          className="text-blue-500 mr-4 basis-12"
+          className="text-accent-hover mr-4 basis-12"
         />
       );
     case "uploading":
@@ -46,7 +46,7 @@ const fileProxyStatusToIcon = (file: FileProxy) => {
         <Icon
           Icon={FaGears}
           size="xxlarge"
-          className="text-yellow-500 mr-4 basis-12"
+          className="text-warning-strong mr-4 basis-12"
         />
       );
   }
@@ -54,7 +54,7 @@ const fileProxyStatusToIcon = (file: FileProxy) => {
 
 const FileList = ({ files }: { files: FileProxy[] }) => {
   return (
-    <div className="bg-white p-2 basis-full">
+    <div className="bg-tab-bg p-2 basis-full">
       {files.map((file, idx) => (
         <div
           title={file.errorReason}
@@ -64,7 +64,7 @@ const FileList = ({ files }: { files: FileProxy[] }) => {
           <Icon
             Icon={fileIconFromFile(file)}
             size="xxlarge"
-            className="text-gray-500 mr-4 basis-12"
+            className="text-text-faint mr-4 basis-12"
           />
           <span
             title={file.name}
@@ -104,11 +104,11 @@ export const FileUploadView: React.FC<Props> = ({
       {
         tabId: "All",
         node: (
-          <WithNumberIndicator count={allFiles.length} color="bg-blue-500">
+          <WithNumberIndicator count={allFiles.length} color="bg-accent-hover">
             <Icon
               Icon={BsFilterLeft}
               size="xlarge"
-              className="text-blue-500"
+              className="text-accent-hover"
               title={t("fileUpload.allFiles")}
             />
           </WithNumberIndicator>
@@ -117,11 +117,11 @@ export const FileUploadView: React.FC<Props> = ({
       {
         tabId: "Uploading",
         node: (
-          <WithNumberIndicator count={toBeProcessed.size} color="bg-blue-500">
+          <WithNumberIndicator count={toBeProcessed.size} color="bg-accent-hover">
             <Icon
               Icon={AiOutlineUpload}
               size="xlarge"
-              className="text-blue-500"
+              className="text-accent-hover"
               title={t("fileUpload.uploadingFiles")}
             />
           </WithNumberIndicator>
@@ -130,11 +130,11 @@ export const FileUploadView: React.FC<Props> = ({
       {
         tabId: "Success",
         node: (
-          <WithNumberIndicator count={processedFiles.size} color="bg-green-600">
+          <WithNumberIndicator count={processedFiles.size} color="bg-success-strong">
             <Icon
               Icon={MdDoneAll}
               size="xlarge"
-              className="text-green-600"
+              className="text-success-strong"
               title={t("fileUpload.successfulFiles")}
             />
           </WithNumberIndicator>
@@ -143,11 +143,11 @@ export const FileUploadView: React.FC<Props> = ({
       {
         tabId: "Failed",
         node: (
-          <WithNumberIndicator count={failedFiles.size} color="bg-red-500">
+          <WithNumberIndicator count={failedFiles.size} color="bg-danger-strong">
             <Icon
               Icon={BiErrorAlt}
               size="xlarge"
-              className="text-red-500"
+              className="text-danger-strong"
               title={t("fileUpload.failedFiles")}
             />
           </WithNumberIndicator>

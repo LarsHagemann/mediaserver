@@ -216,7 +216,7 @@ export const GalleryPage = () => {
       <div className="flex flex-row justify-end gap-2 pr-2">
         {query && (
           <MdBookmarkAdd
-            className="inline text-xl cursor-pointer hover:text-blue-400"
+            className="inline text-xl cursor-pointer hover:text-accent-subtle"
             title={t("collections.saveAsCollection")}
             onClick={() => setCollectionModalOpen(true)}
           />
@@ -224,7 +224,7 @@ export const GalleryPage = () => {
         <FiGrid
           className={twMerge(
             "inline text-xl",
-            layoutType === "grid" && "text-blue-400",
+            layoutType === "grid" && "text-accent-subtle",
             layoutType === "list" && "cursor-pointer",
           )}
           onClick={() => {
@@ -234,7 +234,7 @@ export const GalleryPage = () => {
         <FiList
           className={twMerge(
             "inline text-xl",
-            layoutType === "list" && "text-blue-400",
+            layoutType === "list" && "text-accent-subtle",
             layoutType === "grid" && "cursor-pointer",
           )}
           onClick={() => {

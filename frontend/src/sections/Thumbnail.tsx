@@ -5,8 +5,8 @@ import { Icon } from "../components/Icon";
 import { fileIconFromMimeType } from "../util/fileIconFromFile";
 
 const layouts = {
-  grid: "w-[120px] h-[120px] m-2 transition-all duration-200 object-contain border-transparent border-1 hover:border-blue-200",
-  list: "flex flex-row gap-4 w-full p-2 border-b-gray-700 border-b-1 items-center cursor-pointer hover:bg-gray-600",
+  grid: "w-[120px] h-[120px] m-2 transition-all duration-200 object-contain border-transparent border-1 hover:border-accent-muted",
+  list: "flex flex-row gap-4 w-full p-2 border-b-border border-b-1 items-center cursor-pointer hover:bg-surface-3",
 };
 
 type Props = {
@@ -30,7 +30,7 @@ export const Thumbnail = ({
 
   if (isLoading || error) {
     return (
-      <div className="w-[120px] h-[120px] bg-gray-300 flex items-center justify-center" />
+      <div className="w-[120px] h-[120px] bg-placeholder flex items-center justify-center" />
     );
   }
 
@@ -41,7 +41,7 @@ export const Thumbnail = ({
         size === "small" && "w-[60px] h-[60px] sm:w-[120px] sm:h-[120px]",
         onClick && "cursor-pointer",
         className,
-        selected && "border-blue-200",
+        selected && "border-accent-muted",
       )}
       src={objectUrl}
       alt="Document Thumbnail"
@@ -52,7 +52,7 @@ export const Thumbnail = ({
       <Icon
         Icon={fileIconFromMimeType(document.mime)}
         size="medium"
-        className="text-gray-500 mr-4 basis-12"
+        className="text-text-faint mr-4 basis-12"
       />
       <span className="flex-grow overflow-hidden text-nowrap text-ellipsis">
         {document.id}

@@ -5,7 +5,7 @@
   li {
     a {
       transition: background-color 0.2s ease-in-out;
-      color: rgb(217, 217, 217);
+      color: var(--color-text-secondary);
       padding: 0.25rem 0.75rem;
       border-radius: 5px;
       text-align: center;
@@ -24,30 +24,30 @@
     }
 
     &:not(:global(.disabled)):global(.next) a {
-      color: #5087df;
+      color: var(--color-accent-subtle);
     }
 
     &:not(:global(.disabled)):global(.previous) a {
-      color: #5087df;
+      color: var(--color-accent-subtle);
     }
 
     &:not(:global(.break)):not(:global(.disabled)) {
       a:hover {
-        border: 1px solid #6b7280;
+        border: 1px solid var(--color-border-strong);
         padding: calc(0.25rem - 1px) calc(0.75rem - 1px);
       }
     }
 
     &:global(.selected) {
       a {
-        background-color: #5087df;
+        background-color: var(--color-accent-subtle);
       }
     }
 
     &:global(.disabled) {
       a {
         cursor: default;
-        color: rgb(97, 97, 97);
+        color: var(--color-text-faint);
       }
     }
   }

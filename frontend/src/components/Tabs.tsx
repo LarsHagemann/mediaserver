@@ -8,8 +8,8 @@ export type TabSpec<Tabs extends string> = {
 type Props<Tabs extends string, AllowNoSelection extends boolean> = {
   allowNoSelection?: AllowNoSelection;
   currentTab:
-    | NoInfer<Tabs>
-    | (AllowNoSelection extends true ? undefined : never);
+  | NoInfer<Tabs>
+  | (AllowNoSelection extends true ? undefined : never);
   onTabChange: (
     tab: NoInfer<Tabs> | (AllowNoSelection extends true ? undefined : never),
   ) => void;
@@ -38,10 +38,10 @@ export const Tabs = <
         <div
           key={tab.tabId}
           className={twMerge(
-            "flex basis-0 grow p-2 justify-center  cursor-pointer hover:bg-gray-200 transition-colors duration-200",
+            "flex basis-0 grow p-2 justify-center  cursor-pointer hover:bg-tab-bg-hover transition-colors duration-200",
             tab.tabId === currentTab
-              ? "bg-gray-400 hover:bg-gray-400"
-              : "bg-white",
+              ? "bg-tab-bg-active hover:bg-tab-bg-active"
+              : "bg-tab-bg",
           )}
           onClick={() => {
             if (allowNoSelection === true && currentTab === tab.tabId) {

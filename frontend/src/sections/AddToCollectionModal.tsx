@@ -66,7 +66,7 @@ export const AddToCollectionModal = ({ documentId, isOpen, onClose }: Props) => 
               <input
                 type="checkbox"
                 checked={documentCollectionIds.has(collection.id)}
-                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                className="w-4 h-4 text-accent bg-placeholder border-border-strong rounded focus:ring-accent-hover"
                 onChange={() => onToggle(collection.id)}
               />
             )}

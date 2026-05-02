@@ -86,34 +86,32 @@ export const CollectionFormModal = ({
       <div className="flex flex-col gap-4">
         {showTypeSelector && (
           <div>
-            <label className="block text-sm text-gray-400 mb-1">
+            <label className="block text-sm text-text-muted mb-1">
               {t("collections.form.type")}
             </label>
-            <div className="flex rounded overflow-hidden border border-gray-600">
+            <div className="flex rounded overflow-hidden border border-border-subtle">
               <button
                 type="button"
-                className={`flex-1 py-2 text-sm transition-colors ${
-                  type === "dynamic"
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-                }`}
+                className={`flex-1 py-2 text-sm transition-colors ${type === "dynamic"
+                    ? "bg-accent text-text-primary"
+                    : "bg-surface-2 text-text-secondary hover:bg-surface-3"
+                  }`}
                 onClick={() => setType("dynamic")}
               >
                 {t("collections.form.typeDynamic")}
               </button>
               <button
                 type="button"
-                className={`flex-1 py-2 text-sm transition-colors ${
-                  type === "static"
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-                }`}
+                className={`flex-1 py-2 text-sm transition-colors ${type === "static"
+                    ? "bg-accent text-text-primary"
+                    : "bg-surface-2 text-text-secondary hover:bg-surface-3"
+                  }`}
                 onClick={() => setType("static")}
               >
                 {t("collections.form.typeStatic")}
               </button>
             </div>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-text-faint mt-1">
               {type === "dynamic"
                 ? t("collections.form.typeDynamicHint")
                 : t("collections.form.typeStaticHint")}
@@ -122,44 +120,44 @@ export const CollectionFormModal = ({
         )}
 
         <div>
-          <label className="block text-sm text-gray-400 mb-1">
+          <label className="block text-sm text-text-muted mb-1">
             {t("collections.form.name")} *
           </label>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full bg-gray-700 border border-gray-600 rounded p-2 text-white outline-none focus:border-blue-500"
+            className="w-full bg-surface-2 border border-border-subtle rounded p-2 text-text-primary outline-none focus:border-accent-hover"
             placeholder={t("collections.form.namePlaceholder")}
           />
         </div>
 
         <div>
-          <label className="block text-sm text-gray-400 mb-1">
+          <label className="block text-sm text-text-muted mb-1">
             {t("collections.form.description")}
           </label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full bg-gray-700 border border-gray-600 rounded p-2 text-white outline-none focus:border-blue-500 resize-none h-20"
+            className="w-full bg-surface-2 border border-border-subtle rounded p-2 text-text-primary outline-none focus:border-accent-hover resize-none h-20"
             placeholder={t("collections.form.descriptionPlaceholder")}
           />
         </div>
 
         {effectiveType === "dynamic" && (
           <div>
-            <label className="block text-sm text-gray-400 mb-1">
+            <label className="block text-sm text-text-muted mb-1">
               {t("collections.form.filterExpression")} *
             </label>
             <TagInput
               value={filterExpression}
               onChange={setFilterExpression}
-              onSubmit={() => {}}
+              onSubmit={() => { }}
               onValidChange={setIsFilterValid}
               placeholder={t("collections.form.filterPlaceholder")}
             />
             {isFilterValid && filterExpression !== "" && (
-              <p className="text-sm text-gray-400 mt-1">
+              <p className="text-sm text-text-muted mt-1">
                 {t("collections.docCount", { count: previewData?.total ?? 0 })}
               </p>
             )}
@@ -167,7 +165,7 @@ export const CollectionFormModal = ({
         )}
 
         {effectiveType === "static" && isEditing && (
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-text-faint">
             {t("collections.form.staticFilterNote")}
           </p>
         )}
