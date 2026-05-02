@@ -7,6 +7,7 @@ import { DocumentPreviewControls } from "../components/DocumentPreviewControls";
 import { useDocumentUrl } from "../hooks/useDocumentUrl";
 import { twMerge } from "tailwind-merge";
 import { DocumentDiashow } from "../components/DocumentDiashow";
+import { preventInputHandling } from "../util/preventInputHandling";
 
 type Props = {
   previewImageId: string;
@@ -46,6 +47,10 @@ export const PreviewContainer = ({
 
   useEffect(() => {
     const keyDownHandler = (event: KeyboardEvent) => {
+      if (preventInputHandling()) {
+        return;
+      }
+
       if (event.key === "ArrowRight") {
         nextPreviewImage();
       } else if (event.key === "ArrowLeft") {

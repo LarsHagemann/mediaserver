@@ -8,6 +8,7 @@ import type { ApiTag } from "../app/api";
 import { tagToString } from "../util/tag";
 import { useTranslation } from "react-i18next";
 import { DocumentRender } from "../components/DocumentRender";
+import { preventInputHandling } from "../util/preventInputHandling";
 
 type Props = {
   id: string;
@@ -23,6 +24,10 @@ export const DocumentPreview = ({ id, mimeType }: Props) => {
 
   useEffect(() => {
     const keyDownHandler = (event: KeyboardEvent) => {
+      if (preventInputHandling()) {
+        return;
+      }
+
       if (event.key === "t") {
         setTagListOpen((open) => !open);
       }
