@@ -1,4 +1,4 @@
-FROM node:20 AS builder
+FROM node:24-alpine AS builder
 
 WORKDIR /usr/src/app
 
@@ -11,11 +11,11 @@ COPY tsconfig.json ./
 
 RUN npm run build
 
-FROM node:20
+FROM node:24-alpine
 
 WORKDIR /usr/src/app
 
-RUN apt-get update && apt-get install -y \
+RUN apk add --no-cache \
     imagemagick \
     ghostscript \
     ffmpeg
