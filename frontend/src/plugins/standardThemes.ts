@@ -1,4 +1,4 @@
-import type { ThemePlugin } from "../../../plugin/frontend-types/types/plugin";
+import type { ThemePlugin } from "./plugin";
 
 export const darkTheme: ThemePlugin = {
   name: "dark",

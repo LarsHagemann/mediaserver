@@ -1,4 +1,4 @@
-import type { ThemePlugin } from "../../../plugin/frontend-types/types/plugin";
+import type { ThemePlugin } from "./plugin";
 
 const THEME_STORAGE_KEY = "activeTheme";
 

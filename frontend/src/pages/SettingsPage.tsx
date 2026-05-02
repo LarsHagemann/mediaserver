@@ -5,12 +5,11 @@ import { themePlugins } from "../plugins/addThemePlugin";
 import { applyTheme } from "../plugins/applyTheme";
 import { Icon } from "../components/Icon";
 import { standardTranslations, translations } from "../i18n";
-import { reactIcons } from "../plugins/plugin";
+import { reactIcons, type ThemePlugin } from "../plugins/plugin";
 import { isPluginTrusted } from "../hooks/useIsPluginTrusted";
 import { useAppDispatch, useAppSelector } from "../app/store";
 import { setActiveTheme, selectActiveThemeName } from "../app/persistent.slice";
 import { standardThemes } from "../plugins/standardThemes";
-import type { ThemePlugin } from "../../../plugin/frontend-types/types/plugin";
 
 export const SettingsPage = () => {
   const { t } = useTranslation();

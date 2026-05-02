@@ -92,6 +92,41 @@ jobs:
         working-directory: ./frontend
         run: npm run build
 
+  build-plugin-types:
+    name: Build Plugin Types
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install server dependencies
+        working-directory: ./server
+        run: npm install
+
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: npm install
+
+      - name: Install backend plugin types
+        working-directory: ./plugin/backend-types
+        run: npm install
+
+      - name: Install frontend plugin types
+        working-directory: ./plugin/frontend-types
+        run: npm install
+
+      - name: Install create-plugin dependencies
+        working-directory: ./plugin/create-plugin
+        run: npm install
+
+      - name: Build create-plugin
+        working-directory: ./plugin/create-plugin
+        run: npm run build
+
   docker-server:
     name: Docker Server (build)
     needs: build-server
