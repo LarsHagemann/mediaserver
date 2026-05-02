@@ -100,7 +100,7 @@ export const TagInput = ({
           onKeyDown={onKeyDown}
           className={twMerge(
             "p-2 outline-0 w-full border-1",
-            onValidChange && !isValid[0] ? "border-red-500" : "border-gray-600",
+            !isValid[0] ? "border-red-500" : "border-gray-600",
             focused
               ? direction === "up"
                 ? "rounded-b-md"

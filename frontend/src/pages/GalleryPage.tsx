@@ -83,16 +83,18 @@ export const GalleryPage = () => {
     };
   }, [isMobile]);
 
-  useEffect(() => {
-    setLimit(documentsPerRow * documentsPerColumn - 1);
-  }, [documentsPerRow, setLimit, documentsPerColumn]);
-
   const {
     params: { preview: previewDocumentSearchParam, q: query },
     setSearchParams,
     addSearchParam,
     removeSearchParam,
   } = useEasySearchParams(["preview", "q"]);
+
+  useEffect(() => {
+    if (!previewDocumentSearchParam) {
+      setLimit(documentsPerRow * documentsPerColumn - 1);
+    }
+  }, [documentsPerRow, setLimit, documentsPerColumn, previewDocumentSearchParam]);
 
   const [tagInput, setTagInput] = useState("");
 
@@ -105,6 +107,14 @@ export const GalleryPage = () => {
     offset: offset,
     query: query,
   });
+
+  useEffect(() => {
+    if (data && data.items.length === 0) {
+      if (page > 0) {
+        setPage(page - 1);
+      }
+    }
+  }, [data, page, setPage]);
 
   const idToDocument = useMemo(
     () => Object.fromEntries((data?.items ?? []).map((d) => [d.id, d])),
@@ -169,6 +179,26 @@ export const GalleryPage = () => {
     }
   }, [setPreviewDocument, previewDocument, setSearchParams, page, limit]);
 
+  useEffect(() => {
+    console.log({
+      previewDocument,
+      previewDocumentSearchParam,
+      idToDocument,
+      limit,
+      offset,
+      query,
+      data,
+    });
+  }, [previewDocument, previewDocumentSearchParam, idToDocument, limit, offset, query, data]);
+
+  const onInputSubmit = useCallback(
+    (value: string) => {
+      setPage(0);
+      addSearchParam("q", value);
+    },
+    [addSearchParam, setPage],
+  );
+
   return (
     <div
       ref={containerRef}
@@ -178,7 +208,7 @@ export const GalleryPage = () => {
         value={tagInput}
         onChange={setTagInput}
         onValidChange={() => { }}
-        onSubmit={(value) => addSearchParam("q", value)}
+        onSubmit={onInputSubmit}
         className="flex flex-row mb-2 p-2 w-full"
         placeholder={t("pages.gallery.tagInputPlaceholder")}
         blurOnSubmit
