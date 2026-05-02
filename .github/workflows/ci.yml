@@ -123,6 +123,14 @@ jobs:
         working-directory: ./plugin/create-plugin
         run: npm install
 
+      - name: Check plugin folder dirty state
+        run: |
+          if [[ -n "$(git status --porcelain plugin/)" ]]; then
+            echo "Plugin folder is dirty. Please commit the changes."
+            git status plugin/
+            exit 1
+          fi
+
       - name: Build create-plugin
         working-directory: ./plugin/create-plugin
         run: npm run build
