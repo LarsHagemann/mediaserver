@@ -26,7 +26,7 @@ COPY ./assets/icons ./assets/icons
 COPY ./package*.json ./
 
 RUN sed 's/<\/policymap>/  <policy domain="coder" rights="read | write" pattern="PDF" \/>\n<\/policymap>/' \ 
-    -i /etc/ImageMagick-6/policy.xml
+    -i /etc/ImageMagick-7/policy.xml
 
 ARG APP_VERSION=unknown
 ARG COMMITHASH=unknown
