@@ -191,6 +191,14 @@ export const GalleryPage = () => {
     });
   }, [previewDocument, previewDocumentSearchParam, idToDocument, limit, offset, query, data]);
 
+  const onInputSubmit = useCallback(
+    (value: string) => {
+      setPage(0);
+      addSearchParam("q", value);
+    },
+    [addSearchParam, setPage],
+  );
+
   return (
     <div
       ref={containerRef}
@@ -200,7 +208,7 @@ export const GalleryPage = () => {
         value={tagInput}
         onChange={setTagInput}
         onValidChange={() => { }}
-        onSubmit={(value) => addSearchParam("q", value)}
+        onSubmit={onInputSubmit}
         className="flex flex-row mb-2 p-2 w-full"
         placeholder={t("pages.gallery.tagInputPlaceholder")}
         blurOnSubmit
