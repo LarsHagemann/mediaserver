@@ -39,6 +39,7 @@ export class CollectionService {
   public async listCollections(request: {
     limit: number;
     offset: number;
+    type: CollectionType | undefined;
   }): Promise<PaginatedResponse<Collection>> {
     return this.collectionRepository.listCollections(request);
   }

@@ -98,6 +98,7 @@ export const api = baseApi.injectEndpoints({
       }),
       providesTags: (response) => [
         "document",
+        "tag",
         ...(response?.items.map(
           (doc) => ({ type: "document", id: doc.id }) as const,
         ) || []),
@@ -169,10 +170,10 @@ export const api = baseApi.injectEndpoints({
 
     listCollections: build.query<
       PaginatedResponse<Collection>,
-      { limit?: number; offset?: number }
+      { limit?: number; offset?: number; type?: CollectionType }
     >({
-      query: ({ limit = 20, offset = 0 }) => ({
-        url: `/collections?limit=${limit}&offset=${offset}`,
+      query: ({ limit = 20, offset = 0, type }) => ({
+        url: `/collections?limit=${limit}&offset=${offset}${type ? `&type=${type}` : ""}`,
         method: "GET",
       }),
       providesTags: (response) => [

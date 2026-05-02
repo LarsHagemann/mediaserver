@@ -335,11 +335,11 @@ export class TagSqlBuilder {
     }
   }
 
-  public buildRemoveTagFromEntityQuery(
+  public async buildRemoveTagFromEntityQuery(
     tag: Tag | MetaTag,
-  ): TagSqlBuilderResult<DeleteStatement, ["$entityId"]> {
+  ): Promise<TagSqlBuilderResult<DeleteStatement, ["$entityId"]>> {
     try {
-      const id = this.tagCache.tagToTagId(tag);
+      const id = await this.tagCache.tagToTagId(tag);
       return {
         success: true,
         stmt: {

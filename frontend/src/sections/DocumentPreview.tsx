@@ -1,7 +1,7 @@
 import { twMerge } from "tailwind-merge";
 import { enhancedApi } from "../app/enhancedApi";
 import { TagList } from "../components/TagList";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { TagInput } from "./TagInput";
 import type { ApiTag } from "../app/api";
@@ -60,19 +60,21 @@ export const DocumentPreview = ({ id, mimeType }: Props) => {
     [removeTag, id],
   );
 
+  const tags = useMemo(() => data?.tags.filter(tag => tag.key !== "collection") || [], [data]);
+
   return (
     <div className="relative w-full h-full">
       <div
         className={twMerge(
-          "h-1/4 left-0 absolute w-full flex flex-col items-start gap-2 sm:top-0 sm:w-1/4 sm:h-full z-20 bg-gray-800 p-2 border-b-2 border-gray-700 duration-200",
+          "h-1/2 left-0 absolute w-full sm:w-1/4 flex flex-col items-start gap-2 sm:top-0 sm:h-full z-20 bg-gray-800 p-2 border-b-2 border-gray-700 duration-200",
           tagListOpen
             ? "bottom-0 sm:left-0"
-            : "-bottom-1/4 sm:bottom-0 sm:-left-1/4",
+            : "-bottom-1/2 sm:-bottom-1/2 sm:-left-1/4",
         )}
       >
         <div className="relative flex-col grow w-full overflow-y-auto z-10">
           <TagList
-            tags={data?.tags || []}
+            tags={tags}
             onClick={(tag) =>
               navigate(`?q=${tag.key}${tag.value ? `:${tag.value}` : ""}`)
             }
@@ -93,9 +95,9 @@ export const DocumentPreview = ({ id, mimeType }: Props) => {
       </div>
       <div
         className={twMerge(
-          "absolute sm:top-1/2 z-10 bg-gray-700 p-2 border-r-2 border-r-transparent rounded-r-md duration-200 cursor-pointer rotate-270 sm:bottom-[initial] sm:rotate-0",
+          "absolute sm:top-1/2 z-10 left-[initial] left-[calc(50%-1rem)] bg-gray-700 p-2 border-r-2 border-r-transparent rounded-r-md duration-200 cursor-pointer rotate-270 sm:bottom-[initial] sm:rotate-0",
           tagListOpen
-            ? "bottom-[calc(25%-0.5rem)] sm:left-1/4"
+            ? "bottom-[calc(50%-0.5rem)] sm:left-1/4"
             : "-bottom-2 sm:left-0",
         )}
         onClick={() => setTagListOpen((open) => !open)}
@@ -112,9 +114,9 @@ export const DocumentPreview = ({ id, mimeType }: Props) => {
       </div>
       <div
         className={twMerge(
-          "absolute top-0 h-full z-0 bg-gray-900 duration-200",
+          "absolute top-0 w-full h-full z-0 bg-gray-900 duration-200",
           tagListOpen
-            ? "h-3/4 sm:h-full sm:w-3/4 sm:left-1/4"
+            ? "h-1/2 sm:h-full sm:w-3/4 sm:left-1/4"
             : "h-full sm:w-full sm:left-0",
         )}
       >

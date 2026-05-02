@@ -9,9 +9,10 @@ import { IconButton } from "../components/IconButton";
 
 type Props = {
   collection: Collection;
-  onEdit: (collection: Collection) => void;
-  onDelete: (collection: Collection) => void;
-  onToggleFavorite: (collection: Collection) => void;
+  onEdit?: (collection: Collection) => void;
+  onDelete?: (collection: Collection) => void;
+  onToggleFavorite?: (collection: Collection) => void;
+  onClick?: ((collection: Collection) => void) | 'navigate';
 };
 
 export const CollectionCard = ({
@@ -19,6 +20,7 @@ export const CollectionCard = ({
   onEdit,
   onDelete,
   onToggleFavorite,
+  onClick = 'navigate',
 }: Props) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -34,14 +36,18 @@ export const CollectionCard = ({
   return (
     <div
       className={twMerge(
-        "bg-gray-800 rounded-lg p-4 border border-gray-700 cursor-pointer hover:border-gray-500 transition-all flex flex-col gap-2",
+        "bg-gray-800 rounded-lg p-4 border border-gray-700 cursor-pointer hover:border-gray-500 transition-all flex flex-col flex-1 gap-2",
         collection.isFavorite && "border-yellow-500/50",
       )}
-      onClick={() =>
-        navigate(
-          `/gallery?q=${encodeURIComponent(collection.filterExpression)}`,
-        )
-      }
+      onClick={() => {
+        if (onClick === 'navigate') {
+          navigate(
+            `/gallery?q=${encodeURIComponent(collection.filterExpression)}`,
+          );
+        } else if (onClick) {
+          onClick(collection);
+        }
+      }}
     >
       <div className="flex justify-between items-start">
         <div className="flex items-center gap-2 flex-1 min-w-0 mr-2">
@@ -63,7 +69,7 @@ export const CollectionCard = ({
             )}
           </span>
         </div>
-        <IconButton
+        {onToggleFavorite && (<IconButton
           onClick={(e) => {
             e.stopPropagation();
             onToggleFavorite(collection);
@@ -72,6 +78,7 @@ export const CollectionCard = ({
         >
           {collection.isFavorite ? <FaStar /> : <FaRegStar />}
         </IconButton>
+        )}
       </div>
 
       {collection.description && (
@@ -91,18 +98,22 @@ export const CollectionCard = ({
           {t("collections.docCount", { count: docCount })}
         </span>
         <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-          <IconButton
-            className="text-lg text-gray-400 hover:text-white"
-            onClick={() => onEdit(collection)}
-          >
-            <MdEdit />
-          </IconButton>
-          <IconButton
-            className="text-lg text-gray-400 hover:text-red-400"
-            onClick={() => onDelete(collection)}
-          >
-            <MdDelete />
-          </IconButton>
+          {onEdit && (
+            <IconButton
+              className="text-lg text-gray-400 hover:text-white"
+              onClick={() => onEdit(collection)}
+            >
+              <MdEdit />
+            </IconButton>
+          )}
+          {onDelete && (
+            <IconButton
+              className="text-lg text-gray-400 hover:text-red-400"
+              onClick={() => onDelete(collection)}
+            >
+              <MdDelete />
+            </IconButton>
+          )}
         </div>
       </div>
     </div>

@@ -79,6 +79,11 @@
       "filterPlaceholder": "tag1 & tag2",
       "save": "Save",
       "cancel": "Cancel"
+    },
+    "addForm": {
+      "add": "Add to Collection",
+      "remove": "Remove from Collection",
+      "cancel": "Cancel"
     }
   },
   "document": {
