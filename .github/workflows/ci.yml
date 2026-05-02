@@ -91,3 +91,37 @@ jobs:
       - name: Build
         working-directory: ./frontend
         run: npm run build
+
+  docker-server:
+    name: Docker Server (build)
+    needs: build-server
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build
+        uses: docker/build-push-action@v7
+        with:
+          push: false
+          context: ./server
+          file: ./server/Dockerfile
+
+  docker-frontend:
+    name: Docker Frontend (build)
+    needs: build-frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build
+        uses: docker/build-push-action@v7
+        with:
+          push: false
+          context: .
+          file: ./frontend/Dockerfile
