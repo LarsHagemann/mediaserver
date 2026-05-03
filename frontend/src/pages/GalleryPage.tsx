@@ -7,11 +7,12 @@ import { PreviewContainer } from "../sections/PreviewContainer";
 import { useEasySearchParams } from "../hooks/useEasySearchParams";
 import { usePageOffsetAndLimitParams } from "../hooks/usePageOffsetAndLimitParams";
 import { TagInput } from "../sections/TagInput";
-import { FiGrid, FiList } from "react-icons/fi";
+import { FiGrid, FiList, FiShuffle } from "react-icons/fi";
 import { MdBookmarkAdd } from "react-icons/md";
 import { twMerge } from "tailwind-merge";
 import { useIsMobileScreen } from "../hooks/useIsMobileScreen";
 import { CollectionFormModal } from "../sections/CollectionFormModal";
+import { useGallerySeed } from "../hooks/useGallerySeed";
 
 const remToPixel = (rem: number) => {
   return rem * parseFloat(getComputedStyle(document.documentElement).fontSize);
@@ -84,22 +85,14 @@ export const GalleryPage = () => {
   }, [isMobile]);
 
   const {
-    params: { preview: previewDocumentSearchParam, q: query, seed },
+    params: { preview: previewDocumentSearchParam, q: query },
     setSearchParams,
     addSearchParam,
     removeSearchParam,
-  } = useEasySearchParams(["preview", "q", "seed"]);
+  } = useEasySearchParams(["preview", "q"]);
 
-  // When sort:random is active, keep a stable seed in the URL so all queries
-  // (gallery, preview thumbnail strip, next/prev page) share the same ordering.
-  useEffect(() => {
-    const hasRandomSort = (query ?? "").includes("sort:random");
-    if (hasRandomSort && !seed) {
-      addSearchParam("seed", Math.random().toString(36).slice(2));
-    } else if (!hasRandomSort && seed) {
-      removeSearchParam("seed");
-    }
-  }, [query, seed, addSearchParam, removeSearchParam]);
+  const { seed, reseedGallery } = useGallerySeed();
+  const hasRandomSort = (query ?? "").includes("sort:random");
 
   useEffect(() => {
     if (!previewDocumentSearchParam) {
@@ -117,7 +110,7 @@ export const GalleryPage = () => {
     limit: limit,
     offset: offset,
     query: query,
-    seed: seed,
+    seed: hasRandomSort ? seed : undefined,
   });
 
   useEffect(() => {
@@ -231,6 +224,13 @@ export const GalleryPage = () => {
         blurOnSubmit
       />
       <div className="flex flex-row justify-end gap-2 pr-2">
+        {hasRandomSort && (
+          <FiShuffle
+            className="inline text-xl cursor-pointer hover:text-accent-subtle"
+            title={t("pages.gallery.reseed")}
+            onClick={reseedGallery}
+          />
+        )}
         {query && (
           <MdBookmarkAdd
             className="inline text-xl cursor-pointer hover:text-accent-subtle"
@@ -319,7 +319,7 @@ export const GalleryPage = () => {
           nextPreviewImage={nextPreviewImage}
           previousPreviewImage={prevPreviewImage}
           previewImageIndex={previewDocument?.queryIndex ?? lastKnownPreviewIndexRef.current}
-          queryParams={{ limit, offset, query, seed }}
+          queryParams={{ limit, offset, query, seed: hasRandomSort ? seed : undefined }}
           onClose={() => setPreviewDocument(undefined)}
         />
       )}

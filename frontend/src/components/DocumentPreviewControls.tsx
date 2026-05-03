@@ -75,7 +75,7 @@ export const DocumentPreviewControls: React.FC<Props> = ({
         </div>
       </div>
       <MdClose
-        className="z-100 text-3xl cursor-pointer hover:rotate-180 duration-200 hover:text-danger-subtle"
+        className="z-100 text-3xl cursor-pointer duration-200 hover:text-danger-subtle"
         onClick={onClose}
       />
     </div>

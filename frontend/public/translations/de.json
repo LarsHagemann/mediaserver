@@ -16,7 +16,8 @@
       "dropFilesHereOrClickToSelect": "Dateien hier ablegen oder zum Auswählen klicken"
     },
     "gallery": {
-      "tagInputPlaceholder": "Nach Tag suchen..."
+      "tagInputPlaceholder": "Nach Tag suchen...",
+      "reseed": "Reihenfolge neu mischen"
     }
   },
   "pagination": {
