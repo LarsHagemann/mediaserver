@@ -2,12 +2,9 @@ import { type ButtonHTMLAttributes, type ReactNode } from "react";
 import { twMerge } from "tailwind-merge";
 
 const variants = {
-  primary:
-    "bg-accent hover:enabled:bg-accent-hover text-text-primary rounded",
-  ghost:
-    "text-text-muted hover:enabled:text-text-primary",
-  danger:
-    "bg-danger hover:enabled:bg-danger-hover text-text-primary rounded",
+  primary: "bg-accent hover:enabled:bg-accent-hover text-text-primary rounded",
+  ghost: "text-text-muted hover:enabled:text-text-primary",
+  danger: "bg-danger hover:enabled:bg-danger-hover text-text-primary rounded",
 };
 
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {

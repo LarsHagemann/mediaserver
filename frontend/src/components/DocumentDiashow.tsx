@@ -1,8 +1,10 @@
-import React from "react";
+import { useEffect, useState } from "react";
 import { useDocument } from "../hooks/useDocument";
 import { useDocumentPlugin } from "../hooks/useDocumentPlugin";
 import { useDocumentUrl } from "../hooks/useDocumentUrl";
 import { useSwipeable } from "react-swipeable";
+import { DocumentDiashowControls } from "./DocumentDiashowControls";
+import React from "react";
 
 type Props = {
   documentId: string;
@@ -22,6 +24,10 @@ export const DocumentDiashow = ({
   const pluginFromProp = useDocumentPlugin(mimeType);
   const isStream = pluginFromProp.fetchMode === "stream";
 
+  const [timeout, setTimeoutValue] = useState(defaultTimeout);
+  const [paused, setPaused] = useState(false);
+  const [autoAdvance, setAutoAdvance] = useState(true);
+
   const { objectUrl: blobUrl, blob } = useDocument(documentId, isStream);
   const streamUrl = useDocumentUrl(documentId);
 
@@ -38,16 +44,41 @@ export const DocumentDiashow = ({
     trackTouch: true,
   });
 
+  useEffect(() => {
+    setAutoAdvance(!paused);
+  }, [paused, documentId]);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (autoAdvance) {
+        nextDocument();
+      }
+    }, timeout);
+
+    return () => clearTimeout(timeoutId);
+  }, [timeout, nextDocument, autoAdvance]);
+
   if (!objectUrl) {
     return null;
   }
 
   return (
-    <div className="fixed z-10 bg-surface-1 w-screen h-screen left-0 top-0" {...handlers}>
+    <div
+      className="fixed z-10 bg-surface-1 w-screen h-screen left-0 top-0"
+      {...handlers}
+    >
+      <DocumentDiashowControls
+        nextDocument={nextDocument}
+        previousDocument={previousDocument}
+        togglePause={() => setPaused(!paused)}
+        setTimeoutValue={setTimeoutValue}
+        timeout={timeout}
+        paused={paused}
+      />
       <plugin.Diashow
         objectUrl={objectUrl}
-        defaultTimeout={defaultTimeout}
         nextDocument={nextDocument}
+        preventAutoAdvance={() => setAutoAdvance(false)}
         React={React}
       />
     </div>

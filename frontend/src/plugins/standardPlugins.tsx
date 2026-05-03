@@ -8,14 +8,6 @@ export const pdfPlugin: FileTypePlugin = {
     <embed className="w-full h-full" src={objectUrl} type="application/pdf" />
   ),
   Diashow: (context) => {
-    context.React.useEffect(() => {
-      const timeout = setTimeout(() => {
-        context.nextDocument();
-      }, context.defaultTimeout);
-
-      return () => clearTimeout(timeout);
-    }, [context]);
-
     return (
       <embed
         className="w-full h-full"
@@ -38,14 +30,6 @@ export const imagePlugin: FileTypePlugin = {
     />
   ),
   Diashow: (context) => {
-    context.React.useEffect(() => {
-      const timeout = setTimeout(() => {
-        context.nextDocument();
-      }, context.defaultTimeout);
-
-      return () => clearTimeout(timeout);
-    }, [context]);
-
     return (
       <img
         className="w-full h-full object-contain"
@@ -65,15 +49,7 @@ export const videoPlugin: FileTypePlugin = {
     <video className="w-full h-full" src={objectUrl} controls />
   ),
   Diashow: (context) => {
-    const videoRef = context.React.useRef<HTMLVideoElement>(null);
-
-    context.React.useEffect(() => {
-      videoRef.current?.play();
-
-      videoRef.current?.addEventListener("ended", () => {
-        context.nextDocument();
-      });
-    }, [context]);
+    context.preventAutoAdvance();
 
     return (
       <video
@@ -81,7 +57,6 @@ export const videoPlugin: FileTypePlugin = {
         src={context.objectUrl}
         controls
         loop={false}
-        ref={videoRef}
       />
     );
   },
@@ -96,15 +71,7 @@ export const audioPlugin: FileTypePlugin = {
     <audio className="w-full h-full" src={objectUrl} controls />
   ),
   Diashow: (context) => {
-    const audioRef = context.React.useRef<HTMLAudioElement>(null);
-
-    context.React.useEffect(() => {
-      audioRef.current?.play();
-
-      audioRef.current?.addEventListener("ended", () => {
-        context.nextDocument();
-      });
-    }, [context]);
+    context.preventAutoAdvance();
 
     return (
       <audio
@@ -112,7 +79,6 @@ export const audioPlugin: FileTypePlugin = {
         src={context.objectUrl}
         controls
         loop={false}
-        ref={audioRef}
       />
     );
   },

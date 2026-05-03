@@ -144,7 +144,10 @@ export const UploadContextProvider: React.FC<{
       })
         .unwrap()
         .catch((err) => {
-          markFileAsFailedRef.current(file.name, err.message || "Upload failed");
+          markFileAsFailedRef.current(
+            file.name,
+            err.message || "Upload failed",
+          );
         });
       markFileAsBeingProcessed(file.name);
     }

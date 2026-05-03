@@ -1,18 +1,22 @@
 import { useNavigate } from "react-router";
-import { FaStar, FaRegStar } from "react-icons/fa";
+import { FaStar, FaRegStar, FaRegCheckCircle } from "react-icons/fa";
 import { MdEdit, MdDelete } from "react-icons/md";
 import { enhancedApi } from "../app/enhancedApi";
 import type { Collection } from "../app/api";
 import { useTranslation } from "react-i18next";
 import { twMerge } from "tailwind-merge";
 import { IconButton } from "../components/IconButton";
+import { BiLoader } from "react-icons/bi";
+import { FaRegCircle } from "react-icons/fa6";
 
 type Props = {
   collection: Collection;
   onEdit?: (collection: Collection) => void;
   onDelete?: (collection: Collection) => void;
   onToggleFavorite?: (collection: Collection) => void;
-  onClick?: ((collection: Collection) => void) | 'navigate';
+  onClick?: ((collection: Collection) => void) | "navigate";
+  isLoading?: boolean;
+  isSelected?: boolean;
 };
 
 export const CollectionCard = ({
@@ -20,7 +24,9 @@ export const CollectionCard = ({
   onEdit,
   onDelete,
   onToggleFavorite,
-  onClick = 'navigate',
+  onClick = "navigate",
+  isLoading,
+  isSelected,
 }: Props) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -37,10 +43,10 @@ export const CollectionCard = ({
     <div
       className={twMerge(
         "bg-surface-1 rounded-lg p-4 border border-border cursor-pointer hover:border-border-strong transition-all flex flex-col flex-1 gap-2",
-        collection.isFavorite && "border-yellow-500/50",
+        collection.isFavorite && "border-yellow-500/50 hover:border-yellow-500",
       )}
       onClick={() => {
-        if (onClick === 'navigate') {
+        if (onClick === "navigate") {
           navigate(
             `/gallery?q=${encodeURIComponent(collection.filterExpression)}`,
           );
@@ -69,15 +75,31 @@ export const CollectionCard = ({
             )}
           </span>
         </div>
-        {onToggleFavorite && (<IconButton
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleFavorite(collection);
-          }}
-          className="text-warning hover:text-warning flex-shrink-0"
-        >
-          {collection.isFavorite ? <FaStar /> : <FaRegStar />}
-        </IconButton>
+        {onToggleFavorite && (
+          <IconButton
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleFavorite(collection);
+            }}
+            className="text-warning hover:text-warning flex-shrink-0"
+          >
+            {collection.isFavorite ? <FaStar /> : <FaRegStar />}
+          </IconButton>
+        )}
+        {isLoading && <BiLoader className="animate-spin w-6 h-6" />}
+        {!isLoading && onClick && isSelected !== undefined && (
+          <IconButton
+            className={twMerge(
+              "text-lg text-text-muted hover:text-text-primary flex-shrink-0 w-6 h-6",
+              isSelected && "text-green-500 hover:text-green-600",
+            )}
+          >
+            {isSelected ? (
+              <FaRegCheckCircle className="w-6 h-6" />
+            ) : (
+              <FaRegCircle className="w-6 h-6" />
+            )}
+          </IconButton>
         )}
       </div>
 

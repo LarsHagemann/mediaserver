@@ -36,14 +36,18 @@ export const SettingsPage = () => {
       <h2 className="text-xl font-semibold mb-2">{t("settings.themes")}</h2>
       <div className="flex flex-row flex-wrap gap-3 mb-6">
         {themePlugins.map((plugin) => {
-          const isActive = activeThemeName === plugin.name ||
+          const isActive =
+            activeThemeName === plugin.name ||
             (activeThemeName === null && plugin.name === "dark");
           return (
             <button
               key={plugin.name}
               onClick={() => handleThemeSelect(plugin)}
-              className={`flex flex-col gap-2 p-3 rounded-lg border-2 cursor-pointer transition-all ${isActive ? "border-accent" : "border-border hover:border-border-strong"
-                }`}
+              className={`flex flex-col gap-2 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                isActive
+                  ? "border-accent"
+                  : "border-border hover:border-border-strong"
+              }`}
             >
               <div className="flex flex-row gap-1">
                 {plugin.preview && (
@@ -61,7 +65,9 @@ export const SettingsPage = () => {
               </div>
               <span className="text-sm font-medium">{plugin.description}</span>
               {!isThemeTrusted(plugin) && (
-                <span className="text-xs text-warning">{t("settings.plugin.untrusted")}</span>
+                <span className="text-xs text-warning">
+                  {t("settings.plugin.untrusted")}
+                </span>
               )}
             </button>
           );
@@ -79,7 +85,7 @@ export const SettingsPage = () => {
             {t(`settings.languageExtension.trusted`)}:{" "}
             {t(
               "settings.languageExtension." +
-              (lng in standardTranslations ? "yes" : "no"),
+                (lng in standardTranslations ? "yes" : "no"),
             )}
           </div>
         </div>

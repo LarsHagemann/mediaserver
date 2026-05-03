@@ -161,11 +161,11 @@ export const CollectionsPage = () => {
           <p className="text-text-secondary">
             {deletingCollection?.type === "static"
               ? t("collections.deleteModal.bodyStatic", {
-                name: deletingCollection.name,
-              })
+                  name: deletingCollection.name,
+                })
               : t("collections.deleteModal.body", {
-                name: deletingCollection?.name,
-              })}
+                  name: deletingCollection?.name,
+                })}
           </p>
           {deletingCollection?.type === "static" && (
             <p className="text-warning text-sm">

@@ -17,7 +17,10 @@ export const TagsPage = () => {
 
   const navigate = useNavigate();
 
-  const tags = useMemo(() => data?.items.filter(tag => tag.key !== 'collection') || [], [data?.items]);
+  const tags = useMemo(
+    () => data?.items.filter((tag) => tag.key !== "collection") || [],
+    [data?.items],
+  );
 
   return (
     <div className="p-4">
