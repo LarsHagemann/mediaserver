@@ -84,11 +84,22 @@ export const GalleryPage = () => {
   }, [isMobile]);
 
   const {
-    params: { preview: previewDocumentSearchParam, q: query },
+    params: { preview: previewDocumentSearchParam, q: query, seed },
     setSearchParams,
     addSearchParam,
     removeSearchParam,
-  } = useEasySearchParams(["preview", "q"]);
+  } = useEasySearchParams(["preview", "q", "seed"]);
+
+  // When sort:random is active, keep a stable seed in the URL so all queries
+  // (gallery, preview thumbnail strip, next/prev page) share the same ordering.
+  useEffect(() => {
+    const hasRandomSort = (query ?? "").includes("sort:random");
+    if (hasRandomSort && !seed) {
+      addSearchParam("seed", Math.random().toString(36).slice(2));
+    } else if (!hasRandomSort && seed) {
+      removeSearchParam("seed");
+    }
+  }, [query, seed, addSearchParam, removeSearchParam]);
 
   useEffect(() => {
     if (!previewDocumentSearchParam) {
@@ -106,6 +117,7 @@ export const GalleryPage = () => {
     limit: limit,
     offset: offset,
     query: query,
+    seed: seed,
   });
 
   useEffect(() => {
@@ -307,7 +319,7 @@ export const GalleryPage = () => {
           nextPreviewImage={nextPreviewImage}
           previousPreviewImage={prevPreviewImage}
           previewImageIndex={previewDocument?.queryIndex ?? lastKnownPreviewIndexRef.current}
-          queryParams={{ limit, offset, query }}
+          queryParams={{ limit, offset, query, seed }}
           onClose={() => setPreviewDocument(undefined)}
         />
       )}
