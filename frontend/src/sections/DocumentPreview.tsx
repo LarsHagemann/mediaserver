@@ -9,13 +9,16 @@ import { tagToString } from "../util/tag";
 import { useTranslation } from "react-i18next";
 import { DocumentRender } from "../components/DocumentRender";
 import { preventInputHandling } from "../util/preventInputHandling";
+import { useSwipeable } from "react-swipeable";
 
 type Props = {
   id: string;
   mimeType?: string;
+  nextPreviewImage: () => void;
+  previousPreviewImage: () => void;
 };
 
-export const DocumentPreview = ({ id, mimeType }: Props) => {
+export const DocumentPreview = ({ id, mimeType, nextPreviewImage, previousPreviewImage }: Props) => {
   const [tagInput, setTagInput] = useState("");
 
   const { t } = useTranslation();
@@ -61,6 +64,14 @@ export const DocumentPreview = ({ id, mimeType }: Props) => {
   );
 
   const tags = useMemo(() => data?.tags.filter(tag => tag.key !== "collection") || [], [data]);
+
+  const handlers = useSwipeable({
+    onSwipedLeft: () => nextPreviewImage(),
+    onSwipedRight: () => previousPreviewImage(),
+    trackMouse: true,
+    preventScrollOnSwipe: true,
+    trackTouch: true,
+  });
 
   return (
     <div className="relative w-full h-full">
@@ -119,6 +130,7 @@ export const DocumentPreview = ({ id, mimeType }: Props) => {
             ? "h-1/2 sm:h-full sm:w-3/4 sm:left-1/4"
             : "h-full sm:w-full sm:left-0",
         )}
+        {...handlers}
       >
         <DocumentRender documentId={id} mimeType={mimeType} />
       </div>

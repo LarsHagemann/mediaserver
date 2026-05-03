@@ -124,14 +124,14 @@ export const PreviewContainer = ({
           </div>
           <div className="flex flex-1 w-full">
             {diashowMode && (
-              <div className="fixed z-10 bg-surface-1 w-screen h-screen left-0 top-0">
-                <DocumentDiashow documentId={previewImageId} nextDocument={nextPreviewImage} mimeType={mimeType} />
-              </div>
+              <DocumentDiashow documentId={previewImageId} nextDocument={nextPreviewImage} previousDocument={previousPreviewImage} mimeType={mimeType} />
             )}
             {!diashowMode && (
               <DocumentPreview
                 id={previewImageId}
                 mimeType={mimeType}
+                nextPreviewImage={nextPreviewImage}
+                previousPreviewImage={previousPreviewImage}
               />
             )}
           </div>
