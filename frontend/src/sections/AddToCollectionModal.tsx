@@ -3,7 +3,6 @@ import { Modal } from "../components/Modal";
 import { enhancedApi } from "../app/enhancedApi";
 import { useCallback, useMemo, useState } from "react";
 import { CollectionCard } from "./CollectionCard";
-import { BiLoader } from "react-icons/bi";
 
 type Props = {
   documentId: string;
@@ -60,21 +59,13 @@ export const AddToCollectionModal = ({ documentId, isOpen, onClose }: Props) => 
       <div className="flex flex-col gap-2">
         {collections.map((collection) => (
           <div className="flex flex-row items-center gap-2" key={collection.id}>
-            {loadingCollection === collection.id ? (
-              <BiLoader className="animate-spin" />
-            ) : (
-              <input
-                type="checkbox"
-                checked={documentCollectionIds.has(collection.id)}
-                className="w-4 h-4 text-accent bg-placeholder border-border-strong rounded focus:ring-accent-hover"
-                onChange={() => onToggle(collection.id)}
-              />
-            )}
             <CollectionCard
               collection={collection}
               onClick={() => {
                 onToggle(collection.id);
               }}
+              isSelected={documentCollectionIds.has(collection.id)}
+              isLoading={loadingCollection === collection.id}
             />
           </div>
         ))}
