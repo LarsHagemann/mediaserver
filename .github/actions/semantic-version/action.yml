@@ -1,0 +1,88 @@
+name: 'Semantic Version'
+description: >
+  Computes the next semantic version from git tags, handling stable and beta
+  tag streams independently. Beta stream tracks vX.Y.Z-beta tags; stable
+  stream tracks vX.Y.Z tags. A commit whose subject starts with "feat" triggers
+  a minor bump; all other commits trigger a patch bump.
+
+inputs:
+  is_beta:
+    description: >
+      Set to "true" to use the beta tag stream (vX.Y.Z-beta tags).
+      Set to "false" (default) for the stable stream (vX.Y.Z tags).
+    required: false
+    default: 'false'
+
+outputs:
+  version:
+    description: 'The computed next version string (e.g. v1.1.1-beta or v1.2.0)'
+    value: ${{ steps.compute.outputs.version }}
+
+runs:
+  using: composite
+  steps:
+    - name: Compute next semantic version
+      id: compute
+      shell: bash
+      run: |
+        set -Eeuo pipefail
+
+        IS_BETA="${{ inputs.is_beta }}"
+        SUFFIX=""
+        TAG_PATTERN='^v[0-9]+\.[0-9]+\.[0-9]+$'
+
+        if [[ "$IS_BETA" == "true" ]]; then
+          SUFFIX="-beta"
+          TAG_PATTERN='^v[0-9]+\.[0-9]+\.[0-9]+-beta$'
+          LABEL="beta"
+        else
+          LABEL="stable"
+        fi
+
+        # Get latest matching tag safely
+        LATEST="$(
+          git tag -l \
+          | grep -E "$TAG_PATTERN" \
+          | sort -V \
+          | tail -n1 || true
+        )"
+
+        echo "Latest ${LABEL} tag: ${LATEST:-<none>}"
+
+        # Default starting version
+        MAJOR=0
+        MINOR=1
+        PATCH=0
+
+        if [[ -n "${LATEST}" ]]; then
+          VERSION_CORE="${LATEST#v}"
+          VERSION_CORE="${VERSION_CORE%-beta}"
+
+          # Safer parsing than IFS read
+          if [[ "$VERSION_CORE" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            MAJOR="${BASH_REMATCH[1]}"
+            MINOR="${BASH_REMATCH[2]}"
+            PATCH="${BASH_REMATCH[3]}"
+          else
+            echo "Invalid tag format: $LATEST" >&2
+            exit 1
+          fi
+
+          # Collect commits safely (avoid set -e breakage)
+          COMMITS="$(git log "${LATEST}..HEAD" --pretty=format:%s || true)"
+
+          if [[ -z "$COMMITS" ]]; then
+            echo "No commits since last tag; keeping version bump minimal"
+            PATCH=$((PATCH + 1))
+          elif grep -qE '^feat(\(.+\))?:' <<< "$COMMITS"; then
+            MINOR=$((MINOR + 1))
+            PATCH=0
+          else
+            PATCH=$((PATCH + 1))
+          fi
+        fi
+
+        VERSION="v${MAJOR}.${MINOR}.${PATCH}${SUFFIX}"
+
+        echo "Computed version: $VERSION"
+        echo "version=$VERSION" >> "$GITHUB_OUTPUT"
