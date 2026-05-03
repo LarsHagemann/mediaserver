@@ -26,6 +26,7 @@ export type ListDocumentsRequest = {
   offset: number;
   limit: number;
   query: string;
+  seed?: string;
 };
 
 const documentRowSchema = z.object({
@@ -67,13 +68,7 @@ export class TagRepository {
     this.sqlBuilder = new TagSqlBuilder(
       {
         userdataTableName: "documents",
-        userdataTableColumns: [
-          "id",
-          "mime",
-          "row_number() OVER (ORDER BY created_at DESC) - 1 AS query_index",
-          "LAG(id) OVER (ORDER BY created_at DESC) AS previous_id",
-          "LEAD(id) OVER (ORDER BY created_at DESC) AS next_id",
-        ],
+        userdataTableColumns: ["id", "mime"],
         userdataTableIdColumn: "id",
       },
       tagCache,
@@ -84,15 +79,19 @@ export class TagRepository {
     offset,
     limit,
     query,
+    seed,
   }: ListDocumentsRequest): Promise<PaginatedResponse<Document>> {
     const filter = new TagParser(query).parse();
     const sql = await this.sqlBuilder.buildListFilteredEntitiesQuery(filter);
 
     if (sql.success) {
+      const isRandom =
+        sql.stmt.sort?.find((s) => s.field === "_rand") !== undefined;
+
       const items = await this.dbService.any(
         paginated(documentRowSchema),
         buildQueryFromSelectStatement(sql.stmt),
-        { limit, offset },
+        isRandom ? { limit, offset, seed: seed ?? null } : { limit, offset },
       );
 
       return toPaginatedResponse(

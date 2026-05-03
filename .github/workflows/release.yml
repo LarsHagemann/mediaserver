@@ -21,11 +21,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: paulhatch/semantic-version@v5.4.0
+      - uses: ./.github/actions/semantic-version
         id: version
         with:
-          version_format: "v${major}.${minor}.${patch}${{ github.ref_name == 'main' && '' || '-beta' }}"
-          minor_pattern: "/^feat/"
+          is_beta: ${{ github.ref_name != 'main' }}
 
   docker-server:
     name: Docker Server

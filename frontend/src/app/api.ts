@@ -90,10 +90,10 @@ export const api = baseApi.injectEndpoints({
 
     listDocuments: build.query<
       PaginatedResponse<Document>,
-      { limit?: number; offset?: number; query?: string }
+      { limit?: number; offset?: number; query?: string; seed?: string }
     >({
-      query: ({ limit = 100, offset = 0, query = "" }) => ({
-        url: `/documents?limit=${limit}&offset=${offset}&query=${encodeURIComponent(query)}`,
+      query: ({ limit = 100, offset = 0, query = "", seed }) => ({
+        url: `/documents?limit=${limit}&offset=${offset}&query=${encodeURIComponent(query)}${seed ? `&seed=${encodeURIComponent(seed)}` : ""}`,
         method: "GET",
       }),
       providesTags: (response) => [

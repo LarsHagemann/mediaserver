@@ -16,6 +16,7 @@ export type TagSqlBuilderConfig = {
 };
 
 export type SelectStatement = {
+  with?: { name: string; body: string }[];
   select: string[];
   from: string;
   joins?: {
@@ -80,7 +81,11 @@ const buildQueryOrderByStatement = (stmt: SelectStatement["sort"]) => {
 };
 
 export const buildQueryFromSelectStatement = (stmt: SelectStatement) => {
-  const query = `SELECT ${stmt.select} FROM ${stmt.from}`;
+  const withClause =
+    stmt.with && stmt.with.length > 0
+      ? `WITH ${stmt.with.map((c) => `${c.name} AS (${c.body})`).join(", ")} `
+      : "";
+  const query = `${withClause}SELECT ${stmt.select} FROM ${stmt.from}`;
   const joinClauses = (stmt.joins ?? [])
     .map((join) => `${join.join} JOIN ${join.table} ON ${join.on}`)
     .join(" ");
@@ -236,34 +241,77 @@ export class TagSqlBuilder {
   ): Promise<TagSqlBuilderResult<SelectStatement, ["$limit", "$offset"]>> {
     this.setupParse();
 
+    const idCol = this.builderConfig.userdataTableIdColumn;
+    const tableName = this.builderConfig.userdataTableName;
+    const staticCols = this.builderConfig.userdataTableColumns;
+
     try {
-      return {
-        success: true,
-        stmt: {
-          select: [
-            "COUNT(*) OVER()::int AS __total",
-            ...this.builderConfig.userdataTableColumns,
-          ],
-          from: `${this.builderConfig.userdataTableName} u`,
-          joins: [
-            {
-              join: "LEFT",
-              table: "userdata_tags ut",
-              on: `u.${this.builderConfig.userdataTableIdColumn} = ut.userdata_id`,
-            },
-          ],
-          groupBy: `u.${this.builderConfig.userdataTableIdColumn}`,
-          having: `${await this.sqlFilterConditions(filter)}`,
-          sort: [
-            {
-              field: this.currentParse.sortBy,
-              direction: this.currentParse.sortDirection,
-            },
-          ],
-          limit: "$limit",
-          offset: "$offset",
-        },
-      };
+      const havingCondition = await this.sqlFilterConditions(filter);
+
+      if (this.currentParse.sortBy === "random") {
+        // Use a CTE with a deterministic hash per (row, seed) so that the ORDER BY
+        // and all window functions (LAG, LEAD, ROW_NUMBER) share the same ordering
+        // across all queries with the same seed (pagination, thumbnail strip, etc.).
+        const innerSelectCols = staticCols.map((col) => `u.${col}`).join(", ");
+        const innerBody =
+          `SELECT ${innerSelectCols}, HASHTEXT(u.${idCol} || $seed) AS _rand ` +
+          `FROM ${tableName} u ` +
+          `LEFT JOIN userdata_tags ut ON u.${idCol} = ut.userdata_id ` +
+          `GROUP BY u.${idCol} ` +
+          `HAVING ${havingCondition}`;
+
+        return {
+          success: true,
+          stmt: {
+            with: [{ name: "filtered_rand", body: innerBody }],
+            select: [
+              "COUNT(*) OVER()::int AS __total",
+              ...staticCols,
+              `row_number() OVER (ORDER BY _rand) - 1 AS query_index`,
+              `LAG(${idCol}) OVER (ORDER BY _rand) AS previous_id`,
+              `LEAD(${idCol}) OVER (ORDER BY _rand) AS next_id`,
+            ],
+            from: "filtered_rand",
+            sort: [{ field: "_rand" }],
+            limit: "$limit",
+            offset: "$offset",
+          },
+        };
+      } else {
+        const sortDir = this.currentParse.sortDirection.toUpperCase();
+        const windowOrderBy = `${this.currentParse.sortBy} ${sortDir}`;
+
+        return {
+          success: true,
+          stmt: {
+            select: [
+              "COUNT(*) OVER()::int AS __total",
+              ...staticCols,
+              `row_number() OVER (ORDER BY ${windowOrderBy}) - 1 AS query_index`,
+              `LAG(${idCol}) OVER (ORDER BY ${windowOrderBy}) AS previous_id`,
+              `LEAD(${idCol}) OVER (ORDER BY ${windowOrderBy}) AS next_id`,
+            ],
+            from: `${tableName} u`,
+            joins: [
+              {
+                join: "LEFT",
+                table: "userdata_tags ut",
+                on: `u.${idCol} = ut.userdata_id`,
+              },
+            ],
+            groupBy: `u.${idCol}`,
+            having: havingCondition,
+            sort: [
+              {
+                field: this.currentParse.sortBy,
+                direction: this.currentParse.sortDirection,
+              },
+            ],
+            limit: "$limit",
+            offset: "$offset",
+          },
+        };
+      }
     } catch (error) {
       return {
         success: false,

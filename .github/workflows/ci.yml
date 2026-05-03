@@ -2,6 +2,18 @@ on:
   push:
 
 jobs:
+  version:
+    name: Compute Version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - uses: ./.github/actions/semantic-version
+        with:
+          is_beta: ${{ github.ref_name != 'main' }}
+
   lint-server:
     name: Lint Server
     runs-on: ubuntu-latest

@@ -7,11 +7,12 @@ import { PreviewContainer } from "../sections/PreviewContainer";
 import { useEasySearchParams } from "../hooks/useEasySearchParams";
 import { usePageOffsetAndLimitParams } from "../hooks/usePageOffsetAndLimitParams";
 import { TagInput } from "../sections/TagInput";
-import { FiGrid, FiList } from "react-icons/fi";
+import { FiGrid, FiList, FiShuffle } from "react-icons/fi";
 import { MdBookmarkAdd } from "react-icons/md";
 import { twMerge } from "tailwind-merge";
 import { useIsMobileScreen } from "../hooks/useIsMobileScreen";
 import { CollectionFormModal } from "../sections/CollectionFormModal";
+import { useGallerySeed } from "../hooks/useGallerySeed";
 
 const remToPixel = (rem: number) => {
   return rem * parseFloat(getComputedStyle(document.documentElement).fontSize);
@@ -90,6 +91,9 @@ export const GalleryPage = () => {
     removeSearchParam,
   } = useEasySearchParams(["preview", "q"]);
 
+  const { seed, reseedGallery } = useGallerySeed();
+  const hasRandomSort = (query ?? "").includes("sort:random");
+
   useEffect(() => {
     if (!previewDocumentSearchParam) {
       setLimit(documentsPerRow * documentsPerColumn - 1);
@@ -106,6 +110,7 @@ export const GalleryPage = () => {
     limit: limit,
     offset: offset,
     query: query,
+    seed: hasRandomSort ? seed : undefined,
   });
 
   useEffect(() => {
@@ -130,6 +135,11 @@ export const GalleryPage = () => {
         : undefined,
     [idToDocument, previewDocumentSearchParam],
   );
+
+  const lastKnownPreviewIndexRef = useRef<number>(0);
+  if (previewDocument) {
+    lastKnownPreviewIndexRef.current = previewDocument.queryIndex;
+  }
 
   const setPreviewDocument = useCallback(
     (previewDocumentId: string | undefined) => {
@@ -214,6 +224,13 @@ export const GalleryPage = () => {
         blurOnSubmit
       />
       <div className="flex flex-row justify-end gap-2 pr-2">
+        {hasRandomSort && (
+          <FiShuffle
+            className="inline text-xl cursor-pointer hover:text-accent-subtle"
+            title={t("pages.gallery.reseed")}
+            onClick={reseedGallery}
+          />
+        )}
         {query && (
           <MdBookmarkAdd
             className="inline text-xl cursor-pointer hover:text-accent-subtle"
@@ -292,17 +309,17 @@ export const GalleryPage = () => {
         }}
         initialFilterExpression={query}
       />
-      {previewDocument && (
+      {previewDocumentSearchParam && (
         <PreviewContainer
           totalDocuments={total}
-          previewImageId={previewDocument.id}
+          previewImageId={previewDocumentSearchParam}
           onThumbnailClicked={(id) => {
             setPreviewDocument(id);
           }}
           nextPreviewImage={nextPreviewImage}
           previousPreviewImage={prevPreviewImage}
-          previewImageIndex={previewDocument.queryIndex}
-          queryParams={{ limit, offset, query }}
+          previewImageIndex={previewDocument?.queryIndex ?? lastKnownPreviewIndexRef.current}
+          queryParams={{ limit, offset, query, seed: hasRandomSort ? seed : undefined }}
           onClose={() => setPreviewDocument(undefined)}
         />
       )}
