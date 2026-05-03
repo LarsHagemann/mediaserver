@@ -85,7 +85,8 @@ export class TagRepository {
     const sql = await this.sqlBuilder.buildListFilteredEntitiesQuery(filter);
 
     if (sql.success) {
-      const isRandom = sql.stmt.sort?.find((s) => s.field === "_rand") !== undefined;
+      const isRandom =
+        sql.stmt.sort?.find((s) => s.field === "_rand") !== undefined;
 
       const items = await this.dbService.any(
         paginated(documentRowSchema),

@@ -79,19 +79,24 @@ documentRouter.get(
   apiHandler<
     PaginatedResponse<Document>,
     { limit?: number; offset?: number; query?: string; seed?: string }
-  >(async ({ diContainer, query: { limit = 100, offset = 0, query = "", seed } }) => {
-    const tagService = diContainer.get<TagService>(services.tag);
-    const response = await tagService.listDocuments({
-      limit,
-      offset,
-      query: decodeURIComponent(query),
-      seed: seed ?? '',
-    });
-    return {
-      status: 200,
-      body: response,
-    };
-  }),
+  >(
+    async ({
+      diContainer,
+      query: { limit = 100, offset = 0, query = "", seed },
+    }) => {
+      const tagService = diContainer.get<TagService>(services.tag);
+      const response = await tagService.listDocuments({
+        limit,
+        offset,
+        query: decodeURIComponent(query),
+        seed: seed ?? "",
+      });
+      return {
+        status: 200,
+        body: response,
+      };
+    },
+  ),
 );
 
 documentRouter.get(

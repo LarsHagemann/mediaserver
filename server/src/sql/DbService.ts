@@ -65,14 +65,17 @@ const escapeValues = (
   const query =
     typeof queryTextOrConfig === "string"
       ? queryTextOrConfig.replace(/\$(\w+)/g, (match, key) => {
-        if (!(key in toPlaceholder)) {
-          console.error(`Key ${key} not found in values object for query placeholder`, values);
-          throw new Error(
-            `Key ${key} not found in values object for query placeholder`,
-          );
-        }
-        return toPlaceholder[key] || match;
-      })
+          if (!(key in toPlaceholder)) {
+            console.error(
+              `Key ${key} not found in values object for query placeholder`,
+              values,
+            );
+            throw new Error(
+              `Key ${key} not found in values object for query placeholder`,
+            );
+          }
+          return toPlaceholder[key] || match;
+        })
       : queryTextOrConfig;
 
   return [query, Object.values(values)];

@@ -1,8 +1,5 @@
 import { useCallback, useEffect } from "react";
-import {
-  selectGallerySeed,
-  setGallerySeed,
-} from "../app/persistent.slice";
+import { selectGallerySeed, setGallerySeed } from "../app/persistent.slice";
 import { useAppDispatch, useAppSelector } from "../app/store";
 
 const generateSeed = () => Math.random().toString(36).slice(2);

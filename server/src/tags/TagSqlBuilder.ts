@@ -38,13 +38,13 @@ export type SelectStatement = {
 
 export type OnConflict =
   | {
-    action: "DO NOTHING";
-  }
+      action: "DO NOTHING";
+    }
   | {
-    action: "DO UPDATE";
-    target?: string | string[];
-    set: { [column: string]: string };
-  };
+      action: "DO UPDATE";
+      target?: string | string[];
+      set: { [column: string]: string };
+    };
 
 export type UpdateStatement = {
   table: string;
@@ -69,12 +69,12 @@ const buildQueryOrderByStatement = (stmt: SelectStatement["sort"]) => {
   const orderByClause =
     stmt && stmt.length > 0
       ? `ORDER BY ${stmt
-        .map((s) =>
-          s.field === "random"
-            ? "RANDOM()"
-            : `${s.field} ${s.direction?.toUpperCase() || ""} ${s.nulls ? `NULLS ${s.nulls.toUpperCase()}` : ""}`,
-        )
-        .join(", ")}`
+          .map((s) =>
+            s.field === "random"
+              ? "RANDOM()"
+              : `${s.field} ${s.direction?.toUpperCase() || ""} ${s.nulls ? `NULLS ${s.nulls.toUpperCase()}` : ""}`,
+          )
+          .join(", ")}`
       : "";
 
   return orderByClause;
@@ -149,13 +149,13 @@ export type TagSqlBuilderResult<
   Parameters extends string[] = [],
 > =
   | {
-    success: false;
-    message: string;
-  }
+      success: false;
+      message: string;
+    }
   | {
-    success: true;
-    stmt: T;
-  };
+      success: true;
+      stmt: T;
+    };
 
 type CurrentParse = {
   sortBy: "created_at" | "random";
