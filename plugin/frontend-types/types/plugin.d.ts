@@ -10002,7 +10002,7 @@ export type RenderContext = {
 };
 export type DiashowContext = RenderContext & {
     nextDocument: () => void;
-    defaultTimeout: number;
+    preventAutoAdvance: () => void;
 };
 export type ThemeTokens = Record<string, string>;
 export type FileTypePlugin = {

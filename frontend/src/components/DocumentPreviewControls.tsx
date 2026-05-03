@@ -3,15 +3,19 @@ import { FaCaretLeft, FaCaretRight, FaDownload } from "react-icons/fa";
 import { LuPresentation } from "react-icons/lu";
 import { useIsMobileScreen } from "../hooks/useIsMobileScreen";
 import { MdClose } from "react-icons/md";
-import { FaBookmark } from "react-icons/fa6";
+import { FaBookmark, FaRegBookmark } from "react-icons/fa6";
+import { IoPricetag, IoPricetagOutline } from "react-icons/io5";
 
 type Props = {
   nextDocument: () => void;
   previousDocument: () => void;
   downloadDocument: () => void;
   toggleDiashow: () => void;
-  onBookmark: () => void;
+  bookmarksOpen: boolean;
+  setBookmarksOpen: (open: boolean) => void;
   onClose: () => void;
+  tagListOpen: boolean;
+  setTagListOpen: (open: boolean) => void;
 };
 
 export const DocumentPreviewControls: React.FC<Props> = ({
@@ -19,8 +23,11 @@ export const DocumentPreviewControls: React.FC<Props> = ({
   previousDocument,
   downloadDocument,
   toggleDiashow,
-  onBookmark,
+  bookmarksOpen,
+  setBookmarksOpen,
   onClose,
+  tagListOpen,
+  setTagListOpen,
 }) => {
   const isMobile = useIsMobileScreen();
 
@@ -38,6 +45,18 @@ export const DocumentPreviewControls: React.FC<Props> = ({
           }}
         >
           <FaCaretLeft size={normalControlSize} />
+        </div>
+        <div
+          className="rounded-md p-2 cursor-pointer hover:text-text-muted duration-200"
+          onClick={() => {
+            setTagListOpen(!tagListOpen);
+          }}
+        >
+          {tagListOpen ? (
+            <IoPricetag size={normalControlSize} />
+          ) : (
+            <IoPricetagOutline size={normalControlSize} />
+          )}
         </div>
         <div
           className="rounded-md p-3 cursor-pointer hover:text-text-muted duration-200"
@@ -58,10 +77,14 @@ export const DocumentPreviewControls: React.FC<Props> = ({
         <div
           className="rounded-md p-2 cursor-pointer hover:text-text-muted duration-200"
           onClick={() => {
-            onBookmark();
+            setBookmarksOpen(!bookmarksOpen);
           }}
         >
-          <FaBookmark size={smallControlSize} />
+          {bookmarksOpen ? (
+            <FaBookmark size={smallControlSize} />
+          ) : (
+            <FaRegBookmark size={smallControlSize} />
+          )}
         </div>
         <div
           className="rounded-md p-2 cursor-pointer hover:text-text-muted duration-200"

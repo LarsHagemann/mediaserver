@@ -1,7 +1,14 @@
 import { twMerge } from "tailwind-merge";
 import { enhancedApi } from "../app/enhancedApi";
 import { TagList } from "../components/TagList";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 import { useNavigate } from "react-router";
 import { TagInput } from "./TagInput";
 import type { ApiTag } from "../app/api";
@@ -10,12 +17,19 @@ import { useTranslation } from "react-i18next";
 import { DocumentRender } from "../components/DocumentRender";
 import { preventInputHandling } from "../util/preventInputHandling";
 import { useSwipeable } from "react-swipeable";
+import { useIsMobileScreen } from "../hooks/useIsMobileScreen";
+import { AddToCollectionModal } from "./AddToCollectionModal";
+import { AddDocumentToCollection } from "./AddDocumentToCollection";
 
 type Props = {
   id: string;
   mimeType?: string;
   nextPreviewImage: () => void;
   previousPreviewImage: () => void;
+  tagListOpen: boolean;
+  setTagListOpen: Dispatch<SetStateAction<boolean>>;
+  bookmarksOpen: boolean;
+  setBookmarksOpen: Dispatch<SetStateAction<boolean>>;
 };
 
 export const DocumentPreview = ({
@@ -23,12 +37,14 @@ export const DocumentPreview = ({
   mimeType,
   nextPreviewImage,
   previousPreviewImage,
+  tagListOpen,
+  setTagListOpen,
+  bookmarksOpen,
+  setBookmarksOpen,
 }: Props) => {
   const [tagInput, setTagInput] = useState("");
 
   const { t } = useTranslation();
-
-  const [tagListOpen, setTagListOpen] = useState(false);
 
   useEffect(() => {
     const keyDownHandler = (event: KeyboardEvent) => {
@@ -45,7 +61,7 @@ export const DocumentPreview = ({
     return () => {
       window.removeEventListener("keydown", keyDownHandler);
     };
-  }, []);
+  }, [setTagListOpen]);
 
   const { data } = enhancedApi.useGetDocumentTagsQuery(id);
 
@@ -81,6 +97,8 @@ export const DocumentPreview = ({
     trackTouch: true,
   });
 
+  const isMobile = useIsMobileScreen();
+
   return (
     <div className="relative w-full h-full">
       <div
@@ -114,32 +132,37 @@ export const DocumentPreview = ({
       </div>
       <div
         className={twMerge(
-          "absolute sm:top-1/2 z-10 left-[initial] left-[calc(50%-1rem)] bg-surface-2 p-2 border-r-2 border-r-transparent rounded-r-md duration-200 cursor-pointer rotate-270 sm:bottom-[initial] sm:rotate-0",
-          tagListOpen
-            ? "bottom-[calc(50%-0.5rem)] sm:left-1/4"
-            : "-bottom-2 sm:left-0",
-        )}
-        onClick={() => setTagListOpen((open) => !open)}
-      >
-        <div
-          className={
-            tagListOpen ? "duration-200 rotate-180" : "duration-200 rotate-0"
-          }
-        >
-          &gt;
-        </div>
-      </div>
-      <div
-        className={twMerge(
           "absolute top-0 w-full h-full z-0 bg-bg-base duration-200",
           tagListOpen
             ? "h-1/2 sm:h-full sm:w-3/4 sm:left-1/4"
             : "h-full sm:w-full sm:left-0",
+          bookmarksOpen && !isMobile
+            ? "h-1/2 sm:h-full sm:w-3/4 sm:right-1/4"
+            : "",
+          tagListOpen && bookmarksOpen && !isMobile
+            ? "h-1/2 sm:h-full sm:w-1/2 sm:left-1/4"
+            : "",
         )}
         {...handlers}
       >
         <DocumentRender documentId={id} mimeType={mimeType} />
       </div>
+      {isMobile ? (
+        <AddToCollectionModal
+          documentId={id}
+          isOpen={bookmarksOpen}
+          onClose={() => setBookmarksOpen(false)}
+        />
+      ) : (
+        <div
+          className={twMerge(
+            "h-full top-0 right-0 w-1/4 absolute flex flex-col items-start gap-2 z-20 bg-surface-1 p-2 border-b-2 border-border duration-200",
+            bookmarksOpen ? "bottom-0 right-0" : "-bottom-1/2 -right-1/4",
+          )}
+        >
+          <AddDocumentToCollection documentId={id} />
+        </div>
+      )}
     </div>
   );
 };

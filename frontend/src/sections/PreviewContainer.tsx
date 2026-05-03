@@ -8,7 +8,6 @@ import { useDocumentUrl } from "../hooks/useDocumentUrl";
 import { twMerge } from "tailwind-merge";
 import { DocumentDiashow } from "../components/DocumentDiashow";
 import { preventInputHandling } from "../util/preventInputHandling";
-import { AddToCollectionModal } from "./AddToCollectionModal";
 
 type Props = {
   previewImageId: string;
@@ -47,6 +46,7 @@ export const PreviewContainer = ({
   const [wasFullscreen, setWasFullscreen] = useState<boolean>(false);
   const [addToCollectionModalOpen, setAddToCollectionModalOpen] =
     useState(false);
+  const [tagListOpen, setTagListOpen] = useState(false);
 
   useEffect(() => {
     const keyDownHandler = (event: KeyboardEvent) => {
@@ -62,6 +62,8 @@ export const PreviewContainer = ({
         onClose?.();
       } else if (event.key === "p") {
         setDiashowMode((mode) => !mode);
+      } else if (event.key === "c") {
+        setAddToCollectionModalOpen((open) => !open);
       }
     };
 
@@ -84,11 +86,6 @@ export const PreviewContainer = ({
 
   const documentDownloadUrl = useDocumentUrl(previewImageId);
   const mimeType = data?.items.find((d) => d.id === previewImageId)?.mime;
-
-  // Todo: Show "AddToCollectionModal" here
-  const onBookmark = () => {
-    setAddToCollectionModalOpen(true);
-  };
 
   const onCloseImpl = useCallback(() => {
     if (diashowMode) {
@@ -121,7 +118,10 @@ export const PreviewContainer = ({
               }}
               toggleDiashow={() => setDiashowMode(!diashowMode)}
               onClose={onCloseImpl}
-              onBookmark={onBookmark}
+              bookmarksOpen={addToCollectionModalOpen}
+              setBookmarksOpen={setAddToCollectionModalOpen}
+              tagListOpen={tagListOpen}
+              setTagListOpen={setTagListOpen}
             />
           </div>
           <div className="flex flex-1 w-full">
@@ -139,6 +139,10 @@ export const PreviewContainer = ({
                 mimeType={mimeType}
                 nextPreviewImage={nextPreviewImage}
                 previousPreviewImage={previousPreviewImage}
+                tagListOpen={tagListOpen}
+                setTagListOpen={setTagListOpen}
+                bookmarksOpen={addToCollectionModalOpen}
+                setBookmarksOpen={setAddToCollectionModalOpen}
               />
             )}
           </div>
@@ -156,11 +160,6 @@ export const PreviewContainer = ({
           size="small"
         />
       </div>
-      <AddToCollectionModal
-        documentId={previewImageId}
-        isOpen={addToCollectionModalOpen}
-        onClose={() => setAddToCollectionModalOpen(false)}
-      />
     </>
   );
 };
