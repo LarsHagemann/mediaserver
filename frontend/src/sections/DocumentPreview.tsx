@@ -18,7 +18,12 @@ type Props = {
   previousPreviewImage: () => void;
 };
 
-export const DocumentPreview = ({ id, mimeType, nextPreviewImage, previousPreviewImage }: Props) => {
+export const DocumentPreview = ({
+  id,
+  mimeType,
+  nextPreviewImage,
+  previousPreviewImage,
+}: Props) => {
   const [tagInput, setTagInput] = useState("");
 
   const { t } = useTranslation();
@@ -63,7 +68,10 @@ export const DocumentPreview = ({ id, mimeType, nextPreviewImage, previousPrevie
     [removeTag, id],
   );
 
-  const tags = useMemo(() => data?.tags.filter(tag => tag.key !== "collection") || [], [data]);
+  const tags = useMemo(
+    () => data?.tags.filter((tag) => tag.key !== "collection") || [],
+    [data],
+  );
 
   const handlers = useSwipeable({
     onSwipedLeft: () => nextPreviewImage(),
@@ -115,9 +123,7 @@ export const DocumentPreview = ({ id, mimeType, nextPreviewImage, previousPrevie
       >
         <div
           className={
-            tagListOpen
-              ? "duration-200 rotate-180"
-              : "duration-200 rotate-0"
+            tagListOpen ? "duration-200 rotate-180" : "duration-200 rotate-0"
           }
         >
           &gt;

@@ -28,9 +28,7 @@ export const DocumentPreviewControls: React.FC<Props> = ({
   const smallControlSize = isMobile ? "1rem" : "1.5rem";
 
   return (
-    <div
-      className="flex flex-row justify-between px-2 items-center w-full h-full"
-    >
+    <div className="flex flex-row justify-between px-2 items-center w-full h-full">
       <div />
       <div className="flex flex-row justify-center items-center gap-4">
         <div
@@ -79,5 +77,5 @@ export const DocumentPreviewControls: React.FC<Props> = ({
         onClick={onClose}
       />
     </div>
-  )
+  );
 };

@@ -59,7 +59,7 @@ export const GalleryPage = () => {
         const containerWidth = containerEntry.contentBoxSize[0].inlineSize;
         const thumbnailsPerRow = Math.floor(
           (containerWidth - thumbnailMargin - containerPadding) /
-          (120 + thumbnailMargin * 2),
+            (120 + thumbnailMargin * 2),
         );
         setDocumentsPerRow(thumbnailsPerRow);
 
@@ -72,8 +72,8 @@ export const GalleryPage = () => {
 
         setThumbnailContainerWidth(
           thumbnailsPerRow * (120 + thumbnailMargin * 2) +
-          thumbnailMargin +
-          containerPadding,
+            thumbnailMargin +
+            containerPadding,
         );
       }
     });
@@ -98,7 +98,12 @@ export const GalleryPage = () => {
     if (!previewDocumentSearchParam) {
       setLimit(documentsPerRow * documentsPerColumn - 1);
     }
-  }, [documentsPerRow, setLimit, documentsPerColumn, previewDocumentSearchParam]);
+  }, [
+    documentsPerRow,
+    setLimit,
+    documentsPerColumn,
+    previewDocumentSearchParam,
+  ]);
 
   const [tagInput, setTagInput] = useState("");
 
@@ -156,7 +161,11 @@ export const GalleryPage = () => {
     if (previewDocument?.nextId) {
       const nextId = previewDocument.nextId;
       const indexOnPage = previewDocument.queryIndex % limit;
-      console.log({ indexOnPage, queryIndex: previewDocument.queryIndex, limit });
+      console.log({
+        indexOnPage,
+        queryIndex: previewDocument.queryIndex,
+        limit,
+      });
       if (indexOnPage === limit - 1) {
         const newPage = page + 1;
         setSearchParams((prev) => {
@@ -199,7 +208,15 @@ export const GalleryPage = () => {
       query,
       data,
     });
-  }, [previewDocument, previewDocumentSearchParam, idToDocument, limit, offset, query, data]);
+  }, [
+    previewDocument,
+    previewDocumentSearchParam,
+    idToDocument,
+    limit,
+    offset,
+    query,
+    data,
+  ]);
 
   const onInputSubmit = useCallback(
     (value: string) => {
@@ -217,7 +234,7 @@ export const GalleryPage = () => {
       <TagInput
         value={tagInput}
         onChange={setTagInput}
-        onValidChange={() => { }}
+        onValidChange={() => {}}
         onSubmit={onInputSubmit}
         className="flex flex-row mb-2 p-2 w-full"
         placeholder={t("pages.gallery.tagInputPlaceholder")}
@@ -318,8 +335,15 @@ export const GalleryPage = () => {
           }}
           nextPreviewImage={nextPreviewImage}
           previousPreviewImage={prevPreviewImage}
-          previewImageIndex={previewDocument?.queryIndex ?? lastKnownPreviewIndexRef.current}
-          queryParams={{ limit, offset, query, seed: hasRandomSort ? seed : undefined }}
+          previewImageIndex={
+            previewDocument?.queryIndex ?? lastKnownPreviewIndexRef.current
+          }
+          queryParams={{
+            limit,
+            offset,
+            query,
+            seed: hasRandomSort ? seed : undefined,
+          }}
           onClose={() => setPreviewDocument(undefined)}
         />
       )}

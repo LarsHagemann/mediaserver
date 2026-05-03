@@ -43,7 +43,10 @@ export const DocumentDiashow = ({
   }
 
   return (
-    <div className="fixed z-10 bg-surface-1 w-screen h-screen left-0 top-0" {...handlers}>
+    <div
+      className="fixed z-10 bg-surface-1 w-screen h-screen left-0 top-0"
+      {...handlers}
+    >
       <plugin.Diashow
         objectUrl={objectUrl}
         defaultTimeout={defaultTimeout}

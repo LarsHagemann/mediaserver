@@ -117,7 +117,10 @@ export const FileUploadView: React.FC<Props> = ({
       {
         tabId: "Uploading",
         node: (
-          <WithNumberIndicator count={toBeProcessed.size} color="bg-accent-hover">
+          <WithNumberIndicator
+            count={toBeProcessed.size}
+            color="bg-accent-hover"
+          >
             <Icon
               Icon={AiOutlineUpload}
               size="xlarge"
@@ -130,7 +133,10 @@ export const FileUploadView: React.FC<Props> = ({
       {
         tabId: "Success",
         node: (
-          <WithNumberIndicator count={processedFiles.size} color="bg-success-strong">
+          <WithNumberIndicator
+            count={processedFiles.size}
+            color="bg-success-strong"
+          >
             <Icon
               Icon={MdDoneAll}
               size="xlarge"
@@ -143,7 +149,10 @@ export const FileUploadView: React.FC<Props> = ({
       {
         tabId: "Failed",
         node: (
-          <WithNumberIndicator count={failedFiles.size} color="bg-danger-strong">
+          <WithNumberIndicator
+            count={failedFiles.size}
+            color="bg-danger-strong"
+          >
             <Icon
               Icon={BiErrorAlt}
               size="xlarge"

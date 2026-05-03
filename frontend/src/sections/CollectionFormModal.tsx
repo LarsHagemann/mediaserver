@@ -56,15 +56,12 @@ export const CollectionFormModal = ({
     { limit: 1, offset: 0, query: filterExpression },
     {
       skip:
-        effectiveType === "static" ||
-        !isFilterValid ||
-        filterExpression === "",
+        effectiveType === "static" || !isFilterValid || filterExpression === "",
     },
   );
 
   const isValid =
-    name.trim().length > 0 &&
-    (effectiveType === "static" || isFilterValid);
+    name.trim().length > 0 && (effectiveType === "static" || isFilterValid);
 
   const handleSave = () => {
     if (!isValid) return;
@@ -92,20 +89,22 @@ export const CollectionFormModal = ({
             <div className="flex rounded overflow-hidden border border-border-subtle">
               <button
                 type="button"
-                className={`flex-1 py-2 text-sm transition-colors ${type === "dynamic"
+                className={`flex-1 py-2 text-sm transition-colors ${
+                  type === "dynamic"
                     ? "bg-accent text-text-primary"
                     : "bg-surface-2 text-text-secondary hover:bg-surface-3"
-                  }`}
+                }`}
                 onClick={() => setType("dynamic")}
               >
                 {t("collections.form.typeDynamic")}
               </button>
               <button
                 type="button"
-                className={`flex-1 py-2 text-sm transition-colors ${type === "static"
+                className={`flex-1 py-2 text-sm transition-colors ${
+                  type === "static"
                     ? "bg-accent text-text-primary"
                     : "bg-surface-2 text-text-secondary hover:bg-surface-3"
-                  }`}
+                }`}
                 onClick={() => setType("static")}
               >
                 {t("collections.form.typeStatic")}
@@ -152,7 +151,7 @@ export const CollectionFormModal = ({
             <TagInput
               value={filterExpression}
               onChange={setFilterExpression}
-              onSubmit={() => { }}
+              onSubmit={() => {}}
               onValidChange={setIsFilterValid}
               placeholder={t("collections.form.filterPlaceholder")}
             />

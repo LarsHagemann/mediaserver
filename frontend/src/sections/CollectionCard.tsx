@@ -14,7 +14,7 @@ type Props = {
   onEdit?: (collection: Collection) => void;
   onDelete?: (collection: Collection) => void;
   onToggleFavorite?: (collection: Collection) => void;
-  onClick?: ((collection: Collection) => void) | 'navigate';
+  onClick?: ((collection: Collection) => void) | "navigate";
   isLoading?: boolean;
   isSelected?: boolean;
 };
@@ -24,7 +24,7 @@ export const CollectionCard = ({
   onEdit,
   onDelete,
   onToggleFavorite,
-  onClick = 'navigate',
+  onClick = "navigate",
   isLoading,
   isSelected,
 }: Props) => {
@@ -46,7 +46,7 @@ export const CollectionCard = ({
         collection.isFavorite && "border-yellow-500/50 hover:border-yellow-500",
       )}
       onClick={() => {
-        if (onClick === 'navigate') {
+        if (onClick === "navigate") {
           navigate(
             `/gallery?q=${encodeURIComponent(collection.filterExpression)}`,
           );
@@ -75,15 +75,16 @@ export const CollectionCard = ({
             )}
           </span>
         </div>
-        {onToggleFavorite && (<IconButton
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleFavorite(collection);
-          }}
-          className="text-warning hover:text-warning flex-shrink-0"
-        >
-          {collection.isFavorite ? <FaStar /> : <FaRegStar />}
-        </IconButton>
+        {onToggleFavorite && (
+          <IconButton
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleFavorite(collection);
+            }}
+            className="text-warning hover:text-warning flex-shrink-0"
+          >
+            {collection.isFavorite ? <FaStar /> : <FaRegStar />}
+          </IconButton>
         )}
         {isLoading && <BiLoader className="animate-spin w-6 h-6" />}
         {!isLoading && onClick && isSelected !== undefined && (
@@ -93,7 +94,11 @@ export const CollectionCard = ({
               isSelected && "text-green-500 hover:text-green-600",
             )}
           >
-            {isSelected ? <FaRegCheckCircle className="w-6 h-6" /> : <FaRegCircle className="w-6 h-6" />}
+            {isSelected ? (
+              <FaRegCheckCircle className="w-6 h-6" />
+            ) : (
+              <FaRegCircle className="w-6 h-6" />
+            )}
           </IconButton>
         )}
       </div>

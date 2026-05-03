@@ -8,28 +8,41 @@ type Props = {
   documentId: string;
   isOpen: boolean;
   onClose: () => void;
-}
+};
 
-export const AddToCollectionModal = ({ documentId, isOpen, onClose }: Props) => {
+export const AddToCollectionModal = ({
+  documentId,
+  isOpen,
+  onClose,
+}: Props) => {
   const { t } = useTranslation();
 
-  const { data: collectionsData } = enhancedApi.useListCollectionsQuery({ limit: 100, offset: 0, type: 'static' });
-  const { data: documentData } = enhancedApi.useGetDocumentTagsQuery(documentId);
+  const { data: collectionsData } = enhancedApi.useListCollectionsQuery({
+    limit: 100,
+    offset: 0,
+    type: "static",
+  });
+  const { data: documentData } =
+    enhancedApi.useGetDocumentTagsQuery(documentId);
 
-  const [loadingCollection, setLoadingCollection] = useState<string | null>(null);
+  const [loadingCollection, setLoadingCollection] = useState<string | null>(
+    null,
+  );
 
   const [addCollectionMember] = enhancedApi.useAddCollectionMemberMutation();
-  const [removeCollectionMember] = enhancedApi.useRemoveCollectionMemberMutation();
+  const [removeCollectionMember] =
+    enhancedApi.useRemoveCollectionMemberMutation();
 
   const tags = useMemo(() => documentData?.tags || [], [documentData]);
-  const collections = useMemo(() => collectionsData?.items || [], [collectionsData]);
+  const collections = useMemo(
+    () => collectionsData?.items || [],
+    [collectionsData],
+  );
 
   const documentCollectionIds = useMemo(
     () =>
       new Set(
-        tags
-          .filter((tag) => tag.key === "collection")
-          .map((tag) => tag.value),
+        tags.filter((tag) => tag.key === "collection").map((tag) => tag.value),
       ),
     [tags],
   );
@@ -47,7 +60,12 @@ export const AddToCollectionModal = ({ documentId, isOpen, onClose }: Props) => 
         });
       }
     },
-    [addCollectionMember, removeCollectionMember, documentCollectionIds, documentId],
+    [
+      addCollectionMember,
+      removeCollectionMember,
+      documentCollectionIds,
+      documentId,
+    ],
   );
 
   return (

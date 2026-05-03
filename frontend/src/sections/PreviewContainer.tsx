@@ -45,7 +45,8 @@ export const PreviewContainer = ({
 
   const [diashowMode, setDiashowMode] = useState<boolean>(false);
   const [wasFullscreen, setWasFullscreen] = useState<boolean>(false);
-  const [addToCollectionModalOpen, setAddToCollectionModalOpen] = useState(false);
+  const [addToCollectionModalOpen, setAddToCollectionModalOpen] =
+    useState(false);
 
   useEffect(() => {
     const keyDownHandler = (event: KeyboardEvent) => {
@@ -92,8 +93,9 @@ export const PreviewContainer = ({
   const onCloseImpl = useCallback(() => {
     if (diashowMode) {
       setDiashowMode(false);
+    } else {
+      onClose?.();
     }
-    else { onClose?.(); }
   }, [onClose, diashowMode]);
 
   return (
@@ -124,7 +126,12 @@ export const PreviewContainer = ({
           </div>
           <div className="flex flex-1 w-full">
             {diashowMode && (
-              <DocumentDiashow documentId={previewImageId} nextDocument={nextPreviewImage} previousDocument={previousPreviewImage} mimeType={mimeType} />
+              <DocumentDiashow
+                documentId={previewImageId}
+                nextDocument={nextPreviewImage}
+                previousDocument={previousPreviewImage}
+                mimeType={mimeType}
+              />
             )}
             {!diashowMode && (
               <DocumentPreview
