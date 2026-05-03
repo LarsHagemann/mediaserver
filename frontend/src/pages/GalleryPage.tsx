@@ -131,6 +131,11 @@ export const GalleryPage = () => {
     [idToDocument, previewDocumentSearchParam],
   );
 
+  const lastKnownPreviewIndexRef = useRef<number>(0);
+  if (previewDocument) {
+    lastKnownPreviewIndexRef.current = previewDocument.queryIndex;
+  }
+
   const setPreviewDocument = useCallback(
     (previewDocumentId: string | undefined) => {
       if (previewDocumentId) {
@@ -292,16 +297,16 @@ export const GalleryPage = () => {
         }}
         initialFilterExpression={query}
       />
-      {previewDocument && (
+      {previewDocumentSearchParam && (
         <PreviewContainer
           totalDocuments={total}
-          previewImageId={previewDocument.id}
+          previewImageId={previewDocumentSearchParam}
           onThumbnailClicked={(id) => {
             setPreviewDocument(id);
           }}
           nextPreviewImage={nextPreviewImage}
           previousPreviewImage={prevPreviewImage}
-          previewImageIndex={previewDocument.queryIndex}
+          previewImageIndex={previewDocument?.queryIndex ?? lastKnownPreviewIndexRef.current}
           queryParams={{ limit, offset, query }}
           onClose={() => setPreviewDocument(undefined)}
         />
