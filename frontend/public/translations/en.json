@@ -17,7 +17,21 @@
     },
     "gallery": {
       "tagInputPlaceholder": "Search by tag...",
-      "reseed": "Shuffle order"
+      "reseed": "Shuffle order",
+      "bulkEdit": "Edit",
+      "editMode": "Edit Mode — select documents to manage tags and collections",
+      "cancelEdit": "Cancel",
+      "selected": "selected",
+      "editDescription": "Click documents to select",
+      "selectPage": "Select page",
+      "deselectPage": "Deselect page",
+      "selectAll": "Select {{total}}",
+      "clearSelection": "Clear",
+      "bulkEditDocuments": "Bulk Edit {{count}} Documents",
+      "editTags": "Edit Tags",
+      "editCollections": "Edit Collections",
+      "bulkEditConfirm": "Apply changes to {{count}} documents",
+      "searchTag": "Search tag"
     }
   },
   "pagination": {

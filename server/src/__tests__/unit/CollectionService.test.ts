@@ -208,6 +208,7 @@ describe("CollectionService", () => {
       expect(tagService.addTagToDocument).toHaveBeenCalledWith(
         "doc-1",
         "collection:col-1",
+        "collection",
       );
     });
 

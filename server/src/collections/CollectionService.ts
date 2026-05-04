@@ -119,6 +119,7 @@ export class CollectionService {
     await this.tagService.addTagToDocument(
       documentId,
       `collection:${collectionId}`,
+      "collection",
     );
   }
 

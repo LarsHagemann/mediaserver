@@ -24,9 +24,11 @@ type Props = {
   direction?: keyof typeof directions;
   wrap?: keyof typeof flexWrap;
   layout?: React.ComponentProps<typeof Thumbnail>["layout"];
-  selected?: string;
+  highlighted?: Set<string>;
+  selectedDocuments?: Set<string>;
   className?: string;
   size?: "normal" | "small";
+  onSelect?: (id: string, selected: boolean) => void;
 };
 
 export const ThumbnailContainer = ({
@@ -37,13 +39,15 @@ export const ThumbnailContainer = ({
   wrap = "wrap",
   layout = "grid",
   size = "normal",
-  selected,
+  highlighted,
+  selectedDocuments,
   className,
+  onSelect,
 }: Props) => {
   return (
     <div
       className={twMerge(
-        `flex ${directions[direction]} ${flexWrap[wrap]} ${alignments[alignment]}`,
+        `flex ${directions[direction]} ${flexWrap[wrap]} ${alignments[alignment]} gap-4`,
         className,
       )}
     >
@@ -52,9 +56,15 @@ export const ThumbnailContainer = ({
           key={idx}
           document={thumbnail}
           onClick={() => onClick?.(thumbnail.id)}
-          selected={selected === thumbnail.id}
+          highlighted={highlighted?.has(thumbnail.id)}
+          selected={selectedDocuments?.has(thumbnail.id)}
           layout={layout}
           size={size}
+          onSelect={
+            onSelect
+              ? (selected) => onSelect(thumbnail.id, selected)
+              : undefined
+          }
         />
       ))}
     </div>

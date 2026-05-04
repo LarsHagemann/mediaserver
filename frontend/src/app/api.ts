@@ -16,6 +16,10 @@ export type Document = {
   queryIndex: number;
 };
 
+export type DocumentWithTags = Document & {
+  tags: ApiTag[];
+};
+
 interface StoreState {
   free: number;
   total: number;
@@ -61,6 +65,12 @@ type ApiTagWithCount = ApiTag & {
   usageCount: number;
 };
 
+type BulkEditDocumentsRequest = {
+  documentIds: string[];
+  tagsToAdd: ApiTag[];
+  tagsToRemove: ApiTag[];
+};
+
 export const api = baseApi.injectEndpoints({
   endpoints: (build) => ({
     health: build.query<{ status: string }, void>({
@@ -103,6 +113,29 @@ export const api = baseApi.injectEndpoints({
           (doc) => ({ type: "document", id: doc.id }) as const,
         ) || []),
       ],
+    }),
+
+    listDocumentsByIds: build.query<DocumentWithTags[], string[]>({
+      query: (ids) => ({
+        url: `/documents/by-ids?${ids.map((id) => `id=${encodeURIComponent(id)}`).join("&")}`,
+        method: "GET",
+      }),
+      providesTags: (response) => [
+        "document",
+        "tag",
+        ...(response?.map(
+          (doc) => ({ type: "document", id: doc.id }) as const,
+        ) || []),
+      ],
+    }),
+
+    bulkEditDocuments: build.mutation<void, BulkEditDocumentsRequest>({
+      query: (body) => ({
+        url: `/documents/bulk-edit`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["document", "tag"],
     }),
 
     getDocumentTags: build.query<{ tags: ApiTag[] }, string>({

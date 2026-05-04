@@ -62,9 +62,6 @@ async function runMigrations(dbService: DbService): Promise<void> {
 
   for (const file of allFiles) {
     const sql = await readFile(path.join(migrationsDir, file), "utf-8");
-    // Run each statement separately
-    for (const stmt of sql.split(";").map((s) => s.trim()).filter(Boolean)) {
-      await dbService.none(stmt);
-    }
+    await dbService.none(sql);
   }
 }

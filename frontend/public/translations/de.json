@@ -17,7 +17,21 @@
     },
     "gallery": {
       "tagInputPlaceholder": "Nach Tag suchen...",
-      "reseed": "Reihenfolge neu mischen"
+      "reseed": "Reihenfolge neu mischen",
+      "bulkEdit": "Bearbeiten",
+      "editMode": "Bearbeitungsmodus — Wählen Sie Dokumente aus, um Tags und Sammlungen zu verwalten",
+      "cancelEdit": "Abbrechen",
+      "selected": "ausgewählt",
+      "editDescription": "Klicken Sie auf Dokumente, um sie auszuwählen",
+      "selectPage": "Seite auswählen",
+      "deselectPage": "Seite abwählen",
+      "selectAll": "Alle {{total}} auswählen",
+      "clearSelection": "Auswahl löschen",
+      "bulkEditDocuments": "Massenbearbeitung von {{count}} Dokumenten",
+      "editTags": "Tags bearbeiten",
+      "editCollections": "Sammlungen bearbeiten",
+      "bulkEditConfirm": "Änderungen auf {{count}} Dokumente anwenden",
+      "searchTag": "Tag suchen"
     }
   },
   "pagination": {

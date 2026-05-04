@@ -5,7 +5,10 @@ import type {
   TagRepository,
 } from "./TagRepository.js";
 import type { PaginatedResponse } from "../util/PaginatedResponse.js";
-import type { Document } from "../documents/DocumentRepository.js";
+import type {
+  Document,
+  DocumentWithTags,
+} from "../documents/DocumentRepository.js";
 import type { TagCache } from "./TagCache.js";
 
 export type ListTagsRequest = {
@@ -46,6 +49,10 @@ export class TagService {
     return this.tagRepository.listDocuments(request);
   }
 
+  public async listDocumentsByIds(ids: string[]): Promise<DocumentWithTags[]> {
+    return this.tagRepository.listDocumentsByIds(ids);
+  }
+
   public async getTagsForDocument(documentId: string): Promise<ApiTag[]> {
     return await this.tagRepository.getTagsForDocument(documentId);
   }
@@ -78,6 +85,18 @@ export class TagService {
           `${tag.key}${tag.value ? `:${tag.value}` : ""}`,
         ),
       })),
+    );
+  }
+
+  public async bulkEditDocuments(
+    documentIds: string[],
+    tagsToAdd: ApiTag[],
+    tagsToRemove: ApiTag[],
+  ): Promise<void> {
+    await this.tagRepository.bulkEditDocuments(
+      documentIds,
+      tagsToAdd,
+      tagsToRemove,
     );
   }
 }

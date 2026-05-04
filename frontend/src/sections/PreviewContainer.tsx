@@ -156,7 +156,7 @@ export const PreviewContainer = ({
             onThumbnailClicked(id);
           }}
           wrap="nowrap"
-          selected={previewImageId}
+          highlighted={new Set([previewImageId])}
           size="small"
         />
       </div>

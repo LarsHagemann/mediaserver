@@ -1,5 +1,6 @@
 import z from "zod";
 import type { DbService } from "../sql/DbService.js";
+import type { ApiTag } from "../tags/TagRepository.js";
 
 export type CreateDocumentRequest = {
   id: string;
@@ -14,6 +15,10 @@ export type Document = {
   previousId: string | undefined;
   nextId: string | undefined;
   queryIndex: number;
+};
+
+export type DocumentWithTags = Document & {
+  tags: ApiTag[];
 };
 
 export type DocumentWithPathInfo = Document & {
