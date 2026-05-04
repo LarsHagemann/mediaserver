@@ -2,6 +2,7 @@ import ReactPaginate from "react-paginate";
 import style from "./Pagination.module.scss";
 import { twMerge } from "tailwind-merge";
 import { useTranslation } from "react-i18next";
+import { useIsMobileScreen } from "../hooks/useIsMobileScreen";
 
 type Props = {
   total: number;
@@ -19,6 +20,7 @@ export const Pagination = ({
   className,
 }: Props) => {
   const { t } = useTranslation();
+  const isMobile = useIsMobileScreen();
 
   if (total < limit) return null;
 
@@ -43,7 +45,8 @@ export const Pagination = ({
         </>
       }
       forcePage={currentPage}
-      pageRangeDisplayed={1}
+      pageRangeDisplayed={isMobile ? 2 : 5}
+      marginPagesDisplayed={isMobile ? 0 : 2}
     />
   );
 };
