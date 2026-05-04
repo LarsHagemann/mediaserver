@@ -84,7 +84,8 @@
     "addForm": {
       "add": "Zur Sammlung hinzufügen",
       "remove": "Aus der Sammlung entfernen",
-      "cancel": "Abbrechen"
+      "cancel": "Abbrechen",
+      "filterPlaceholder": "Sammlungen filtern..."
     }
   },
   "document": {

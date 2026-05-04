@@ -71,6 +71,10 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Scrollbar styles */
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
 }
 
 a {

@@ -1,12 +1,14 @@
 import { useCallback, useMemo, useState } from "react";
 import { CollectionCard } from "./CollectionCard";
 import { enhancedApi } from "../app/enhancedApi";
+import { useTranslation } from "react-i18next";
 
 type Props = {
   documentId: string;
 };
 
 export const AddDocumentToCollection: React.FC<Props> = ({ documentId }) => {
+  const { t } = useTranslation();
   const { data: collectionsData } = enhancedApi.useListCollectionsQuery({
     limit: 100,
     offset: 0,
@@ -18,6 +20,8 @@ export const AddDocumentToCollection: React.FC<Props> = ({ documentId }) => {
   const [loadingCollection, setLoadingCollection] = useState<string | null>(
     null,
   );
+
+  const [filter, setFilter] = useState("");
 
   const [addCollectionMember] = enhancedApi.useAddCollectionMemberMutation();
   const [removeCollectionMember] =
@@ -58,9 +62,23 @@ export const AddDocumentToCollection: React.FC<Props> = ({ documentId }) => {
     ],
   );
 
+  const filteredCollections = useMemo(() => {
+    const lowerFilter = filter.toLowerCase();
+    return collections.filter((collection) =>
+      collection.name.toLowerCase().includes(lowerFilter),
+    );
+  }, [collections, filter]);
+
   return (
     <div className="flex flex-col gap-2 w-full overflow-y-auto">
-      {collections.map((collection) => (
+      <input
+        type="text"
+        placeholder={t("collections.addForm.filterPlaceholder")}
+        value={filter}
+        onChange={(e) => setFilter(e.target.value)}
+        className="px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300 w-full"
+      />
+      {filteredCollections.map((collection) => (
         <div className="flex flex-row items-center gap-2" key={collection.id}>
           <CollectionCard
             collection={collection}
