@@ -5,15 +5,25 @@ import { services } from "../DefaultDiContainer.js";
 import type { EmptyObject } from "../common/EmptyObject.js";
 import type { DocumentService } from "../documents/DocumentService.js";
 import type { PaginatedResponse } from "../util/PaginatedResponse.js";
-import type { Document } from "../documents/DocumentRepository.js";
+import type {
+  Document,
+  DocumentWithTags,
+} from "../documents/DocumentRepository.js";
 import type { TagService } from "../tags/TagService.js";
 import z from "zod";
 import type { UploadService } from "../files/UploadService.js";
+import type { ApiTag } from "../tags/TagRepository.js";
 
 export const documentRouter = Router();
 
 type DocumentUpload = {
   tags: string;
+};
+
+type BulkEditDocumentsRequest = {
+  documentIds: string[];
+  tagsToAdd: ApiTag[];
+  tagsToRemove: ApiTag[];
 };
 
 documentRouter.post(
@@ -94,6 +104,39 @@ documentRouter.get(
       return {
         status: 200,
         body: response,
+      };
+    },
+  ),
+);
+
+documentRouter.get(
+  "/by-ids",
+  apiHandler<DocumentWithTags[], { id: string | string[] }>(
+    async ({ diContainer, query: { id } }) => {
+      const ids = Array.isArray(id) ? id : [id];
+      const tagService = diContainer.get<TagService>(services.tag);
+      const response = await tagService.listDocumentsByIds(ids);
+      return {
+        status: 200,
+        body: response,
+      };
+    },
+  ),
+);
+
+documentRouter.post(
+  "/bulk-edit",
+  apiHandler<EmptyObject, EmptyObject, BulkEditDocumentsRequest>(
+    async ({ diContainer, body }) => {
+      const tagService = diContainer.get<TagService>(services.tag);
+      await tagService.bulkEditDocuments(
+        body.documentIds,
+        body.tagsToAdd,
+        body.tagsToRemove,
+      );
+      return {
+        status: 204,
+        body: {},
       };
     },
   ),

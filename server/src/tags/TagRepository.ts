@@ -13,7 +13,10 @@ import {
   TagSqlBuilder,
 } from "./TagSqlBuilder.js";
 import z from "zod";
-import type { Document } from "../documents/DocumentRepository.js";
+import type {
+  Document,
+  DocumentWithTags,
+} from "../documents/DocumentRepository.js";
 import type { TagCache } from "./TagCache.js";
 
 export interface ListTagsRequest {
@@ -109,6 +112,50 @@ export class TagRepository {
     }
   }
 
+  public async listDocumentsByIds(ids: string[]): Promise<DocumentWithTags[]> {
+    const items = await this.dbService.any(
+      documentRowSchema.and(tagRowSchema.omit({ id: true }).nullable()),
+      `SELECT 
+        documents.id, 
+        mime, 
+        NULL as previous_id, 
+        NULL as next_id, 
+        0 as query_index, 
+        tags.key, 
+        tags.value, 
+        tags.type
+      FROM documents 
+      LEFT JOIN userdata_tags ON documents.id = userdata_tags.userdata_id
+      LEFT JOIN tags ON userdata_tags.tag_id = tags.id
+      WHERE documents.id = ANY($ids)`,
+      { ids },
+    );
+
+    const documentsMap: Record<string, DocumentWithTags> = {};
+
+    for (const item of items) {
+      if (!documentsMap[item.id]) {
+        documentsMap[item.id] = {
+          id: item.id,
+          mime: item.mime,
+          previousId: undefined,
+          nextId: undefined,
+          queryIndex: 0,
+          tags: [],
+        };
+      }
+      if (item.key) {
+        documentsMap[item.id]!.tags.push({
+          key: item.key,
+          value: item.value ?? undefined,
+          type: item.type,
+        });
+      }
+    }
+
+    return Object.values(documentsMap);
+  }
+
   public async listTags(
     request: ListTagsRequest,
   ): Promise<PaginatedResponse<ApiTagWithCount>> {
@@ -147,11 +194,13 @@ export class TagRepository {
       })
       .join(", ");
 
-    console.log(tags);
-
     const result = await this.dbService.any(
-      z.object({ id: z.number() }),
-      `INSERT INTO tags (key, value, type) VALUES ${valuesStmt} ON CONFLICT DO NOTHING RETURNING id`,
+      z.object({
+        id: z.number(),
+        key: z.string(),
+        value: z.string().nullable(),
+      }),
+      `INSERT INTO tags (key, value, type) VALUES ${valuesStmt} ON CONFLICT DO NOTHING RETURNING id, key, value`,
       tags
         .map((tag) =>
           tag.value
@@ -161,9 +210,11 @@ export class TagRepository {
         .flat(1),
     );
 
-    let j = 0;
     for (const row of result) {
-      this.tagCache.onTagAdded(tags[j++]!, row.id.toString());
+      this.tagCache.onTagAdded(
+        row.value ? new MetaTag(row.key, row.value) : new Tag(row.key),
+        row.id.toString(),
+      );
     }
   }
 
@@ -228,5 +279,17 @@ export class TagRepository {
   public async enumerateTags() {
     const rows = await this.dbService.any(tagRowSchema, `SELECT * FROM tags`);
     return rows;
+  }
+
+  public async bulkEditDocuments(
+    documentIds: string[],
+    tagsToAdd: ApiTag[],
+    tagsToRemove: ApiTag[],
+  ): Promise<void> {
+    console.log({ documentIds, tagsToAdd, tagsToRemove });
+    await this.dbService.none(
+      `CALL bulk_edit_documents($1::uuid[], $2::jsonb, $3::jsonb)`,
+      [documentIds, JSON.stringify(tagsToAdd), JSON.stringify(tagsToRemove)],
+    );
   }
 }

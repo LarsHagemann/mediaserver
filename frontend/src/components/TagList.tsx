@@ -45,7 +45,7 @@ export const TagList = ({
                 key={`${tag.key}:${tag.value}`}
                 onClick={() => onClick?.(tag)}
                 className={twMerge(
-                  "px-2 py-1 bg-chip-bg rounded-full text-sm duration-200 h-8 basis-8 flex items-center z-100",
+                  "px-2 py-1 bg-chip-bg rounded-full text-sm duration-200 h-8 basis-8 flex items-center z-90",
                   onClick
                     ? "cursor-pointer hover:bg-chip-hover"
                     : "cursor-default",

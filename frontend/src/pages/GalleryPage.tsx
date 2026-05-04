@@ -8,11 +8,13 @@ import { useEasySearchParams } from "../hooks/useEasySearchParams";
 import { usePageOffsetAndLimitParams } from "../hooks/usePageOffsetAndLimitParams";
 import { TagInput } from "../sections/TagInput";
 import { FiGrid, FiList, FiShuffle } from "react-icons/fi";
-import { MdBookmarkAdd } from "react-icons/md";
+import { MdBookmarkAdd, MdEdit } from "react-icons/md";
 import { twMerge } from "tailwind-merge";
 import { useIsMobileScreen } from "../hooks/useIsMobileScreen";
 import { CollectionFormModal } from "../sections/CollectionFormModal";
 import { useGallerySeed } from "../hooks/useGallerySeed";
+import { Button } from "../components/Button";
+import { BulkEditDocumentsModal } from "../sections/BulkEditDocumentsModal";
 
 const remToPixel = (rem: number) => {
   return rem * parseFloat(getComputedStyle(document.documentElement).fontSize);
@@ -38,6 +40,9 @@ export const GalleryPage = () => {
   const [layoutType, setLayoutType] = useState<"grid" | "list">("grid");
   const [collectionModalOpen, setCollectionModalOpen] = useState(false);
   const [createCollection] = enhancedApi.useCreateCollectionMutation();
+  const [editMode, setEditMode] = useState(false);
+  const [editDocuments, setEditDocuments] = useState<Set<string>>(new Set());
+  const [editDocumentsModalOpen, setEditDocumentsModalOpen] = useState(false);
 
   const { limit, offset, page, setPage, setLimit } =
     usePageOffsetAndLimitParams();
@@ -49,6 +54,10 @@ export const GalleryPage = () => {
     useState<number>(0);
 
   const isMobile = useIsMobileScreen();
+
+  useEffect(() => {
+    setEditDocuments(new Set());
+  }, [editMode]);
 
   useEffect(() => {
     const observer = new ResizeObserver((entries) => {
@@ -161,11 +170,6 @@ export const GalleryPage = () => {
     if (previewDocument?.nextId) {
       const nextId = previewDocument.nextId;
       const indexOnPage = previewDocument.queryIndex % limit;
-      console.log({
-        indexOnPage,
-        queryIndex: previewDocument.queryIndex,
-        limit,
-      });
       if (indexOnPage === limit - 1) {
         const newPage = page + 1;
         setSearchParams((prev) => {
@@ -198,26 +202,6 @@ export const GalleryPage = () => {
     }
   }, [setPreviewDocument, previewDocument, setSearchParams, page, limit]);
 
-  useEffect(() => {
-    console.log({
-      previewDocument,
-      previewDocumentSearchParam,
-      idToDocument,
-      limit,
-      offset,
-      query,
-      data,
-    });
-  }, [
-    previewDocument,
-    previewDocumentSearchParam,
-    idToDocument,
-    limit,
-    offset,
-    query,
-    data,
-  ]);
-
   const onInputSubmit = useCallback(
     (value: string) => {
       setPage(0);
@@ -226,20 +210,99 @@ export const GalleryPage = () => {
     [addSearchParam, setPage],
   );
 
+  const entirePageSelected = useMemo(() => {
+    if (!data) {
+      return false;
+    }
+    return data.items.every((item) => editDocuments.has(item.id));
+  }, [data, editDocuments]);
+
   return (
     <div
       ref={containerRef}
       className="h-full relative flex flex-col gap-1 overflow-hidden"
     >
-      <TagInput
-        value={tagInput}
-        onChange={setTagInput}
-        onValidChange={() => {}}
-        onSubmit={onInputSubmit}
-        className="flex flex-row mb-2 p-2 w-full"
-        placeholder={t("pages.gallery.tagInputPlaceholder")}
-        blurOnSubmit
-      />
+      <div className="flex flex-row gap-2 items-center">
+        <TagInput
+          value={tagInput}
+          onChange={setTagInput}
+          onValidChange={() => {}}
+          onSubmit={onInputSubmit}
+          className="flex flex-row p-2 w-full"
+          placeholder={t("pages.gallery.tagInputPlaceholder")}
+          blurOnSubmit
+        />
+        <Button
+          className="mr-2 flex flex-row gap-2 items-center"
+          onClick={() => setEditMode((prev) => !prev)}
+          variant={editMode ? "primary" : "outline"}
+        >
+          <MdEdit className="inline text-md" />
+          {t("pages.gallery.bulkEdit")}
+        </Button>
+      </div>
+      {editMode && (
+        <div className="px-2 flex flex-col bg-surface-1 text-sm text-text-primary p-2 gap-2">
+          <div className="flex flex-row gap-2 items-center justify-start flex-wrap">
+            <div className="flex flex-row gap-2 items-center">
+              <div className="w-3 h-3 rounded-full bg-accent-subtle  border-accent border-3" />
+              <span>{t("pages.gallery.editMode")}</span>
+            </div>
+            <div className="flex flex-grow justify-end">
+              <span
+                className="underline text-accent-subtle cursor-pointer"
+                onClick={() => setEditMode(false)}
+              >
+                {t("pages.gallery.cancelEdit")}
+              </span>
+            </div>
+          </div>
+          <hr className="border-accent-subtle" />
+          <div className="flex flex-row gap-2 items-center justify-start flex-wrap">
+            <div className="rounded-lg bg-accent-subtle px-2">
+              {editDocuments.size} {t("pages.gallery.selected")}
+            </div>
+            <Button
+              variant="outline"
+              className="p-0.5 px-1"
+              onClick={() =>
+                setEditDocuments((old) => {
+                  const newSet = new Set(old);
+                  const newDocumentIds = data?.items.map((d) => d.id) ?? [];
+                  if (entirePageSelected) {
+                    newDocumentIds.forEach((id) => newSet.delete(id));
+                  } else {
+                    newDocumentIds.forEach((id) => newSet.add(id));
+                  }
+                  return newSet;
+                })
+              }
+            >
+              {entirePageSelected
+                ? t("pages.gallery.deselectPage")
+                : t("pages.gallery.selectPage")}
+            </Button>
+            <Button
+              variant="outline"
+              className="p-0.5 px-1"
+              onClick={() => setEditDocuments(new Set())}
+            >
+              {t("pages.gallery.clearSelection")}
+            </Button>
+            <Button
+              variant="primary"
+              className="p-0.5 px-1"
+              onClick={() => setEditDocumentsModalOpen(true)}
+              disabled={editDocuments.size === 0}
+            >
+              {t("pages.gallery.bulkEdit")}
+            </Button>
+            <div className="flex flex-grow justify-end text-text-muted">
+              {t("pages.gallery.editDescription")}
+            </div>
+          </div>
+        </div>
+      )}
       <div className="flex flex-row justify-end gap-2 pr-2">
         {hasRandomSort && (
           <FiShuffle
@@ -297,10 +360,40 @@ export const GalleryPage = () => {
           alignment="start"
           thumbnails={data?.items || []}
           onClick={(id) => {
-            setPreviewDocument(id);
+            if (!editMode) {
+              setPreviewDocument(id);
+            } else {
+              setEditDocuments((documents) => {
+                const newSet = new Set(documents);
+                if (newSet.has(id)) {
+                  newSet.delete(id);
+                } else {
+                  newSet.add(id);
+                }
+                return newSet;
+              });
+            }
           }}
           layout={layoutType}
           size="small"
+          onSelect={
+            editMode
+              ? (id, selected) => {
+                  if (selected) {
+                    setEditDocuments((documents) => {
+                      documents.add(id);
+                      return new Set(documents);
+                    });
+                  } else {
+                    setEditDocuments((documents) => {
+                      documents.delete(id);
+                      return new Set(documents);
+                    });
+                  }
+                }
+              : undefined
+          }
+          selectedDocuments={editDocuments}
         />
       </div>
       <span className="p-2 w-full text-left">
@@ -325,6 +418,16 @@ export const GalleryPage = () => {
           setCollectionModalOpen(false);
         }}
         initialFilterExpression={query}
+      />
+      <BulkEditDocumentsModal
+        documentIds={Array.from(editDocuments)}
+        isOpen={editDocumentsModalOpen}
+        onAbort={() => setEditDocumentsModalOpen(false)}
+        onConfirm={() => {
+          setEditDocumentsModalOpen(false);
+          setEditDocuments(new Set());
+          setEditMode(false);
+        }}
       />
       {previewDocumentSearchParam && (
         <PreviewContainer

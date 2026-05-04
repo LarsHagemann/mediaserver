@@ -3,6 +3,7 @@ import { useThumbnail } from "../hooks/useThumbnail";
 import type { Document } from "../app/api";
 import { Icon } from "../components/Icon";
 import { fileIconFromMimeType } from "../util/fileIconFromFile";
+import { SelectionIndicator } from "../components/SelectionIndicator";
 
 const layouts = {
   grid: "w-[120px] h-[120px] m-2 transition-all duration-200 object-contain border-transparent border-1 hover:border-accent-muted",
@@ -13,40 +14,61 @@ type Props = {
   document: Document;
   onClick?: () => void;
   className?: string;
+  highlighted?: boolean;
   selected?: boolean;
   layout?: keyof typeof layouts;
   size?: "normal" | "small";
+  onSelect?: (selected: boolean) => void;
 };
 
 export const Thumbnail = ({
   document,
   onClick,
   className,
+  highlighted,
   selected,
   layout = "grid",
   size = "normal",
+  onSelect,
 }: Props) => {
   const { objectUrl, isLoading, error } = useThumbnail(document.id);
 
   if (isLoading || error) {
     return (
-      <div className="w-[120px] h-[120px] bg-placeholder flex items-center justify-center" />
+      <div className="w-[120px] h-[120px] bg-primary flex items-center justify-center" />
     );
   }
 
   return layout === "grid" ? (
-    <img
-      className={twMerge(
-        layouts[layout],
-        size === "small" && "w-[60px] h-[60px] sm:w-[120px] sm:h-[120px]",
-        onClick && "cursor-pointer",
-        className,
-        selected && "border-accent-muted",
-      )}
-      src={objectUrl}
-      alt="Document Thumbnail"
-      onClick={onClick}
-    />
+    <>
+      <div
+        className={twMerge(
+          "relative w-[60px] h-[60px] sm:w-[120px] sm:h-[120px] inline-block",
+          className,
+        )}
+      >
+        <img
+          className={twMerge(
+            layouts[layout],
+            size === "small" && "w-full h-full",
+            onClick && "cursor-pointer",
+            highlighted && "border-accent-muted",
+          )}
+          src={objectUrl}
+          alt="Document Thumbnail"
+          onClick={onClick}
+        />
+        {onSelect && (
+          <div className="w-4 h-4 absolute top-0 right-0 rounded-full flex items-center justify-center text-white text-xs">
+            <SelectionIndicator
+              selected={selected}
+              onSelect={onSelect}
+              size="medium"
+            />
+          </div>
+        )}
+      </div>
+    </>
   ) : (
     <div className={twMerge(layouts[layout], className)} onClick={onClick}>
       <Icon

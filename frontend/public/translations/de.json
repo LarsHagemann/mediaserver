@@ -17,7 +17,8 @@
     },
     "gallery": {
       "tagInputPlaceholder": "Nach Tag suchen...",
-      "reseed": "Reihenfolge neu mischen"
+      "reseed": "Reihenfolge neu mischen",
+      "bulkEdit": "Bearbeiten"
     }
   },
   "pagination": {
