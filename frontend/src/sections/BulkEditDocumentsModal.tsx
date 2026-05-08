@@ -10,6 +10,7 @@ import type { ApiTag } from "../app/api";
 import { Button } from "../components/Button";
 import { CollectionCard } from "./CollectionCard";
 import { BiLoader } from "react-icons/bi";
+import { tagToString, stringToTag } from "../util/tag";
 
 type Props = {
   documentIds: string[];
@@ -41,53 +42,48 @@ export const BulkEditDocumentsModal = ({
     offset: 0,
   });
 
-  const [workingDocuments, setWorkingDocuments] =
-    useState<typeof documents>(undefined);
+  const [tagsToAdd, setTagsToAdd] = useState<ApiTag[]>([]);
+  const [tagsToRemove, setTagsToRemove] = useState<ApiTag[]>([]);
 
   useEffect(() => {
-    if (documents) {
-      setWorkingDocuments(
-        JSON.parse(JSON.stringify(documents)) as typeof documents,
-      );
+    if (isOpen) {
+      setTagsToAdd([]);
+      setTagsToRemove([]);
     }
-  }, [documents]);
-
-  const allTags = useMemo(() => {
-    if (!fetchedTags) return workingDocuments?.flatMap((doc) => doc.tags) ?? [];
-    if (!workingDocuments) return fetchedTags.items;
-
-    const tagsMap: Record<string, (typeof fetchedTags.items)[0]> = {};
-    fetchedTags.items.forEach((tag) => {
-      tagsMap[`${tag.key}:${tag.value}`] = tag;
-    });
-
-    workingDocuments.forEach((doc) => {
-      doc.tags.forEach((tag) => {
-        const key = `${tag.key}:${tag.value}`;
-        if (!(key in tagsMap)) {
-          tagsMap[key] = {
-            ...tag,
-            usageCount: workingDocuments.filter((d) =>
-              d.tags.some((t) => t.key === tag.key && t.value === tag.value),
-            ).length,
-          };
-        }
-      });
-    });
-
-    return Object.values(tagsMap);
-  }, [fetchedTags, workingDocuments]);
+  }, [isOpen]);
 
   const allTagsWithUsage = useMemo(() => {
-    if (!workingDocuments)
-      return allTags.map((tag) => ({ ...tag, usageCount: 0 }));
-    return allTags.map((tag) => ({
-      ...tag,
-      usageCount: workingDocuments.filter((doc) =>
-        doc.tags.some((t) => t.key === tag.key && t.value === tag.value),
-      ).length,
-    }));
-  }, [allTags, workingDocuments]);
+    if (!documents) return [];
+    const n = documents.length;
+
+    const tagsMap: Record<string, ApiTag & { usageCount: number }> = {};
+    fetchedTags?.items.forEach((tag) => {
+      tagsMap[tagToString(tag)] = { ...tag, usageCount: 0 };
+    });
+    documents.forEach((doc) => {
+      doc.tags.forEach((tag) => {
+        const k = tagToString(tag);
+        if (!(k in tagsMap)) tagsMap[k] = { ...tag, usageCount: 0 };
+      });
+    });
+    tagsToAdd.forEach((tag) => {
+      const k = tagToString(tag);
+      if (!(k in tagsMap)) tagsMap[k] = { ...tag, usageCount: 0 };
+    });
+
+    return Object.values(tagsMap).map((tag) => {
+      const k = tagToString(tag);
+      const originalCount = documents.filter((doc) =>
+        doc.tags.some((t) => tagToString(t) === k),
+      ).length;
+      const pendingAdd = tagsToAdd.some((t) => tagToString(t) === k);
+      const pendingRemove = tagsToRemove.some((t) => tagToString(t) === k);
+      return {
+        ...tag,
+        usageCount: pendingAdd ? n : pendingRemove ? 0 : originalCount,
+      };
+    });
+  }, [documents, fetchedTags, tagsToAdd, tagsToRemove]);
 
   const tags = useMemo(() => {
     return allTagsWithUsage.filter(
@@ -98,19 +94,17 @@ export const BulkEditDocumentsModal = ({
     );
   }, [allTagsWithUsage]);
 
-  // Tags shared by every document
   const sharedTags = useMemo(() => {
-    return tags.filter((tag) => tag.usageCount === workingDocuments?.length);
-  }, [tags, workingDocuments]);
+    return tags.filter((tag) => tag.usageCount === documents?.length);
+  }, [tags, documents]);
 
-  // Collections shared by every document
   const sharedCollections = useMemo(() => {
     return allTagsWithUsage.filter(
       (tag) =>
         (tag.key === "collection" || tag.type === "collection") &&
-        tag.usageCount === workingDocuments?.length,
+        tag.usageCount === documents?.length,
     );
-  }, [allTagsWithUsage, workingDocuments]);
+  }, [allTagsWithUsage, documents]);
 
   const [collectionFilter, setCollectionFilter] = useState("");
   const [query, setQuery] = useState("");
@@ -118,126 +112,46 @@ export const BulkEditDocumentsModal = ({
   const filteredCollections = useMemo(() => {
     const lowerFilter = collectionFilter.toLowerCase();
     return (
-      collections?.items.filter((collection) =>
-        collection.name.toLowerCase().includes(lowerFilter),
+      collections?.items.filter(
+        (collection) =>
+          collection.type === "static" &&
+          collection.name.toLowerCase().includes(lowerFilter),
       ) || []
     );
   }, [collections, collectionFilter]);
 
-  const onSubmit = useCallback(
-    (query: string) => {
-      if (sharedTags.some((tag) => `${tag.key}:${tag.value}` === query)) {
-        setWorkingDocuments((docs) => {
-          docs?.forEach((doc) => {
-            doc.tags = doc.tags.filter(
-              (tag) => `${tag.key}:${tag.value}` !== query,
-            );
-          });
-          return [...(docs ?? [])];
-        });
-      } else {
-        const [key, value] = query.split(":");
-        setWorkingDocuments((docs) => {
-          docs?.forEach((doc) => {
-            if (
-              !doc.tags.some((tag) => tag.key === key && tag.value === value)
-            ) {
-              doc.tags.push({ key, value, type: "default" });
-            }
-          });
-          return [...(docs ?? [])];
-        });
-      }
-      setQuery("");
-    },
-    [sharedTags],
-  );
-
   const toggleTag = useCallback(
     (tag: ApiTag) => {
-      if (sharedTags.some((t) => t.key === tag.key && t.value === tag.value)) {
-        setWorkingDocuments((docs) => {
-          docs?.forEach((doc) => {
-            doc.tags = doc.tags.filter(
-              (t) => !(t.key === tag.key && t.value === tag.value),
-            );
-          });
-          return [...(docs ?? [])];
-        });
-      } else if (
-        sharedCollections.some(
-          (t) => t.key === "collection" && t.value === tag.value,
-        )
-      ) {
-        setWorkingDocuments((docs) => {
-          docs?.forEach((doc) => {
-            doc.tags = doc.tags.filter(
-              (t) => !(t.key === "collection" && t.value === tag.value),
-            );
-          });
-          return [...(docs ?? [])];
-        });
+      const key = tagToString(tag);
+      const isShared =
+        sharedTags.some((t) => tagToString(t) === key) ||
+        sharedCollections.some((t) => tagToString(t) === key);
+      const isPendingAdd = tagsToAdd.some((t) => tagToString(t) === key);
+      const isPendingRemove = tagsToRemove.some((t) => tagToString(t) === key);
+
+      if (isShared && !isPendingRemove) {
+        setTagsToRemove((prev) => [...prev, tag]);
+      } else if (isShared && isPendingRemove) {
+        setTagsToRemove((prev) => prev.filter((t) => tagToString(t) !== key));
+      } else if (!isShared && isPendingAdd) {
+        setTagsToAdd((prev) => prev.filter((t) => tagToString(t) !== key));
       } else {
-        setWorkingDocuments((docs) => {
-          docs?.forEach((doc) => {
-            if (
-              !doc.tags.some((t) => t.key === tag.key && t.value === tag.value)
-            ) {
-              doc.tags.push({
-                key: tag.key,
-                value: tag.value,
-                type: tag.type,
-              });
-            }
-          });
-          return [...(docs ?? [])];
-        });
+        setTagsToAdd((prev) => [
+          ...prev,
+          { key: tag.key, value: tag.value, type: tag.type },
+        ]);
       }
     },
-    [sharedTags, sharedCollections],
+    [sharedTags, sharedCollections, tagsToAdd, tagsToRemove],
   );
 
-  const diff: { added: ApiTag[]; removed: ApiTag[] } = useMemo(() => {
-    if (!documents || !workingDocuments) {
-      return { added: [], removed: [] };
-    }
-
-    const added: ApiTag[] = [];
-    const removed: ApiTag[] = [];
-
-    const tagKeySet = new Set<string>();
-
-    workingDocuments.forEach((doc) => {
-      doc.tags.forEach((tag) => {
-        const key = `${tag.key}:${tag.value}`;
-        tagKeySet.add(key);
-      });
-    });
-
-    documents.forEach((doc) => {
-      doc.tags.forEach((tag) => {
-        const key = `${tag.key}:${tag.value}`;
-        if (!tagKeySet.has(key)) {
-          removed.push(tag);
-        }
-      });
-    });
-
-    workingDocuments.forEach((doc) => {
-      doc.tags.forEach((tag) => {
-        const key = `${tag.key}:${tag.value}`;
-        if (
-          !documents.some((d) =>
-            d.tags.some((t) => `${t.key}:${t.value}` === key),
-          )
-        ) {
-          added.push(tag);
-        }
-      });
-    });
-
-    return { added, removed };
-  }, [documents, workingDocuments]);
+  const onSubmit = useCallback(
+    (query: string) => {
+      toggleTag(stringToTag(query));
+      setQuery("");
+    },
+    [toggleTag],
+  );
 
   const [bulkEditDocuments, { isLoading }] =
     enhancedApi.useBulkEditDocumentsMutation();
@@ -245,12 +159,12 @@ export const BulkEditDocumentsModal = ({
   const onBulkEditConfirm = useCallback(() => {
     bulkEditDocuments({
       documentIds,
-      tagsToAdd: diff.added,
-      tagsToRemove: diff.removed,
+      tagsToAdd,
+      tagsToRemove,
     }).then(() => {
       onConfirm();
     });
-  }, [diff, bulkEditDocuments, documentIds, onConfirm]);
+  }, [tagsToAdd, tagsToRemove, bulkEditDocuments, documentIds, onConfirm]);
 
   return (
     <Modal
@@ -317,7 +231,7 @@ export const BulkEditDocumentsModal = ({
         <Button
           onClick={onBulkEditConfirm}
           className="self-end flex flex-row items-center gap-2"
-          disabled={isLoading || (!diff.added.length && !diff.removed.length)}
+          disabled={isLoading || (!tagsToAdd.length && !tagsToRemove.length)}
         >
           {isLoading ? <BiLoader className="animate-spin" /> : undefined}
           {t("pages.gallery.bulkEditConfirm", { count: documentIds.length })}
