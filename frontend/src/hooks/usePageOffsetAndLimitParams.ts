@@ -19,10 +19,10 @@ export const usePageOffsetAndLimitParams = (initialLimit = 60) => {
     [addSearchParam],
   );
 
-  const currentLimit = useMemo(
-    () => parseInt(searchLimit ?? initialLimit.toString()),
-    [searchLimit, initialLimit],
-  );
+  const currentLimit = useMemo(() => {
+    const parsed = parseInt(searchLimit ?? "");
+    return isNaN(parsed) || parsed < 1 ? initialLimit : parsed;
+  }, [searchLimit, initialLimit]);
 
   const setCurrentLimit = useCallback(
     (page: number) => {
