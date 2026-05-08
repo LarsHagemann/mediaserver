@@ -206,9 +206,7 @@ export const api = baseApi.injectEndpoints({
         url: `/collections/${encodeURIComponent(id)}`,
         method: "GET",
       }),
-      providesTags: (_result, _error, id) => [
-        { type: "collection", id },
-      ],
+      providesTags: (_result, _error, id) => [{ type: "collection", id }],
     }),
 
     listCollections: build.query<

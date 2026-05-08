@@ -70,7 +70,7 @@ export const GalleryPage = () => {
         const containerWidth = containerEntry.contentBoxSize[0].inlineSize;
         const thumbnailsPerRow = Math.floor(
           (containerWidth - thumbnailMargin - containerPadding) /
-          (120 + thumbnailMargin * 2),
+            (120 + thumbnailMargin * 2),
         );
         setDocumentsPerRow(thumbnailsPerRow);
 
@@ -83,8 +83,8 @@ export const GalleryPage = () => {
 
         setThumbnailContainerWidth(
           thumbnailsPerRow * (120 + thumbnailMargin * 2) +
-          thumbnailMargin +
-          containerPadding,
+            thumbnailMargin +
+            containerPadding,
         );
       }
     });
@@ -96,13 +96,19 @@ export const GalleryPage = () => {
   }, [isMobile]);
 
   const {
-    params: { preview: previewDocumentSearchParam, q: query, collection: collectionSearchParam },
+    params: {
+      preview: previewDocumentSearchParam,
+      q: query,
+      collection: collectionSearchParam,
+    },
     setSearchParams,
     addSearchParam,
     removeSearchParam,
   } = useEasySearchParams(["preview", "q", "collection"]);
 
-  const { data: collection } = enhancedApi.useGetCollectionByIdQuery(collectionSearchParam ?? skipToken);
+  const { data: collection } = enhancedApi.useGetCollectionByIdQuery(
+    collectionSearchParam ?? skipToken,
+  );
 
   const { seed, reseedGallery } = useGallerySeed();
   const hasRandomSort = (query ?? "").includes("sort:random");
@@ -126,9 +132,10 @@ export const GalleryPage = () => {
 
   const finalQuery = useMemo(() => {
     if (collectionSearchParam && collection) {
-      const collectionFilter = collection.type === "static"
-        ? `collection:${collection.id}`
-        : `(${collection.filterExpression})`;
+      const collectionFilter =
+        collection.type === "static"
+          ? `collection:${collection.id}`
+          : `(${collection.filterExpression})`;
 
       if (!query?.trim()) {
         return collectionFilter;
@@ -245,7 +252,7 @@ export const GalleryPage = () => {
         <TagInput
           value={tagInput}
           onChange={setTagInput}
-          onValidChange={() => { }}
+          onValidChange={() => {}}
           onSubmit={onInputSubmit}
           className="flex flex-row p-2 w-full"
           placeholder={t("pages.gallery.tagInputPlaceholder")}
@@ -408,18 +415,18 @@ export const GalleryPage = () => {
           onSelect={
             editMode
               ? (id, selected) => {
-                if (selected) {
-                  setEditDocuments((documents) => {
-                    documents.add(id);
-                    return new Set(documents);
-                  });
-                } else {
-                  setEditDocuments((documents) => {
-                    documents.delete(id);
-                    return new Set(documents);
-                  });
+                  if (selected) {
+                    setEditDocuments((documents) => {
+                      documents.add(id);
+                      return new Set(documents);
+                    });
+                  } else {
+                    setEditDocuments((documents) => {
+                      documents.delete(id);
+                      return new Set(documents);
+                    });
+                  }
                 }
-              }
               : undefined
           }
           selectedDocuments={editDocuments}

@@ -1,5 +1,5 @@
 import { twMerge } from "tailwind-merge";
-import type { Collection } from "../app/api"
+import type { Collection } from "../app/api";
 import { Badge } from "./Badge";
 
 type Props = {
@@ -19,7 +19,7 @@ export const CollectionBadge: React.FC<Props> = ({
         collection.type === "static"
           ? "bg-badge-static text-badge-static-text"
           : "bg-accent-dim text-accent-muted",
-        collection.isFavorite && "border-yellow-500"
+        collection.isFavorite && "border-yellow-500",
       )}
       onClick={onClick ? () => onClick(collection) : undefined}
       onDelete={onDelete ? () => onDelete(collection) : undefined}

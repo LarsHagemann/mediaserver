@@ -47,9 +47,7 @@ export const CollectionCard = ({
       )}
       onClick={() => {
         if (onClick === "navigate") {
-          navigate(
-            `/gallery?collection=${encodeURIComponent(collection.id)}`,
-          );
+          navigate(`/gallery?collection=${encodeURIComponent(collection.id)}`);
         } else if (onClick) {
           onClick(collection);
         }
