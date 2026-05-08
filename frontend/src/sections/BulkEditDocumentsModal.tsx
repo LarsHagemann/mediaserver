@@ -119,6 +119,7 @@ export const BulkEditDocumentsModal = ({
     const lowerFilter = collectionFilter.toLowerCase();
     return (
       collections?.items.filter((collection) =>
+        collection.type === "static" &&
         collection.name.toLowerCase().includes(lowerFilter),
       ) || []
     );

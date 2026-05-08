@@ -201,6 +201,16 @@ export const api = baseApi.injectEndpoints({
       }),
     }),
 
+    getCollectionById: build.query<Collection, string>({
+      query: (id) => ({
+        url: `/collections/${encodeURIComponent(id)}`,
+        method: "GET",
+      }),
+      providesTags: (_result, _error, id) => [
+        { type: "collection", id },
+      ],
+    }),
+
     listCollections: build.query<
       PaginatedResponse<Collection>,
       { limit?: number; offset?: number; type?: CollectionType }

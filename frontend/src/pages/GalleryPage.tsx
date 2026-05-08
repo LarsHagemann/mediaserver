@@ -15,6 +15,8 @@ import { CollectionFormModal } from "../sections/CollectionFormModal";
 import { useGallerySeed } from "../hooks/useGallerySeed";
 import { Button } from "../components/Button";
 import { BulkEditDocumentsModal } from "../sections/BulkEditDocumentsModal";
+import { skipToken } from "@reduxjs/toolkit/query";
+import { CollectionBadge } from "../components/CollectionBadge";
 
 const remToPixel = (rem: number) => {
   return rem * parseFloat(getComputedStyle(document.documentElement).fontSize);
@@ -68,7 +70,7 @@ export const GalleryPage = () => {
         const containerWidth = containerEntry.contentBoxSize[0].inlineSize;
         const thumbnailsPerRow = Math.floor(
           (containerWidth - thumbnailMargin - containerPadding) /
-            (120 + thumbnailMargin * 2),
+          (120 + thumbnailMargin * 2),
         );
         setDocumentsPerRow(thumbnailsPerRow);
 
@@ -81,8 +83,8 @@ export const GalleryPage = () => {
 
         setThumbnailContainerWidth(
           thumbnailsPerRow * (120 + thumbnailMargin * 2) +
-            thumbnailMargin +
-            containerPadding,
+          thumbnailMargin +
+          containerPadding,
         );
       }
     });
@@ -94,11 +96,13 @@ export const GalleryPage = () => {
   }, [isMobile]);
 
   const {
-    params: { preview: previewDocumentSearchParam, q: query },
+    params: { preview: previewDocumentSearchParam, q: query, collection: collectionSearchParam },
     setSearchParams,
     addSearchParam,
     removeSearchParam,
-  } = useEasySearchParams(["preview", "q"]);
+  } = useEasySearchParams(["preview", "q", "collection"]);
+
+  const { data: collection } = enhancedApi.useGetCollectionByIdQuery(collectionSearchParam ?? skipToken);
 
   const { seed, reseedGallery } = useGallerySeed();
   const hasRandomSort = (query ?? "").includes("sort:random");
@@ -120,10 +124,25 @@ export const GalleryPage = () => {
     setTagInput((prev) => query || prev);
   }, [query]);
 
+  const finalQuery = useMemo(() => {
+    if (collectionSearchParam && collection) {
+      const collectionFilter = collection.type === "static"
+        ? `collection:${collection.id}`
+        : `(${collection.filterExpression})`;
+
+      if (!query?.trim()) {
+        return collectionFilter;
+      }
+
+      return `(${collectionFilter}) & (${query})`;
+    }
+    return query;
+  }, [collectionSearchParam, collection, query]);
+
   const { currentData: data } = enhancedApi.useListDocumentsQuery({
     limit: limit,
     offset: offset,
-    query: query,
+    query: finalQuery,
     seed: hasRandomSort ? seed : undefined,
   });
 
@@ -226,7 +245,7 @@ export const GalleryPage = () => {
         <TagInput
           value={tagInput}
           onChange={setTagInput}
-          onValidChange={() => {}}
+          onValidChange={() => { }}
           onSubmit={onInputSubmit}
           className="flex flex-row p-2 w-full"
           placeholder={t("pages.gallery.tagInputPlaceholder")}
@@ -241,6 +260,16 @@ export const GalleryPage = () => {
           {t("pages.gallery.bulkEdit")}
         </Button>
       </div>
+      {collectionSearchParam && collection && (
+        <div className="flex flex-row gap-2 px-2">
+          <CollectionBadge
+            collection={collection}
+            onDelete={() => {
+              removeSearchParam("collection");
+            }}
+          />
+        </div>
+      )}
       {editMode && (
         <div className="px-2 flex flex-col bg-surface-1 text-sm text-text-primary p-2 gap-2">
           <div className="flex flex-row gap-2 items-center justify-start flex-wrap">
@@ -379,18 +408,18 @@ export const GalleryPage = () => {
           onSelect={
             editMode
               ? (id, selected) => {
-                  if (selected) {
-                    setEditDocuments((documents) => {
-                      documents.add(id);
-                      return new Set(documents);
-                    });
-                  } else {
-                    setEditDocuments((documents) => {
-                      documents.delete(id);
-                      return new Set(documents);
-                    });
-                  }
+                if (selected) {
+                  setEditDocuments((documents) => {
+                    documents.add(id);
+                    return new Set(documents);
+                  });
+                } else {
+                  setEditDocuments((documents) => {
+                    documents.delete(id);
+                    return new Set(documents);
+                  });
                 }
+              }
               : undefined
           }
           selectedDocuments={editDocuments}
