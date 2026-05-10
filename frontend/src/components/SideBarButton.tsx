@@ -24,13 +24,23 @@ export const SideBarButton = ({
     <div
       onClick={onClick}
       className={twMerge(
-        `cursor-pointer p-2 hover:bg-surface-1 rounded-sm transition-colors duration-200 sm:mb-2 flex flex-row items-center overflow-hidden`,
-        isActive && "bg-surface-1",
+        "cursor-pointer px-3 py-2.5 rounded-md transition-colors duration-200 flex flex-row items-center gap-3 overflow-hidden hover:bg-surface-1",
+        isActive ? "bg-surface-1" : "",
       )}
     >
-      <IconComponent className="w-8 h-8 min-h-8 min-w-8" />
+      <IconComponent
+        className={twMerge(
+          "w-5 h-5 min-h-5 min-w-5 flex-shrink-0",
+          isActive ? "text-accent-subtle" : "text-text-secondary",
+        )}
+      />
       {!collapsed && (
-        <span className="hidden sm:block ml-2 text-xl pl-2 text-nowrap">
+        <span
+          className={twMerge(
+            "hidden sm:block text-sm text-nowrap",
+            isActive ? "text-text-primary font-medium" : "text-text-secondary",
+          )}
+        >
           {text}
         </span>
       )}
