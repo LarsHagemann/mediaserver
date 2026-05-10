@@ -341,23 +341,25 @@ export const GalleryPage = () => {
         }}
       />
       {previewDocumentSearchParam && (
-        <PreviewContainer
-          totalDocuments={total}
-          previewImageId={previewDocumentSearchParam}
-          onThumbnailClicked={(id) => setPreviewDocument(id)}
-          nextPreviewImage={nextPreviewImage}
-          previousPreviewImage={prevPreviewImage}
-          previewImageIndex={
-            previewDocument?.queryIndex ?? lastKnownPreviewIndexRef.current
-          }
-          queryParams={{
-            limit,
-            offset,
-            query: finalQuery,
-            seed: hasRandomSort ? seed : undefined,
-          }}
-          onClose={() => setPreviewDocument(undefined)}
-        />
+        <div className="fixed top-0 left-0 w-screen h-screen bg-black z-100">
+          <PreviewContainer
+            totalDocuments={total}
+            previewImageId={previewDocumentSearchParam}
+            onThumbnailClicked={(id) => setPreviewDocument(id)}
+            nextPreviewImage={nextPreviewImage}
+            previousPreviewImage={prevPreviewImage}
+            previewImageIndex={
+              previewDocument?.queryIndex ?? lastKnownPreviewIndexRef.current
+            }
+            queryParams={{
+              limit,
+              offset,
+              query: finalQuery,
+              seed: hasRandomSort ? seed : undefined,
+            }}
+            onClose={() => setPreviewDocument(undefined)}
+          />
+        </div>
       )}
     </div>
   );

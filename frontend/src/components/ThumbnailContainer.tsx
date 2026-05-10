@@ -53,7 +53,7 @@ export const ThumbnailContainer = ({
     return (
       <div
         className={twMerge(
-          "grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4",
+          "grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4",
           className,
         )}
       >

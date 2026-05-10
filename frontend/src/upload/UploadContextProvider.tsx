@@ -12,6 +12,7 @@ import {
 import { uploadDocumentWithProgress, type ApiTag } from "../app/api";
 import { useAppSelector } from "../app/store";
 import { selectMaxConcurrentUploads } from "../app/persistent.slice";
+import { enhancedApi } from "../app/enhancedApi";
 
 export const UploadContextProvider: React.FC<{
   children: React.ReactNode;
@@ -159,7 +160,9 @@ export const UploadContextProvider: React.FC<{
       uploadDocumentWithProgress(
         { file, webSocketClientId, tags, isPublic },
         (pct) => setProgress((prev) => new Map(prev).set(file.name, pct)),
-      ).catch((err) => {
+      ).then(() => {
+        enhancedApi.util.invalidateTags(["document"]);
+      }).catch((err) => {
         markFileAsFailedRef.current(file.name, err.message || "Upload failed");
       });
     });

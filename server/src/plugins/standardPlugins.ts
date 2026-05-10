@@ -11,10 +11,10 @@ export const pdfPlugin: FileTypePlugin = {
     const tmpId = uuidv4();
     const pdfBuffer = fs2.createReadStream(path);
     const pdfThumbnailStream = await pdf.default(pdfBuffer, {
-      resize: { width: 120, height: 120 },
+      resize: { width: 240, height: 240 },
       crop: {
-        width: 120,
-        height: 120,
+        width: 240,
+        height: 240,
         x: 0,
         y: 0,
         ratio: true,
@@ -45,7 +45,7 @@ export const imagePlugin: FileTypePlugin = {
     const tmpPath = "/tmp/" + tmpId + "_thumbnail.jpg";
     await sharp(path)
       .rotate()
-      .resize(120, 120, {
+      .resize(240, 240, {
         fit: "inside",
       })
       .jpeg({ mozjpeg: true })
@@ -68,7 +68,7 @@ export const videoPlugin: FileTypePlugin = {
       number: 1,
       every_n_percentage: 50,
       file_name: filename + ".jpg",
-      size: "120x120",
+      size: "240x240",
     });
 
     return { path: "/tmp/" + filename + "_1.jpg" };
@@ -86,11 +86,11 @@ export const audioPlugin: FileTypePlugin = {
     const filename = uuidv4();
     process.addFilterComplex(
       "[0:a]aformat=channel_layouts=mono," +
-        "compand=gain=-6," +
-        "showwavespic=s=120x120:colors=#9cf42f[fg];" +
-        "color=s=120x120:color=#44582c," +
-        "drawgrid=width=iw/10:height=ih/5:color=#9cf42f@0.1[bg];" +
-        "[bg][fg]overlay=format=auto,drawbox=x=(iw-w)/2:y=(ih-h)/2:w=iw:h=1:color=#9cf42f",
+      "compand=gain=-6," +
+      "showwavespic=s=240x240:colors=#9cf42f[fg];" +
+      "color=s=240x240:color=#44582c," +
+      "drawgrid=width=iw/10:height=ih/5:color=#9cf42f@0.1[bg];" +
+      "[bg][fg]overlay=format=auto,drawbox=x=(iw-w)/2:y=(ih-h)/2:w=iw:h=1:color=#9cf42f",
     );
     process.addCommand("-frames:v", "1");
     await process.save("/tmp/" + filename + ".jpg");
