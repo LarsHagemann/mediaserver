@@ -1,23 +1,20 @@
 import type React from "react";
-import { FaCaretLeft, FaCaretRight, FaDownload, FaLock, FaUnlock } from "react-icons/fa";
+import { FaCaretLeft, FaCaretRight, FaDownload } from "react-icons/fa";
 import { LuPresentation } from "react-icons/lu";
 import { useIsMobileScreen } from "../hooks/useIsMobileScreen";
-import { MdClose } from "react-icons/md";
-import { FaBookmark, FaRegBookmark } from "react-icons/fa6";
-import { IoPricetag, IoPricetagOutline } from "react-icons/io5";
+import { MdClose, MdInfo, MdInfoOutline } from "react-icons/md";
+import { twMerge } from "tailwind-merge";
+
+type Tab = "tags" | "collections" | "access";
 
 type Props = {
   nextDocument: () => void;
   previousDocument: () => void;
   downloadDocument: () => void;
   toggleDiashow: () => void;
-  bookmarksOpen: boolean;
-  setBookmarksOpen: (open: boolean) => void;
+  activeTab: Tab | null;
+  setActiveTab: (tab: Tab | null) => void;
   onClose: () => void;
-  tagListOpen: boolean;
-  setTagListOpen: (open: boolean) => void;
-  accessOpen: boolean;
-  setAccessOpen: (open: boolean) => void;
   canManageAccess: boolean;
 };
 
@@ -26,19 +23,16 @@ export const DocumentPreviewControls: React.FC<Props> = ({
   previousDocument,
   downloadDocument,
   toggleDiashow,
-  bookmarksOpen,
-  setBookmarksOpen,
+  activeTab,
+  setActiveTab,
   onClose,
-  tagListOpen,
-  setTagListOpen,
-  accessOpen,
-  setAccessOpen,
-  canManageAccess,
 }) => {
   const isMobile = useIsMobileScreen();
 
   const normalControlSize = isMobile ? "1.25rem" : "2rem";
   const smallControlSize = isMobile ? "1rem" : "1.5rem";
+
+  const panelOpen = activeTab !== null;
 
   return (
     <div className="flex flex-row justify-between px-2 items-center w-full h-full">
@@ -46,69 +40,38 @@ export const DocumentPreviewControls: React.FC<Props> = ({
       <div className="flex flex-row justify-center items-center gap-4">
         <div
           className="rounded-md p-2 cursor-pointer hover:text-text-muted duration-200"
-          onClick={() => {
-            previousDocument();
-          }}
+          onClick={previousDocument}
         >
           <FaCaretLeft size={normalControlSize} />
         </div>
         <div
-          className="rounded-md p-2 cursor-pointer hover:text-text-muted duration-200"
-          onClick={() => {
-            setTagListOpen(!tagListOpen);
-          }}
-        >
-          {tagListOpen ? (
-            <IoPricetag size={normalControlSize} />
-          ) : (
-            <IoPricetagOutline size={normalControlSize} />
-          )}
-        </div>
-        <div
           className="rounded-md p-3 cursor-pointer hover:text-text-muted duration-200"
-          onClick={() => {
-            downloadDocument();
-          }}
+          onClick={downloadDocument}
         >
           <FaDownload size={smallControlSize} />
         </div>
         <div
           className="rounded-md p-2 cursor-pointer hover:text-text-muted duration-200"
-          onClick={() => {
-            toggleDiashow();
-          }}
+          onClick={toggleDiashow}
         >
           <LuPresentation size={smallControlSize} />
         </div>
-        {canManageAccess && (
-          <div
-            className="rounded-md p-2 cursor-pointer hover:text-text-muted duration-200"
-            onClick={() => setAccessOpen(!accessOpen)}
-          >
-            {accessOpen ? (
-              <FaLock size={smallControlSize} />
-            ) : (
-              <FaUnlock size={smallControlSize} />
-            )}
-          </div>
-        )}
         <div
-          className="rounded-md p-2 cursor-pointer hover:text-text-muted duration-200"
-          onClick={() => {
-            setBookmarksOpen(!bookmarksOpen);
-          }}
+          className={twMerge(
+            "rounded-md p-2 cursor-pointer hover:text-text-muted duration-200",
+            panelOpen ? "text-accent" : "",
+          )}
+          onClick={() => setActiveTab(panelOpen ? null : "tags")}
         >
-          {bookmarksOpen ? (
-            <FaBookmark size={smallControlSize} />
+          {panelOpen ? (
+            <MdInfo size={smallControlSize} />
           ) : (
-            <FaRegBookmark size={smallControlSize} />
+            <MdInfoOutline size={smallControlSize} />
           )}
         </div>
         <div
           className="rounded-md p-2 cursor-pointer hover:text-text-muted duration-200"
-          onClick={() => {
-            nextDocument();
-          }}
+          onClick={nextDocument}
         >
           <FaCaretRight size={normalControlSize} />
         </div>

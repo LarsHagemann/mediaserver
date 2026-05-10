@@ -10,6 +10,8 @@ import { twMerge } from "tailwind-merge";
 import { DocumentDiashow } from "../components/DocumentDiashow";
 import { preventInputHandling } from "../util/preventInputHandling";
 
+type Tab = "tags" | "collections" | "access";
+
 type Props = {
   previewImageId: string;
   previewImageIndex: number;
@@ -45,9 +47,7 @@ export const PreviewContainer = ({
 
   const [diashowMode, setDiashowMode] = useState<boolean>(false);
   const [wasFullscreen, setWasFullscreen] = useState<boolean>(false);
-  const [addToCollectionModalOpen, setAddToCollectionModalOpen] = useState(false);
-  const [tagListOpen, setTagListOpen] = useState(false);
-  const [accessOpen, setAccessOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<Tab | null>(null);
 
   const { data: identity } = api.useGetMeQuery();
   const currentDocument = data?.items.find((d) => d.id === previewImageId);
@@ -72,7 +72,7 @@ export const PreviewContainer = ({
       } else if (event.key === "p") {
         setDiashowMode((mode) => !mode);
       } else if (event.key === "c") {
-        setAddToCollectionModalOpen((open) => !open);
+        setActiveTab((tab) => (tab === "collections" ? null : "collections"));
       }
     };
 
@@ -127,18 +127,8 @@ export const PreviewContainer = ({
               }}
               toggleDiashow={() => setDiashowMode(!diashowMode)}
               onClose={onCloseImpl}
-              bookmarksOpen={addToCollectionModalOpen}
-              setBookmarksOpen={(open) => {
-                setAddToCollectionModalOpen(open);
-                if (open) setAccessOpen(false);
-              }}
-              tagListOpen={tagListOpen}
-              setTagListOpen={setTagListOpen}
-              accessOpen={accessOpen}
-              setAccessOpen={(open) => {
-                setAccessOpen(open);
-                if (open) setAddToCollectionModalOpen(false);
-              }}
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
               canManageAccess={canManageAccess}
             />
           </div>
@@ -157,12 +147,9 @@ export const PreviewContainer = ({
                 mimeType={mimeType}
                 nextPreviewImage={nextPreviewImage}
                 previousPreviewImage={previousPreviewImage}
-                tagListOpen={tagListOpen}
-                setTagListOpen={setTagListOpen}
-                bookmarksOpen={addToCollectionModalOpen}
-                setBookmarksOpen={setAddToCollectionModalOpen}
-                accessOpen={accessOpen}
-                setAccessOpen={setAccessOpen}
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                canManageAccess={canManageAccess}
               />
             )}
           </div>

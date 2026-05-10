@@ -187,6 +187,11 @@
   },
   "document": {
     "addTagPlaceholder": "Tag hinzufügen...",
+    "tabs": {
+      "tags": "Tags",
+      "collections": "Sammlungen",
+      "access": "Zugriff"
+    },
     "access": {
       "title": "Zugriff",
       "public": "Öffentlich",

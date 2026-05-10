@@ -187,6 +187,11 @@
   },
   "document": {
     "addTagPlaceholder": "Add a tag...",
+    "tabs": {
+      "tags": "Tags",
+      "collections": "Collections",
+      "access": "Access"
+    },
     "access": {
       "title": "Access",
       "public": "Public",
