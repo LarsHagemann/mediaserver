@@ -1,7 +1,10 @@
 import { useTranslation } from "react-i18next";
-import { type Document } from "../app/api";
+import { type Document, type ApiTag } from "../app/api";
 import { Pagination } from "../components/Pagination";
 import { ThumbnailContainer } from "../components/ThumbnailContainer";
+import { enhancedApi } from "../app/enhancedApi";
+import { useMemo } from "react";
+import { skipToken } from "@reduxjs/toolkit/query";
 
 type Props = {
   items: Document[];
@@ -14,6 +17,7 @@ type Props = {
   selectedDocuments?: Set<string>;
   onThumbnailClick: (id: string) => void;
   onSelect?: (id: string, selected: boolean) => void;
+  popularTags?: ApiTag[];
 };
 
 export const PaginatedThumbnailContainer = ({
@@ -27,12 +31,51 @@ export const PaginatedThumbnailContainer = ({
   selectedDocuments,
   onThumbnailClick,
   onSelect,
+  popularTags,
 }: Props) => {
   const { t } = useTranslation();
 
+  const itemIds = useMemo(() => items.map((item) => item.id), [items]);
+
+  const { data: itemsWithTags } = enhancedApi.useListDocumentsByIdsQuery(
+    layoutType === "grid" && itemIds.length > 0 ? itemIds : skipToken,
+  );
+
+  const tagsMap = useMemo(() => {
+    if (!itemsWithTags) return {};
+    return Object.fromEntries(itemsWithTags.map((d) => [d.id, d.tags]));
+  }, [itemsWithTags]);
+
+  const popularTagKeys = useMemo(() => {
+    if (!popularTags) return new Set<string>();
+    return new Set(
+      popularTags.map((t) => (t.value ? `${t.key}:${t.value}` : t.key)),
+    );
+  }, [popularTags]);
+
   return (
     <>
-      <div className="flex flex-row justify-center">
+      <div className="p-2 max-w-full flex-grow overflow-auto">
+        <ThumbnailContainer
+          alignment="start"
+          thumbnails={items}
+          onClick={onThumbnailClick}
+          layout={layoutType}
+          size="normal"
+          onSelect={onSelect}
+          selectedDocuments={selectedDocuments}
+          tagsMap={tagsMap}
+          popularTagKeys={popularTagKeys}
+        />
+      </div>
+      <div className="flex items-center justify-between px-3 py-2 shrink-0">
+        <span className="text-sm text-text-muted">
+          {t("pagination.range", {
+            start: offset + 1,
+            end: Math.min(offset + limit, total),
+            total,
+          })}
+        </span>
         <Pagination
           total={total}
           limit={limit}
@@ -40,31 +83,6 @@ export const PaginatedThumbnailContainer = ({
           onPageChange={onPageChange}
         />
       </div>
-      <div className="p-2 max-w-full max-h-[calc(100%-210px)] mt-8 flex-grow overflow-auto">
-        <ThumbnailContainer
-          alignment="start"
-          thumbnails={items}
-          onClick={onThumbnailClick}
-          layout={layoutType}
-          size="small"
-          onSelect={onSelect}
-          selectedDocuments={selectedDocuments}
-        />
-      </div>
-      <span className="p-2 w-full text-left">
-        {t("pagination.range", {
-          start: offset + 1,
-          end: Math.min(offset + limit, total),
-          total,
-        })}
-      </span>
-      <Pagination
-        total={total}
-        limit={limit}
-        currentPage={page}
-        onPageChange={onPageChange}
-        className="mb-4"
-      />
     </>
   );
 };

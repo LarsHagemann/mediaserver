@@ -19,6 +19,7 @@ export const documentRouter = Router();
 
 type DocumentUpload = {
   tags: string;
+  isPublic: string;
 };
 
 type BulkEditDocumentsRequest = {
@@ -44,7 +45,7 @@ documentRouter.post(
       diContainer,
       files,
       query: { webSocketClientId, extension },
-      body: { tags },
+      body: { tags, isPublic },
       identity,
     }) => {
       const file = files?.upload;
@@ -77,6 +78,7 @@ documentRouter.post(
         webSocketClientId: decodeURIComponent(webSocketClientId),
         extension,
         ownerId,
+        isPublic: isPublic === "true",
         tags: z
           .array(
             z.object({

@@ -11,6 +11,7 @@ export type FileProxy = {
 export type FileWithTags = {
   file: File;
   tags: ApiTag[];
+  isPublic: boolean;
 };
 
 type UploadContextType = {
@@ -18,8 +19,9 @@ type UploadContextType = {
   toBeProcessed: Set<FileProxy>;
   processedFiles: Set<FileProxy>;
   failedFiles: Set<FileProxy>;
+  progress: Map<string, number>;
 
-  markFileAsToBeUploaded: (file: File, tags: ApiTag[]) => void;
+  markFileAsToBeUploaded: (file: File, tags: ApiTag[], isPublic: boolean) => void;
   markFileAsBeingProcessed: (file: string) => void;
   markFileAsProcessed: (file: string) => void;
   markFileAsFailed: (file: string, errorReason: string) => void;

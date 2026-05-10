@@ -3,6 +3,16 @@ import { FiGrid, FiList, FiShuffle } from "react-icons/fi";
 import { MdBookmarkAdd } from "react-icons/md";
 import { twMerge } from "tailwind-merge";
 
+export type TypeFilter = "all" | "image" | "video" | "application" | "text";
+
+const TYPE_TABS: { key: TypeFilter; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "image", label: "Images" },
+  { key: "video", label: "Video" },
+  { key: "application", label: "Documents" },
+  { key: "text", label: "Data" },
+];
+
 type Props = {
   hasRandomSort: boolean;
   onReseed: () => void;
@@ -10,6 +20,12 @@ type Props = {
   onSaveCollection: () => void;
   layoutType: "grid" | "list";
   onSetLayoutType: (type: "grid" | "list") => void;
+  sortMode: "newest" | "random";
+  onSetSortMode: (mode: "newest" | "random") => void;
+  typeFilter: TypeFilter;
+  onSetTypeFilter: (type: TypeFilter) => void;
+  total: number;
+  pageSize: number;
 };
 
 export const GalleryControls = ({
@@ -19,41 +35,87 @@ export const GalleryControls = ({
   onSaveCollection,
   layoutType,
   onSetLayoutType,
+  sortMode,
+  onSetSortMode,
+  typeFilter,
+  onSetTypeFilter,
+  total,
+  pageSize,
 }: Props) => {
   const { t } = useTranslation();
 
   return (
-    <div className="flex flex-row justify-end gap-2 pr-2">
-      {hasRandomSort && (
-        <FiShuffle
-          className="inline text-xl cursor-pointer hover:text-accent-subtle"
-          title={t("pages.gallery.reseed")}
-          onClick={onReseed}
-        />
-      )}
-      {hasQuery && (
-        <MdBookmarkAdd
-          className="inline text-xl cursor-pointer hover:text-accent-subtle"
-          title={t("collections.saveAsCollection")}
-          onClick={onSaveCollection}
-        />
-      )}
-      <FiGrid
-        className={twMerge(
-          "inline text-xl",
-          layoutType === "grid" && "text-accent-subtle",
-          layoutType === "list" && "cursor-pointer",
+    <div className="flex flex-row items-center justify-between gap-2 px-3 py-1">
+      {/* Type filter tabs */}
+      <div className="flex flex-row items-center gap-0.5">
+        {TYPE_TABS.map(({ key, label }) => (
+          <button
+            key={key}
+            onClick={() => onSetTypeFilter(key)}
+            className={twMerge(
+              "px-3 py-1.5 rounded-full text-sm transition-colors",
+              typeFilter === key
+                ? "bg-surface-3 text-text-primary font-medium"
+                : "text-text-muted hover:text-text-secondary hover:bg-surface-2",
+            )}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {/* Right controls */}
+      <div className="flex flex-row items-center gap-3 shrink-0">
+        {hasQuery && (
+          <MdBookmarkAdd
+            className="text-xl cursor-pointer text-text-muted hover:text-accent-subtle transition-colors"
+            title={t("collections.saveAsCollection")}
+            onClick={onSaveCollection}
+          />
         )}
-        onClick={() => onSetLayoutType("grid")}
-      />
-      <FiList
-        className={twMerge(
-          "inline text-xl",
-          layoutType === "list" && "text-accent-subtle",
-          layoutType === "grid" && "cursor-pointer",
-        )}
-        onClick={() => onSetLayoutType("list")}
-      />
+        <span className="text-sm text-text-muted whitespace-nowrap">
+          {pageSize} of {total}
+        </span>
+        <div className="flex items-center gap-1.5">
+          <select
+            value={sortMode}
+            onChange={(e) =>
+              onSetSortMode(e.target.value as "newest" | "random")
+            }
+            className="bg-surface-2 border border-border text-text-secondary text-sm rounded-md px-2 py-1 cursor-pointer appearance-none"
+          >
+            <option value="newest">Newest first</option>
+            <option value="random">Random</option>
+          </select>
+          {hasRandomSort && (
+            <FiShuffle
+              className="text-lg cursor-pointer text-text-muted hover:text-accent-subtle transition-colors"
+              title={t("pages.gallery.reseed")}
+              onClick={onReseed}
+            />
+          )}
+        </div>
+        <div className="flex items-center gap-1.5">
+          <FiGrid
+            className={twMerge(
+              "text-xl transition-colors",
+              layoutType === "grid"
+                ? "text-accent-subtle"
+                : "cursor-pointer text-text-muted hover:text-text-secondary",
+            )}
+            onClick={() => onSetLayoutType("grid")}
+          />
+          <FiList
+            className={twMerge(
+              "text-xl transition-colors",
+              layoutType === "list"
+                ? "text-accent-subtle"
+                : "cursor-pointer text-text-muted hover:text-text-secondary",
+            )}
+            onClick={() => onSetLayoutType("list")}
+          />
+        </div>
+      </div>
     </div>
   );
 };

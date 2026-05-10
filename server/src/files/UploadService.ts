@@ -16,6 +16,7 @@ type ProcessUploadDocument = {
   webSocketClientId: string;
   tags: ApiTag[];
   ownerId: string;
+  isPublic: boolean;
 };
 
 type UploadFinishedMessage = {
@@ -56,6 +57,7 @@ export class UploadService {
         filename,
         type: upload.mimeType,
         ownerId: upload.ownerId,
+        isPublic: upload.isPublic,
       });
 
       const tags = upload.tags;

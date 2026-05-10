@@ -10,10 +10,39 @@
   },
   "pages": {
     "upload": {
-      "title": "Upload Files",
-      "description": "Drop your files here to upload them. Use the input below to automatically assign tags to all uploaded files.",
-      "tagInputPlaceholder": "Enter tags to assign to all uploaded files",
-      "dropFilesHereOrClickToSelect": "Drop files here or click to select"
+      "title": "Upload files",
+      "headerDescriptionPre": "Drop anything: photos, PDFs, videos, archives. Tags and visibility apply to",
+      "everythingInBatch": "everything in this batch",
+      "headerDescriptionPost": "—you can fine-tune per-file below before uploading.",
+      "statQueued": "Queued",
+      "statTotalSize": "Total Size",
+      "batchTagsLabel": "Batch Tags",
+      "batchTagsHint": "Applied to all uploaded files in this batch",
+      "batchTagsInputPlaceholder": "Type a tag and press Enter",
+      "visibilityLabel": "Visibility",
+      "private": "Private",
+      "public": "Public",
+      "privateDescription": "only you can see, search, and link these files. Switch to public anytime per file from the gallery.",
+      "publicDescription": "everyone with access to this server can see these files.",
+      "dropZoneTitle": "Drop files here, or click to browse",
+      "dropZoneSubtitle": "Up to 2 GB per file. Multiple files welcome — they'll line up in the queue below.",
+      "or": "or",
+      "chooseFiles": "Choose files",
+      "queueTitle": "Upload queue",
+      "fileCount_one": "{{count}} file",
+      "fileCount_other": "{{count}} files",
+      "addMore": "Add more",
+      "clearAll": "Clear all",
+      "parallelUploads": "Parallel uploads",
+      "statusQueued": "Queued",
+      "statusUploading": "Uploading…",
+      "statusDone": "Done",
+      "statusRetry": "Retry",
+      "addTag": "tag",
+      "saveAsDraft": "Save as draft",
+      "uploadButton": "Upload {{count}}",
+      "batchTagCount_one": "{{count}} batch tag",
+      "batchTagCount_other": "{{count}} batch tags"
     },
     "gallery": {
       "tagInputPlaceholder": "Search by tag...",
@@ -31,7 +60,13 @@
       "editTags": "Edit Tags",
       "editCollections": "Edit Collections",
       "bulkEditConfirm": "Apply changes to {{count}} documents",
-      "searchTag": "Search tag"
+      "searchTag": "Search tag",
+      "easyModePlaceholder": "Filter by tag, name, or type — try type:image, after:2026-",
+      "easyModeAddPlaceholder": "Add tag...",
+      "easyMode": "Easy",
+      "advancedMode": "Advanced",
+      "switchToEasyMode": "Switch to easy mode",
+      "switchToAdvancedMode": "Switch to advanced mode"
     }
   },
   "pagination": {

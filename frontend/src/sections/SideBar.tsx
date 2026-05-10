@@ -11,6 +11,7 @@ import { useTranslation } from "react-i18next";
 import { MdSettings, MdCollections, MdLogout } from "react-icons/md";
 import { useIdentity, usePermission } from "../hooks/usePermission";
 import { UserAvatar } from "../components/UserAvatar";
+import { AppIcon } from "../components/AppIcon";
 
 const getUsername = (email?: string | null, name?: string | null): string => {
   if (email) return "@" + email.split("@")[0];
@@ -19,7 +20,7 @@ const getUsername = (email?: string | null, name?: string | null): string => {
 };
 
 const SectionLabel = ({ label }: { label: string }) => (
-  <p className="px-3 pt-4 pb-1 text-xs font-semibold tracking-widest text-text-faint uppercase select-none">
+  <p className="hidden sm:block px-3 pt-4 pb-1 text-xs font-semibold tracking-widest text-text-faint uppercase select-none">
     {label}
   </p>
 );
@@ -46,9 +47,7 @@ export const SideBar = () => {
       {/* Logo */}
       {!collapsed && (
         <div className="hidden sm:flex items-center gap-3 px-3 py-4 mb-1">
-          <div className="w-9 h-9 rounded-lg bg-accent-subtle flex items-center justify-center flex-shrink-0">
-            <RiGalleryView2 className="w-5 h-5 text-white" />
-          </div>
+          <AppIcon size="md" />
           <div className="overflow-hidden">
             <p className="text-text-primary font-semibold text-sm leading-tight truncate">
               Mediaserver

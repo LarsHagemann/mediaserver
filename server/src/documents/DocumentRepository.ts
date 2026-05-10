@@ -10,6 +10,7 @@ export type CreateDocumentRequest = {
   filename: string;
   type: string;
   ownerId: string;
+  isPublic: boolean;
 };
 
 export type Document = {
@@ -51,7 +52,7 @@ export class DocumentRepository {
 
   public async createDocument(request: CreateDocumentRequest): Promise<void> {
     await this.dbService.none(
-      "INSERT INTO documents (id, base_path, filename, mime, owner_id) VALUES ($id, $basePath, $filename, $type, $ownerId)",
+      "INSERT INTO documents (id, base_path, filename, mime, owner_id, is_public) VALUES ($id, $basePath, $filename, $type, $ownerId, $isPublic)",
       request,
     );
   }

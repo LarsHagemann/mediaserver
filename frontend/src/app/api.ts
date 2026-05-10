@@ -6,6 +6,7 @@ type DocumentUpload = {
   file: File;
   webSocketClientId: string;
   tags: ApiTag[];
+  isPublic: boolean;
 };
 
 export type Document = {
@@ -105,10 +106,11 @@ export const api = baseApi.injectEndpoints({
     }),
 
     documentUpload: build.mutation<void, DocumentUpload>({
-      query: ({ file, webSocketClientId, tags }) => {
+      query: ({ file, webSocketClientId, tags, isPublic }) => {
         const formData = new FormData();
         formData.append("upload", file);
         formData.append("tags", JSON.stringify(tags));
+        formData.append("isPublic", String(isPublic));
         return {
           url: `/documents/upload?webSocketClientId=${encodeURIComponent(
             webSocketClientId,
@@ -472,3 +474,39 @@ export type AuthConfig = {
   anonymousRoleId: string | null;
   defaultRoleId: string | null;
 };
+
+export function uploadDocumentWithProgress(
+  params: {
+    file: File;
+    webSocketClientId: string;
+    tags: ApiTag[];
+    isPublic: boolean;
+  },
+  onProgress: (pct: number) => void,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const formData = new FormData();
+    formData.append("upload", params.file);
+    formData.append("tags", JSON.stringify(params.tags));
+    formData.append("isPublic", String(params.isPublic));
+
+    const extension = (params.file.name.split(".").pop() ?? "").toLocaleLowerCase();
+    const url = `${import.meta.env.VITE_BACKEND_URL}/documents/upload?webSocketClientId=${encodeURIComponent(params.webSocketClientId)}&extension=${encodeURIComponent(extension)}`;
+
+    const xhr = new XMLHttpRequest();
+    xhr.withCredentials = true;
+    xhr.open("POST", url);
+
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) onProgress((e.loaded / e.total) * 100);
+    };
+
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) resolve();
+      else reject(new Error(xhr.statusText || `Upload failed with status ${xhr.status}`));
+    };
+    xhr.onerror = () => reject(new Error("Network error during upload"));
+
+    xhr.send(formData);
+  });
+}

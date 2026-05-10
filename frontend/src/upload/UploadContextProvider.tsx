@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   UploadContext,
   type FileProxy,
@@ -9,8 +9,9 @@ import {
   useWebSocketContext,
   type WebSocketIncomingMessageSchema,
 } from "../websocket/WebSocketContext";
-import { enhancedApi } from "../app/enhancedApi";
-import type { ApiTag } from "../app/api";
+import { uploadDocumentWithProgress, type ApiTag } from "../app/api";
+import { useAppSelector } from "../app/store";
+import { selectMaxConcurrentUploads } from "../app/persistent.slice";
 
 export const UploadContextProvider: React.FC<{
   children: React.ReactNode;
@@ -26,13 +27,19 @@ export const UploadContextProvider: React.FC<{
     remove: removeFromBeProcessed,
   } = useSet<FileProxy>();
   const { set: processedFiles, add: addProcessedFile } = useSet<FileProxy>();
-  const { set: failedFiles, add: addFailedFile } = useSet<FileProxy>();
+  const { set: failedFiles, add: addFailedFile, remove: removeFromFailedFiles } = useSet<FileProxy>();
+
+  const [progress, setProgress] = useState<Map<string, number>>(new Map());
+
+  const maxConcurrentUploads = useAppSelector(selectMaxConcurrentUploads);
 
   const markFileAsToBeUploaded = useCallback(
-    (file: File, tags: ApiTag[]) => {
-      addToBeUploaded({ file, tags });
+    (file: File, tags: ApiTag[], isPublic: boolean) => {
+      const failedEntry = Array.from(failedFiles).find((f) => f.name === file.name);
+      if (failedEntry) removeFromFailedFiles(failedEntry);
+      addToBeUploaded({ file, tags, isPublic });
     },
-    [addToBeUploaded],
+    [addToBeUploaded, failedFiles, removeFromFailedFiles],
   );
 
   const markFileAsBeingProcessed = useCallback(
@@ -62,6 +69,11 @@ export const UploadContextProvider: React.FC<{
           status: "success",
         });
         removeFromBeProcessed(fileObj);
+        setProgress((prev) => {
+          const next = new Map(prev);
+          next.delete(file);
+          return next;
+        });
       }
     },
     [addProcessedFile, removeFromBeProcessed, toBeProcessed],
@@ -78,6 +90,11 @@ export const UploadContextProvider: React.FC<{
           errorReason,
         });
         removeFromBeProcessed(fileObj);
+        setProgress((prev) => {
+          const next = new Map(prev);
+          next.delete(file);
+          return next;
+        });
       }
     },
     [addFailedFile, removeFromBeProcessed, toBeProcessed],
@@ -129,33 +146,28 @@ export const UploadContextProvider: React.FC<{
     handleFileUploadSuccess,
   ]);
 
-  const [uploadDocument] = enhancedApi.useDocumentUploadMutation();
-
   const markFileAsFailedRef = useRef(markFileAsFailed);
   markFileAsFailedRef.current = markFileAsFailed;
 
   useEffect(() => {
-    if (toBeUploaded.size > 0 && webSocketClientId) {
-      const { file, tags } = Array.from(toBeUploaded)[0];
-      uploadDocument({
-        file,
-        webSocketClientId,
-        tags,
-      })
-        .unwrap()
-        .catch((err) => {
-          markFileAsFailedRef.current(
-            file.name,
-            err.message || "Upload failed",
-          );
-        });
+    if (toBeUploaded.size === 0 || !webSocketClientId) return;
+    const slots = maxConcurrentUploads - toBeProcessed.size;
+    if (slots <= 0) return;
+    const batch = Array.from(toBeUploaded).slice(0, slots);
+    batch.forEach(({ file, tags, isPublic }) => {
       markFileAsBeingProcessed(file.name);
-    }
+      uploadDocumentWithProgress(
+        { file, webSocketClientId, tags, isPublic },
+        (pct) => setProgress((prev) => new Map(prev).set(file.name, pct)),
+      ).catch((err) => {
+        markFileAsFailedRef.current(file.name, err.message || "Upload failed");
+      });
+    });
   }, [
     toBeUploaded,
-    uploadDocument,
+    toBeProcessed,
+    maxConcurrentUploads,
     markFileAsBeingProcessed,
-    markFileAsFailed,
     webSocketClientId,
   ]);
 
@@ -166,6 +178,7 @@ export const UploadContextProvider: React.FC<{
         toBeProcessed,
         processedFiles,
         failedFiles,
+        progress,
 
         markFileAsToBeUploaded,
         markFileAsBeingProcessed,
