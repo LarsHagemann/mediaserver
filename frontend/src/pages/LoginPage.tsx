@@ -28,8 +28,12 @@ export const LoginPage = () => {
           <AppIcon />
         </div>
 
-        <h1 className="text-2xl font-bold text-text-primary mb-1">{t("login.title")}</h1>
-        <p className="text-text-secondary text-sm mb-6">{t("login.redirectNotice")}</p>
+        <h1 className="text-2xl font-bold text-text-primary mb-1">
+          {t("login.title")}
+        </h1>
+        <p className="text-text-secondary text-sm mb-6">
+          {t("login.redirectNotice")}
+        </p>
 
         <button
           onClick={handleLogin}
@@ -50,7 +54,9 @@ export const LoginPage = () => {
         ) : (
           <div className="flex items-start gap-2 p-3 rounded-lg bg-surface-3 border border-border">
             <MdInfo className="w-4 h-4 text-text-secondary flex-shrink-0 mt-0.5" />
-            <p className="text-text-secondary text-xs">{t("login.registrationDisabledNotice")}</p>
+            <p className="text-text-secondary text-xs">
+              {t("login.registrationDisabledNotice")}
+            </p>
           </div>
         )}
       </div>

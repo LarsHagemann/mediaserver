@@ -1,4 +1,8 @@
-import type { ApiTag } from "../tags/TagRepository.js";
+export type ApiTag = {
+  key: string;
+  value: string | undefined;
+  type: string;
+};
 
 export type ThumbnailResult = {
   path: string;

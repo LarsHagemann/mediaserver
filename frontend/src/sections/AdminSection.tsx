@@ -28,9 +28,13 @@ const UsersTab = () => {
       {usersData?.users.map((user) => (
         <div key={user.id} className="p-4 border border-border rounded-lg">
           <div className="mb-2">
-            <span className="font-semibold">{user.name ?? user.email ?? user.externalId}</span>
+            <span className="font-semibold">
+              {user.name ?? user.email ?? user.externalId}
+            </span>
             {user.email && user.name && (
-              <span className="ml-2 text-sm text-text-secondary">{user.email}</span>
+              <span className="ml-2 text-sm text-text-secondary">
+                {user.email}
+              </span>
             )}
           </div>
           <div className="flex flex-wrap gap-2">
@@ -56,7 +60,8 @@ const UsersTab = () => {
 
 const ConfigTab = () => {
   const { t } = useTranslation();
-  const { data: config, isLoading: configLoading } = api.useGetAuthConfigQuery();
+  const { data: config, isLoading: configLoading } =
+    api.useGetAuthConfigQuery();
   const { data: rolesData, isLoading: rolesLoading } = api.useListRolesQuery();
   const [updateConfig] = api.useUpdateAuthConfigMutation();
 
@@ -65,33 +70,49 @@ const ConfigTab = () => {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
-        <label className="text-sm font-medium">{t("admin.config.anonymousRole")}</label>
+        <label className="text-sm font-medium">
+          {t("admin.config.anonymousRole")}
+        </label>
         <select
           className="px-3 py-2 rounded border border-border bg-bg-base text-sm"
           value={config?.anonymousRoleId ?? ""}
-          onChange={(e) => void updateConfig({ anonymousRoleId: e.target.value || undefined })}
+          onChange={(e) =>
+            void updateConfig({ anonymousRoleId: e.target.value || undefined })
+          }
         >
           <option value="">{t("admin.config.noRole")}</option>
           {rolesData?.roles.map((role) => (
-            <option key={role.id} value={role.id}>{role.name}</option>
+            <option key={role.id} value={role.id}>
+              {role.name}
+            </option>
           ))}
         </select>
-        <p className="text-xs text-text-secondary">{t("admin.config.anonymousRoleHint")}</p>
+        <p className="text-xs text-text-secondary">
+          {t("admin.config.anonymousRoleHint")}
+        </p>
       </div>
 
       <div className="flex flex-col gap-2">
-        <label className="text-sm font-medium">{t("admin.config.defaultRole")}</label>
+        <label className="text-sm font-medium">
+          {t("admin.config.defaultRole")}
+        </label>
         <select
           className="px-3 py-2 rounded border border-border bg-bg-base text-sm"
           value={config?.defaultRoleId ?? ""}
-          onChange={(e) => void updateConfig({ defaultRoleId: e.target.value || undefined })}
+          onChange={(e) =>
+            void updateConfig({ defaultRoleId: e.target.value || undefined })
+          }
         >
           <option value="">{t("admin.config.noRole")}</option>
           {rolesData?.roles.map((role) => (
-            <option key={role.id} value={role.id}>{role.name}</option>
+            <option key={role.id} value={role.id}>
+              {role.name}
+            </option>
           ))}
         </select>
-        <p className="text-xs text-text-secondary">{t("admin.config.defaultRoleHint")}</p>
+        <p className="text-xs text-text-secondary">
+          {t("admin.config.defaultRoleHint")}
+        </p>
       </div>
     </div>
   );

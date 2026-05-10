@@ -1,9 +1,14 @@
 import type { Identity } from "./Identity.js";
-import type { CollectionAccessScope, DocumentAccessScope } from "./AccessScope.js";
+import type {
+  CollectionAccessScope,
+  DocumentAccessScope,
+} from "./AccessScope.js";
 
 export class AccessScopeResolver {
   collectionScope(identity: Identity): CollectionAccessScope {
-    return identity.hasPermission("collection:read") ? { type: "all" } : { type: "none" };
+    return identity.hasPermission("collection:read")
+      ? { type: "all" }
+      : { type: "none" };
   }
 
   documentScope(identity: Identity): DocumentAccessScope {

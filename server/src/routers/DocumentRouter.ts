@@ -6,7 +6,10 @@ import type { EmptyObject } from "../common/EmptyObject.js";
 import type { DocumentService } from "../documents/DocumentService.js";
 import type { DocumentAccess } from "../documents/DocumentRepository.js";
 import type { PaginatedResponse } from "../util/PaginatedResponse.js";
-import type { Document, DocumentWithTags } from "../documents/DocumentRepository.js";
+import type {
+  Document,
+  DocumentWithTags,
+} from "../documents/DocumentRepository.js";
 import type { TagService } from "../tags/TagService.js";
 import type { AccessScopeResolver } from "../auth/AccessScopeResolver.js";
 import z from "zod";
@@ -65,9 +68,10 @@ documentRouter.post(
         throw new ApiError("BadRequest", 400, "Missing extension");
       }
 
-      const ownerId = identity.userId === "system" || identity.userId === null
-        ? SYSTEM_USER_ID
-        : identity.userId;
+      const ownerId =
+        identity.userId === "system" || identity.userId === null
+          ? SYSTEM_USER_ID
+          : identity.userId;
 
       const uploadService = diContainer.get<UploadService>(services.upload);
       void uploadService.processUploadDocument({
@@ -110,15 +114,20 @@ documentRouter.get(
       query: { limit = 100, offset = 0, query = "", seed },
       identity,
     }) => {
-      const scopeResolver = diContainer.get<AccessScopeResolver>(services.accessScopeResolver);
+      const scopeResolver = diContainer.get<AccessScopeResolver>(
+        services.accessScopeResolver,
+      );
       const scope = scopeResolver.documentScope(identity);
       const tagService = diContainer.get<TagService>(services.tag);
-      const response = await tagService.listDocuments({
-        limit,
-        offset,
-        query: decodeURIComponent(query),
-        seed: seed ?? "",
-      }, scope);
+      const response = await tagService.listDocuments(
+        {
+          limit,
+          offset,
+          query: decodeURIComponent(query),
+          seed: seed ?? "",
+        },
+        scope,
+      );
       return {
         status: 200,
         body: response,
@@ -132,7 +141,9 @@ documentRouter.get(
   requirePermission("document:read"),
   apiHandler<DocumentWithTags[], { id: string | string[] }>(
     async ({ diContainer, query: { id }, identity }) => {
-      const scopeResolver = diContainer.get<AccessScopeResolver>(services.accessScopeResolver);
+      const scopeResolver = diContainer.get<AccessScopeResolver>(
+        services.accessScopeResolver,
+      );
       const scope = scopeResolver.documentScope(identity);
       const ids = Array.isArray(id) ? id : [id];
       const tagService = diContainer.get<TagService>(services.tag);
@@ -169,10 +180,17 @@ documentRouter.get(
   requirePermission("document:read"),
   apiHandler<FileDownload, EmptyObject, EmptyObject, { id: string }>(
     async ({ diContainer, params: { id }, identity }) => {
-      const scopeResolver = diContainer.get<AccessScopeResolver>(services.accessScopeResolver);
+      const scopeResolver = diContainer.get<AccessScopeResolver>(
+        services.accessScopeResolver,
+      );
       const scope = scopeResolver.documentScope(identity);
-      const documentService = diContainer.get<DocumentService>(services.document);
-      const thumbnailPath = await documentService.getDocumentThumbnail(id, scope);
+      const documentService = diContainer.get<DocumentService>(
+        services.document,
+      );
+      const thumbnailPath = await documentService.getDocumentThumbnail(
+        id,
+        scope,
+      );
       return {
         status: 200,
         body: new FileDownload(thumbnailPath, "image/jpeg"),
@@ -186,7 +204,9 @@ documentRouter.get(
   requirePermission("document:read"),
   apiHandler<DocumentAccess, EmptyObject, EmptyObject, { id: string }>(
     async ({ diContainer, params: { id }, identity }) => {
-      const documentService = diContainer.get<DocumentService>(services.document);
+      const documentService = diContainer.get<DocumentService>(
+        services.document,
+      );
       const access = await documentService.getDocumentAccess(id, identity);
       return {
         status: 200,
@@ -199,28 +219,33 @@ documentRouter.get(
 documentRouter.put(
   "/:id/access",
   requirePermission("document:read"),
-  apiHandler<EmptyObject, EmptyObject, UpdateDocumentAccessRequest, { id: string }>(
-    async ({ diContainer, params: { id }, body, identity }) => {
-      const updateSchema = z.object({
-        isPublic: z.boolean(),
-        sharedWith: z.array(z.string().uuid()),
-      });
-      const update = updateSchema.parse(body);
-      const documentService = diContainer.get<DocumentService>(services.document);
-      await documentService.updateDocumentAccess(id, identity, update);
-      return {
-        status: 204,
-        body: {},
-      };
-    },
-  ),
+  apiHandler<
+    EmptyObject,
+    EmptyObject,
+    UpdateDocumentAccessRequest,
+    { id: string }
+  >(async ({ diContainer, params: { id }, body, identity }) => {
+    const updateSchema = z.object({
+      isPublic: z.boolean(),
+      sharedWith: z.array(z.string().uuid()),
+    });
+    const update = updateSchema.parse(body);
+    const documentService = diContainer.get<DocumentService>(services.document);
+    await documentService.updateDocumentAccess(id, identity, update);
+    return {
+      status: 204,
+      body: {},
+    };
+  }),
 );
 
 documentRouter.delete(
   "/:id",
   apiHandler<EmptyObject, EmptyObject, EmptyObject, { id: string }>(
     async ({ diContainer, params: { id }, identity }) => {
-      const documentService = diContainer.get<DocumentService>(services.document);
+      const documentService = diContainer.get<DocumentService>(
+        services.document,
+      );
       await documentService.deleteDocument(id, identity);
       return {
         status: 204,
@@ -239,7 +264,9 @@ documentRouter.get(
     EmptyObject,
     { id: string }
   >(async ({ diContainer, params: { id }, headers, identity }) => {
-    const scopeResolver = diContainer.get<AccessScopeResolver>(services.accessScopeResolver);
+    const scopeResolver = diContainer.get<AccessScopeResolver>(
+      services.accessScopeResolver,
+    );
     const scope = scopeResolver.documentScope(identity);
     const documentService = diContainer.get<DocumentService>(services.document);
     const result = await documentService.getDocument(id, headers.range, scope);

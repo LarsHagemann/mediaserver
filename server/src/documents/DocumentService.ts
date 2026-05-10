@@ -3,7 +3,6 @@ import type {
   CreateDocumentRequest,
   DocumentAccess,
   DocumentRepository,
-  DocumentWithPathInfo,
 } from "./DocumentRepository.js";
 import type { TagService } from "../tags/TagService.js";
 import { FileDownload, FileStream, parseRangeHeader } from "../ApiHandler.js";
@@ -37,7 +36,10 @@ export class DocumentService {
     id: string,
     scope: DocumentAccessScope,
   ): Promise<string> {
-    const document = await this.documentRepository.getDocumentWithPathInfo(id, scope);
+    const document = await this.documentRepository.getDocumentWithPathInfo(
+      id,
+      scope,
+    );
     return path.join(document.base_path, "thumbnails", `${id}.jpg`);
   }
 
@@ -46,7 +48,10 @@ export class DocumentService {
     rangeHeader: string | undefined,
     scope: DocumentAccessScope,
   ): Promise<FileDownload | FileStream> {
-    const document = await this.documentRepository.getDocumentWithPathInfo(id, scope);
+    const document = await this.documentRepository.getDocumentWithPathInfo(
+      id,
+      scope,
+    );
     const filePath = path.join(
       document.base_path,
       "documents",
@@ -76,7 +81,11 @@ export class DocumentService {
   ): Promise<DocumentAccess> {
     const access = await this.documentRepository.getDocumentAccess(documentId);
     if (!canManageAccess(identity, access.ownerId)) {
-      throw new ApiError("Forbidden", 403, "Only the document owner or an admin can manage access");
+      throw new ApiError(
+        "Forbidden",
+        403,
+        "Only the document owner or an admin can manage access",
+      );
     }
     return access;
   }
@@ -88,7 +97,11 @@ export class DocumentService {
   ): Promise<void> {
     const access = await this.documentRepository.getDocumentAccess(documentId);
     if (!canManageAccess(identity, access.ownerId)) {
-      throw new ApiError("Forbidden", 403, "Only the document owner or an admin can manage access");
+      throw new ApiError(
+        "Forbidden",
+        403,
+        "Only the document owner or an admin can manage access",
+      );
     }
     await this.documentRepository.updateDocumentAccess(documentId, update);
   }
@@ -100,18 +113,26 @@ export class DocumentService {
     const access = await this.documentRepository.getDocumentAccess(documentId);
     const isOwner = isDocumentOwner(identity, access.ownerId);
     if (!isOwner && !identity.hasPermission("document:delete")) {
-      throw new ApiError("Forbidden", 403, "Only the document owner or a user with delete permission can delete documents");
+      throw new ApiError(
+        "Forbidden",
+        403,
+        "Only the document owner or a user with delete permission can delete documents",
+      );
     }
     await this.documentRepository.deleteDocument(documentId);
   }
 }
 
 function isDocumentOwner(identity: Identity, ownerId: string): boolean {
-  return identity.userId !== null
-    && identity.userId !== "system"
-    && identity.userId === ownerId;
+  return (
+    identity.userId !== null &&
+    identity.userId !== "system" &&
+    identity.userId === ownerId
+  );
 }
 
 function canManageAccess(identity: Identity, ownerId: string): boolean {
-  return isDocumentOwner(identity, ownerId) || identity.hasPermission("admin:users");
+  return (
+    isDocumentOwner(identity, ownerId) || identity.hasPermission("admin:users")
+  );
 }

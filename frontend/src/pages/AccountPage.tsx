@@ -19,10 +19,8 @@ export const AccountPage = () => {
   const { t } = useTranslation();
   const { data: identity } = useIdentity();
   const [currentTab, setCurrentTab] = useState<Tab>("profile");
-  const { data: sessionsData, isLoading: sessionsLoading } = api.useListSessionsQuery(
-    undefined,
-    { skip: currentTab !== "sessions" },
-  );
+  const { data: sessionsData, isLoading: sessionsLoading } =
+    api.useListSessionsQuery(undefined, { skip: currentTab !== "sessions" });
   const [deleteSession] = api.useDeleteSessionMutation();
 
   const username = getUsername(identity?.email, identity?.name);
@@ -91,7 +89,9 @@ export const AccountPage = () => {
         {currentTab === "sessions" && (
           <>
             {sessionsLoading && (
-              <p className="text-text-secondary text-sm">{t("common.loading")}</p>
+              <p className="text-text-secondary text-sm">
+                {t("common.loading")}
+              </p>
             )}
             {sessionsData?.sessions.map((session) => (
               <div
@@ -108,7 +108,9 @@ export const AccountPage = () => {
                   <p className="text-text-primary text-sm font-medium truncate">
                     {session.browser && session.os
                       ? `${session.browser} on ${session.os}`
-                      : session.browser ?? session.os ?? t("account.sessions.unknownDevice")}
+                      : (session.browser ??
+                        session.os ??
+                        t("account.sessions.unknownDevice"))}
                   </p>
                   <p className="text-text-secondary text-xs">
                     {t("account.sessions.started", {

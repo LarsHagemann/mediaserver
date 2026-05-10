@@ -2,7 +2,10 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { api, type AdminRole } from "../app/api";
 
-const NS_CONFIG: Record<string, { prefix: string; label: string; color: string }> = {
+const NS_CONFIG: Record<
+  string,
+  { prefix: string; label: string; color: string }
+> = {
   documents: { prefix: "DC", label: "Documents", color: "bg-indigo-600" },
   tags: { prefix: "TG", label: "Tags", color: "bg-teal-600" },
   collections: { prefix: "CL", label: "Collections", color: "bg-emerald-600" },
@@ -26,7 +29,12 @@ type ActionGroupProps = {
   onToggle?: (action: string) => void;
 };
 
-const ActionGroup = ({ namespace, actions, enabledActions, onToggle }: ActionGroupProps) => {
+const ActionGroup = ({
+  namespace,
+  actions,
+  enabledActions,
+  onToggle,
+}: ActionGroupProps) => {
   const cfg = NS_CONFIG[namespace] ?? {
     prefix: namespace.slice(0, 2).toUpperCase(),
     label: namespace,
@@ -37,7 +45,9 @@ const ActionGroup = ({ namespace, actions, enabledActions, onToggle }: ActionGro
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center gap-1.5">
-        <span className={`${cfg.color} text-white text-xs font-bold px-1.5 py-0.5 rounded leading-none`}>
+        <span
+          className={`${cfg.color} text-white text-xs font-bold px-1.5 py-0.5 rounded leading-none`}
+        >
           {cfg.prefix}
         </span>
         <span className="text-sm font-medium">{cfg.label}</span>
@@ -78,7 +88,13 @@ type RoleCardProps = {
   onDelete?: () => void;
 };
 
-const RoleCard = ({ role, groupedActions, userCount, onToggle, onDelete }: RoleCardProps) => {
+const RoleCard = ({
+  role,
+  groupedActions,
+  userCount,
+  onToggle,
+  onDelete,
+}: RoleCardProps) => {
   const { t } = useTranslation();
   const totalActions = Object.values(groupedActions).flat().length;
 
@@ -93,7 +109,9 @@ const RoleCard = ({ role, groupedActions, userCount, onToggle, onDelete }: RoleC
             </span>
           )}
           {role.description && (
-            <span className="text-sm text-text-secondary">{role.description}</span>
+            <span className="text-sm text-text-secondary">
+              {role.description}
+            </span>
           )}
         </div>
         <div className="flex items-center gap-3 shrink-0">
@@ -106,7 +124,10 @@ const RoleCard = ({ role, groupedActions, userCount, onToggle, onDelete }: RoleC
             {role.policies.length}/{totalActions} {t("admin.roles.permissions")}
           </span>
           {!role.isSystem && onDelete && (
-            <button onClick={onDelete} className="text-xs text-danger hover:opacity-80">
+            <button
+              onClick={onDelete}
+              className="text-xs text-danger hover:opacity-80"
+            >
               {t("common.delete")}
             </button>
           )}
@@ -149,7 +170,10 @@ export const RolesEditor = () => {
 
   const handleCreate = async () => {
     if (!newRoleName.trim()) return;
-    await createRole({ name: newRoleName.trim(), description: newRoleDesc.trim() || undefined });
+    await createRole({
+      name: newRoleName.trim(),
+      description: newRoleDesc.trim() || undefined,
+    });
     setNewRoleName("");
     setNewRoleDesc("");
   };
@@ -196,7 +220,9 @@ export const RolesEditor = () => {
             <span className="text-xs font-bold tracking-widest text-text-secondary uppercase">
               {t("admin.roles.systemSection")}
             </span>
-            <span className="text-xs text-text-secondary">{t("admin.roles.systemSectionHint")}</span>
+            <span className="text-xs text-text-secondary">
+              {t("admin.roles.systemSectionHint")}
+            </span>
           </div>
           {systemRoles.map((role) => (
             <RoleCard

@@ -41,6 +41,7 @@ export class AllowAllIdentity implements Identity {
   readonly isAuthenticated = true;
   readonly permissions: readonly Action[] = ALL_ACTIONS;
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   hasPermission(_action: Action): boolean {
     return true;
   }

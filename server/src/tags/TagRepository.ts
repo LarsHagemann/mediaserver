@@ -1,4 +1,6 @@
 import { MetaTag, Tag, TagParser } from "@lars_hagemann/tags";
+import type { ApiTag } from "../plugins/plugin.js";
+export type { ApiTag };
 import type { DbService } from "../sql/DbService.js";
 import {
   paginated,
@@ -56,12 +58,6 @@ const tagWithCountRowSchema = tagRowSchema.extend({
   usage_count: z.number().int(),
 });
 
-export type ApiTag = {
-  key: string;
-  value: string | undefined;
-  type: string;
-};
-
 export type ApiTagWithCount = ApiTag & {
   usageCount: number;
 };
@@ -112,10 +108,13 @@ export class TagRepository {
         }
       }
 
-      const baseParams = isRandom ? { limit, offset, seed: seed ?? null } : { limit, offset };
-      const params = scope.type === "accessible-by"
-        ? { ...baseParams, userId: scope.userId }
-        : baseParams;
+      const baseParams = isRandom
+        ? { limit, offset, seed: seed ?? null }
+        : { limit, offset };
+      const params =
+        scope.type === "accessible-by"
+          ? { ...baseParams, userId: scope.userId }
+          : baseParams;
 
       const items = await this.dbService.any(
         paginated(documentRowSchema),
@@ -151,7 +150,8 @@ export class TagRepository {
     if (scope.type === "public-only") {
       scopeClause = " AND documents.is_public = true";
     } else if (scope.type === "accessible-by") {
-      scopeClause = " AND (documents.is_public = true OR documents.owner_id = $userId OR EXISTS (SELECT 1 FROM document_shares ds WHERE ds.document_id = documents.id AND ds.shared_with_user_id = $userId))";
+      scopeClause =
+        " AND (documents.is_public = true OR documents.owner_id = $userId OR EXISTS (SELECT 1 FROM document_shares ds WHERE ds.document_id = documents.id AND ds.shared_with_user_id = $userId))";
       params.userId = scope.userId;
     }
 

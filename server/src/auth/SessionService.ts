@@ -1,5 +1,9 @@
 import { v4 as uuidv4 } from "uuid";
-import { AnonymousIdentity, SessionIdentity, type Identity } from "./Identity.js";
+import {
+  AnonymousIdentity,
+  SessionIdentity,
+  type Identity,
+} from "./Identity.js";
 import type { SessionRepository } from "./SessionRepository.js";
 import type { UserRepository } from "./UserRepository.js";
 import type { RoleRepository } from "./RoleRepository.js";
@@ -23,12 +27,20 @@ export class SessionService {
     private readonly envService: EnvironmentService,
   ) {}
 
-  async createSession(userId: string, userAgent: string | null = null): Promise<string> {
+  async createSession(
+    userId: string,
+    userAgent: string | null = null,
+  ): Promise<string> {
     const sessionId = uuidv4();
     const ttl = this.envService.sessionTtlSeconds;
     const expiresAt = new Date(Date.now() + ttl * 1000);
 
-    await this.sessionRepository.create(sessionId, userId, expiresAt, userAgent);
+    await this.sessionRepository.create(
+      sessionId,
+      userId,
+      expiresAt,
+      userAgent,
+    );
 
     const roleIds = await this.userRepository.getRoleIds(userId);
     const permissions = await this.roleRepository.getPoliciesForRoles(roleIds);
@@ -78,12 +90,17 @@ export class SessionService {
       return new AnonymousIdentity(JSON.parse(cachedPerms) as never);
     }
 
-    const anonymousRoleId = await this.roleRepository.getConfig("anonymous_role_id");
+    const anonymousRoleId =
+      await this.roleRepository.getConfig("anonymous_role_id");
     const permissions = anonymousRoleId
       ? await this.roleRepository.getPolicies(anonymousRoleId)
       : [];
 
-    await this.redis.setWithTtl(ANON_PERMISSIONS_KEY, JSON.stringify(permissions), 300);
+    await this.redis.setWithTtl(
+      ANON_PERMISSIONS_KEY,
+      JSON.stringify(permissions),
+      300,
+    );
     return new AnonymousIdentity(permissions);
   }
 

@@ -8,8 +8,8 @@ export type TabSpec<Tabs extends string> = {
 type Props<Tabs extends string, AllowNoSelection extends boolean> = {
   allowNoSelection?: AllowNoSelection;
   currentTab:
-  | NoInfer<Tabs>
-  | (AllowNoSelection extends true ? undefined : never);
+    | NoInfer<Tabs>
+    | (AllowNoSelection extends true ? undefined : never);
   onTabChange: (
     tab: NoInfer<Tabs> | (AllowNoSelection extends true ? undefined : never),
   ) => void;
@@ -37,10 +37,7 @@ export const Tabs = <
   };
 
   return (
-    <div className={twMerge(
-      "flex border-b border-border",
-      className
-    )}>
+    <div className={twMerge("flex border-b border-border", className)}>
       {tabs.map((tab) => (
         <button
           key={tab.tabId}

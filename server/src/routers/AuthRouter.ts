@@ -20,7 +20,11 @@ authRouter.get(
     let name: string | null = null;
     let email: string | null = null;
 
-    if (identity.isAuthenticated && identity.userId && identity.userId !== "system") {
+    if (
+      identity.isAuthenticated &&
+      identity.userId &&
+      identity.userId !== "system"
+    ) {
       const userService = diContainer.get<UserService>(services.userService);
       try {
         const user = await userService.getUser(identity.userId);
@@ -31,7 +35,9 @@ authRouter.get(
       }
     }
 
-    const envService = diContainer.get<EnvironmentService>(services.environment);
+    const envService = diContainer.get<EnvironmentService>(
+      services.environment,
+    );
 
     return {
       status: 200,
@@ -41,7 +47,8 @@ authRouter.get(
         permissions: identity.permissions,
         name,
         email,
-        registrationAllowed: envService.idpEnabled && envService.idpRegistrationAllowed,
+        registrationAllowed:
+          envService.idpEnabled && envService.idpRegistrationAllowed,
       },
     };
   }),
@@ -67,7 +74,9 @@ authRouter.get(
       .map((c) => c.trim().split("="))
       .find(([k]) => k === "session_id")?.[1];
 
-    const sessionRepository = diContainer.get<SessionRepository>(repositories.session);
+    const sessionRepository = diContainer.get<SessionRepository>(
+      repositories.session,
+    );
     const sessions = await sessionRepository.findByUserId(identity.userId);
 
     return {
@@ -95,14 +104,18 @@ authRouter.delete(
     const sessionId = params["id"];
     if (!sessionId) throw new ApiError("BadRequest", 400, "Missing session id");
 
-    const sessionRepository = diContainer.get<SessionRepository>(repositories.session);
+    const sessionRepository = diContainer.get<SessionRepository>(
+      repositories.session,
+    );
     const session = await sessionRepository.findById(sessionId);
 
     if (!session || session.userId !== identity.userId) {
       throw new ApiError("NotFound", 404, "Session not found");
     }
 
-    const sessionService = diContainer.get<SessionService>(services.sessionService);
+    const sessionService = diContainer.get<SessionService>(
+      services.sessionService,
+    );
     await sessionService.deleteSession(sessionId);
 
     return { status: 204, body: {} };
@@ -150,7 +163,9 @@ authRouter.get("/callback", async (req, res) => {
 
   try {
     const oauthService = DI_CONTAINER.get<OAuthService>(services.oauthService);
-    const sessionService = DI_CONTAINER.get<SessionService>(services.sessionService);
+    const sessionService = DI_CONTAINER.get<SessionService>(
+      services.sessionService,
+    );
     const userService = DI_CONTAINER.get<UserService>(services.userService);
     const roleRepository = DI_CONTAINER.get<RoleRepository>(repositories.role);
 
@@ -192,7 +207,9 @@ authRouter.get("/logout", async (req, res) => {
   const sessionId = req.cookies?.session_id as string | undefined;
 
   if (sessionId && envService.idpEnabled) {
-    const sessionService = DI_CONTAINER.get<SessionService>(services.sessionService);
+    const sessionService = DI_CONTAINER.get<SessionService>(
+      services.sessionService,
+    );
     await sessionService.deleteSession(sessionId);
   }
 

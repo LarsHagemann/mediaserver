@@ -37,7 +37,9 @@ export const DocumentPreviewControls: React.FC<Props> = ({
           <FaFile size="0.875rem" />
         </div>
         <div className="min-w-0">
-          <div className="text-sm font-semibold text-text-primary truncate">{displayName}</div>
+          <div className="text-sm font-semibold text-text-primary truncate">
+            {displayName}
+          </div>
           <div className="text-xs text-text-muted">
             {current} of {totalDocuments}
             {mimeType ? ` · ${mimeType}` : ""}

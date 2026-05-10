@@ -50,10 +50,15 @@ export class OAuthService {
   async getRegistrationUrl(): Promise<string> {
     const discovery = await this.getDiscovery();
     // Derives registration URL from the authorization endpoint per Keycloak convention
-    const registrationEndpoint = discovery.authorization_endpoint.replace(/\/auth$/, "/registrations");
+    const registrationEndpoint = discovery.authorization_endpoint.replace(
+      /\/auth$/,
+      "/registrations",
+    );
     const state = randomBytes(32).toString("hex");
     const codeVerifier = randomBytes(64).toString("base64url");
-    const codeChallenge = createHash("sha256").update(codeVerifier).digest("base64url");
+    const codeChallenge = createHash("sha256")
+      .update(codeVerifier)
+      .digest("base64url");
 
     await this.redis.setWithTtl(
       `${OAUTH_STATE_PREFIX}${state}`,
@@ -77,7 +82,9 @@ export class OAuthService {
     const discovery = await this.getDiscovery();
     const state = randomBytes(32).toString("hex");
     const codeVerifier = randomBytes(64).toString("base64url");
-    const codeChallenge = createHash("sha256").update(codeVerifier).digest("base64url");
+    const codeChallenge = createHash("sha256")
+      .update(codeVerifier)
+      .digest("base64url");
 
     await this.redis.setWithTtl(
       `${OAUTH_STATE_PREFIX}${state}`,
@@ -95,7 +102,10 @@ export class OAuthService {
       state,
     });
 
-    return { url: `${discovery.authorization_endpoint}?${params.toString()}`, state };
+    return {
+      url: `${discovery.authorization_endpoint}?${params.toString()}`,
+      state,
+    };
   }
 
   async handleCallback(code: string, state: string): Promise<OidcUserInfo> {
@@ -107,7 +117,11 @@ export class OAuthService {
 
     const { codeVerifier } = JSON.parse(raw) as { codeVerifier: string };
     const discovery = await this.getDiscovery();
-    const idToken = await this.exchangeCode(discovery.token_endpoint, code, codeVerifier);
+    const idToken = await this.exchangeCode(
+      discovery.token_endpoint,
+      code,
+      codeVerifier,
+    );
     return this.validateIdToken(idToken, discovery.jwks_uri, discovery.issuer);
   }
 
@@ -160,7 +174,8 @@ export class OAuthService {
       throw new ApiError("BadRequest", 400, "id_token missing sub claim");
     }
 
-    const email = typeof payload["email"] === "string" ? payload["email"] : undefined;
+    const email =
+      typeof payload["email"] === "string" ? payload["email"] : undefined;
 
     let name: string | undefined;
     if (typeof payload["name"] === "string") {
@@ -182,7 +197,11 @@ export class OAuthService {
 
     const response = await fetch(this.envService.idpOidcDiscoveryUrl);
     if (!response.ok) {
-      throw new ApiError("BadGateway", 502, "Failed to fetch OIDC discovery document");
+      throw new ApiError(
+        "BadGateway",
+        502,
+        "Failed to fetch OIDC discovery document",
+      );
     }
 
     this.discovery = (await response.json()) as OidcDiscovery;

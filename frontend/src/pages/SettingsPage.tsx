@@ -88,10 +88,11 @@ export const SettingsPage = () => {
                 <button
                   key={plugin.name}
                   onClick={() => handleThemeSelect(plugin)}
-                  className={`flex flex-col gap-2 p-3 rounded-lg border-2 cursor-pointer transition-all ${isActive
-                    ? "border-accent"
-                    : "border-border hover:border-border-strong"
-                    }`}
+                  className={`flex flex-col gap-2 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                    isActive
+                      ? "border-accent"
+                      : "border-border hover:border-border-strong"
+                  }`}
                 >
                   <div className="flex flex-row gap-1">
                     {plugin.preview && (
@@ -107,7 +108,9 @@ export const SettingsPage = () => {
                       </>
                     )}
                   </div>
-                  <span className="text-sm font-medium">{plugin.description}</span>
+                  <span className="text-sm font-medium">
+                    {plugin.description}
+                  </span>
                   {!isThemeTrusted(plugin) && (
                     <span className="text-xs text-warning">
                       {t("settings.plugin.untrusted")}
@@ -124,13 +127,15 @@ export const SettingsPage = () => {
         <>
           {languages.map((lng) => (
             <div key={lng} className="mb-4 p-4 border rounded">
-              <span className="font-semibold">{t(`languages.${lng}.name`)}</span> (
-              {t(`languages.${lng}.localName`)}) - {t(`languages.${lng}.flag`)}
+              <span className="font-semibold">
+                {t(`languages.${lng}.name`)}
+              </span>{" "}
+              ({t(`languages.${lng}.localName`)}) - {t(`languages.${lng}.flag`)}
               <div>
                 {t(`settings.languageExtension.trusted`)}:{" "}
                 {t(
                   "settings.languageExtension." +
-                  (lng in standardTranslations ? "yes" : "no"),
+                    (lng in standardTranslations ? "yes" : "no"),
                 )}
               </div>
             </div>
@@ -150,7 +155,9 @@ export const SettingsPage = () => {
               <span className="ml-2 font-semibold">{plugin.description}</span>
               <div>
                 {t(`settings.plugin.trusted`)}:{" "}
-                {t("settings.plugin." + (isPluginTrusted(plugin) ? "yes" : "no"))}
+                {t(
+                  "settings.plugin." + (isPluginTrusted(plugin) ? "yes" : "no"),
+                )}
               </div>
             </div>
           ))}

@@ -40,8 +40,13 @@ export const persistentSlice = createSlice({
   },
 });
 
-export const { setLanguage, setActiveTheme, setGallerySeed, setMaxConcurrentUploads, setTagInputEasyMode } =
-  persistentSlice.actions;
+export const {
+  setLanguage,
+  setActiveTheme,
+  setGallerySeed,
+  setMaxConcurrentUploads,
+  setTagInputEasyMode,
+} = persistentSlice.actions;
 export const persistentSliceReducer = persistentSlice.reducer;
 
 export const selectLanguage = (state: RootState) => state.local.language;

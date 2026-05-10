@@ -57,7 +57,9 @@ export const SideBar = () => {
       )}
 
       {/* Workspace section */}
-      {!collapsed && <SectionLabel label={t("sidebar.workspace", "Workspace")} />}
+      {!collapsed && (
+        <SectionLabel label={t("sidebar.workspace", "Workspace")} />
+      )}
       <SideBarButton
         Icon={RiGalleryView2}
         pathPrefix="/gallery"
@@ -92,7 +94,7 @@ export const SideBar = () => {
       )}
 
       {/* System section */}
-      {(canViewState || true) && !collapsed && (
+      {canViewState && !collapsed && (
         <SectionLabel label={t("sidebar.system", "System")} />
       )}
       {canViewState && (
@@ -135,7 +137,11 @@ export const SideBar = () => {
               className="flex justify-center cursor-pointer"
               onClick={() => navigate("/account")}
             >
-              <UserAvatar name={identity.name} email={identity.email} size="sm" />
+              <UserAvatar
+                name={identity.name}
+                email={identity.email}
+                size="sm"
+              />
             </div>
           ) : (
             <>
@@ -143,13 +149,19 @@ export const SideBar = () => {
                 className="flex items-center gap-3 px-2 py-2 rounded-md cursor-pointer hover:bg-surface-2 transition-colors mb-1"
                 onClick={() => navigate("/account")}
               >
-                <UserAvatar name={identity.name} email={identity.email} size="sm" />
+                <UserAvatar
+                  name={identity.name}
+                  email={identity.email}
+                  size="sm"
+                />
                 <div className="overflow-hidden">
                   <p className="text-text-primary text-sm font-semibold truncate leading-tight">
                     {identity.name ?? identity.email ?? t("sidebar.user")}
                   </p>
                   {username && (
-                    <p className="text-text-muted text-xs truncate">{username}</p>
+                    <p className="text-text-muted text-xs truncate">
+                      {username}
+                    </p>
                   )}
                 </div>
               </div>

@@ -58,7 +58,11 @@ export class UserRepository {
     return row ? toUser(row) : undefined;
   }
 
-  async upsert(externalId: string, email: string | undefined, name: string | undefined): Promise<User> {
+  async upsert(
+    externalId: string,
+    email: string | undefined,
+    name: string | undefined,
+  ): Promise<User> {
     const row = await this.db.one(
       userRowSchema,
       `INSERT INTO users (external_id, email, name)

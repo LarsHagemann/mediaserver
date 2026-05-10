@@ -13,7 +13,10 @@ const persistConfig = {
 
 const rootReducer = combineReducers({
   [enhancedApi.reducerPath]: enhancedApi.reducer,
-  [persistentSlice.reducerPath]: persistReducer(persistConfig, persistentSlice.reducer),
+  [persistentSlice.reducerPath]: persistReducer(
+    persistConfig,
+    persistentSlice.reducer,
+  ),
 });
 
 export const store = configureStore({

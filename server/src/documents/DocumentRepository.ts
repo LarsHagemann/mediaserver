@@ -104,7 +104,11 @@ export class DocumentRepository {
     }
 
     const shares = await this.dbService.any(
-      z.object({ user_id: z.string(), name: z.string().nullable(), email: z.string().nullable() }),
+      z.object({
+        user_id: z.string(),
+        name: z.string().nullable(),
+        email: z.string().nullable(),
+      }),
       `SELECT ds.shared_with_user_id AS user_id, u.name, u.email
        FROM document_shares ds
        JOIN users u ON ds.shared_with_user_id = u.id
@@ -115,7 +119,11 @@ export class DocumentRepository {
     return {
       ownerId: doc.owner_id,
       isPublic: doc.is_public,
-      shares: shares.map((s) => ({ userId: s.user_id, name: s.name, email: s.email })),
+      shares: shares.map((s) => ({
+        userId: s.user_id,
+        name: s.name,
+        email: s.email,
+      })),
     };
   }
 
@@ -162,9 +170,13 @@ export function buildScopeClause(scope: DocumentAccessScope): string {
   return " AND (is_public = true OR owner_id = $userId OR EXISTS (SELECT 1 FROM document_shares ds WHERE ds.document_id = id AND ds.shared_with_user_id = $userId))";
 }
 
-export function buildScopeHaving(scope: DocumentAccessScope, tableAlias: string): string {
+export function buildScopeHaving(
+  scope: DocumentAccessScope,
+  tableAlias: string,
+): string {
   if (scope.type === "all") return "";
   if (scope.type === "none") return " AND false";
-  if (scope.type === "public-only") return ` AND ${tableAlias}.is_public = true`;
+  if (scope.type === "public-only")
+    return ` AND ${tableAlias}.is_public = true`;
   return ` AND (${tableAlias}.is_public = true OR ${tableAlias}.owner_id = $userId OR EXISTS (SELECT 1 FROM document_shares ds WHERE ds.document_id = ${tableAlias}.id AND ds.shared_with_user_id = $userId))`;
 }

@@ -28,7 +28,12 @@ const toSession = (row: z.infer<typeof sessionRowSchema>): Session => ({
 export class SessionRepository {
   constructor(private readonly db: DbService) {}
 
-  async create(id: string, userId: string, expiresAt: Date, userAgent: string | null): Promise<Session> {
+  async create(
+    id: string,
+    userId: string,
+    expiresAt: Date,
+    userAgent: string | null,
+  ): Promise<Session> {
     const row = await this.db.one(
       sessionRowSchema,
       "INSERT INTO sessions (id, user_id, expires_at, user_agent) VALUES ($1, $2, $3, $4) RETURNING id, user_id, created_at, expires_at, user_agent",

@@ -1,6 +1,12 @@
 import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { MdAdd, MdCheck, MdDeleteOutline, MdLock, MdPublic } from "react-icons/md";
+import {
+  MdAdd,
+  MdCheck,
+  MdDeleteOutline,
+  MdLock,
+  MdPublic,
+} from "react-icons/md";
 import type { ApiTag } from "../app/api";
 import { Button } from "../components/Button";
 import { stringToTag, tagToString } from "../util/tag";
@@ -9,9 +15,15 @@ import { useUploadContext } from "../upload/UploadContext";
 import { BatchTagsControl } from "../upload/BatchTagsControl";
 import { UploadDropZone } from "../upload/UploadDropZone";
 import { UploadQueueRow } from "../upload/UploadQueueRow";
-import { VisibilitySelector, type Visibility } from "../upload/VisibilitySelector";
+import {
+  VisibilitySelector,
+  type Visibility,
+} from "../upload/VisibilitySelector";
 import { useAppDispatch, useAppSelector } from "../app/store";
-import { selectMaxConcurrentUploads, setMaxConcurrentUploads } from "../app/persistent.slice";
+import {
+  selectMaxConcurrentUploads,
+  setMaxConcurrentUploads,
+} from "../app/persistent.slice";
 
 type QueuedFile = {
   id: string;
@@ -57,7 +69,11 @@ export const UploadPage = () => {
 
   const handleUpload = useCallback(() => {
     queuedFiles.forEach((qf) => {
-      markFileAsToBeUploaded(qf.file, [...batchTags, ...qf.extraTags], visibility === "public");
+      markFileAsToBeUploaded(
+        qf.file,
+        [...batchTags, ...qf.extraTags],
+        visibility === "public",
+      );
     });
     setQueuedFiles([]);
   }, [queuedFiles, batchTags, visibility, markFileAsToBeUploaded]);
@@ -177,11 +193,15 @@ export const UploadPage = () => {
                 {t("pages.upload.parallelUploads")}
                 <select
                   value={maxConcurrentUploads}
-                  onChange={(e) => dispatch(setMaxConcurrentUploads(Number(e.target.value)))}
+                  onChange={(e) =>
+                    dispatch(setMaxConcurrentUploads(Number(e.target.value)))
+                  }
                   className="bg-surface-2 border border-border rounded px-1.5 py-0.5 text-xs text-text-primary focus:outline-none focus:border-border-strong"
                 >
                   {[1, 2, 3, 4, 5].map((n) => (
-                    <option key={n} value={n}>{n}</option>
+                    <option key={n} value={n}>
+                      {n}
+                    </option>
                   ))}
                 </select>
               </label>
@@ -219,7 +239,10 @@ export const UploadPage = () => {
                   setQueuedFiles((prev) =>
                     prev.map((f) =>
                       f.id === qf.id
-                        ? { ...f, extraTags: [...f.extraTags, stringToTag(tag)] }
+                        ? {
+                            ...f,
+                            extraTags: [...f.extraTags, stringToTag(tag)],
+                          }
                         : f,
                     ),
                   )
@@ -229,11 +252,11 @@ export const UploadPage = () => {
                     prev.map((f) =>
                       f.id === qf.id
                         ? {
-                          ...f,
-                          extraTags: f.extraTags.filter(
-                            (t) => tagToString(t) !== tagToString(tag),
-                          ),
-                        }
+                            ...f,
+                            extraTags: f.extraTags.filter(
+                              (t) => tagToString(t) !== tagToString(tag),
+                            ),
+                          }
                         : f,
                     ),
                   )

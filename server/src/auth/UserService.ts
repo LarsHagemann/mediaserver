@@ -30,13 +30,17 @@ export class UserService {
     return this.withRoles(user);
   }
 
-  async setUserRoles(userId: string, roleIds: string[]): Promise<UserWithRoles> {
+  async setUserRoles(
+    userId: string,
+    roleIds: string[],
+  ): Promise<UserWithRoles> {
     const user = await this.userRepository.findById(userId);
     if (!user) throw new ApiError("NotFound", 404, `User ${userId} not found`);
 
     for (const roleId of roleIds) {
       const role = await this.roleRepository.findById(roleId);
-      if (!role) throw new ApiError("NotFound", 404, `Role ${roleId} not found`);
+      if (!role)
+        throw new ApiError("NotFound", 404, `Role ${roleId} not found`);
     }
 
     await this.userRepository.setRoles(userId, roleIds);
@@ -44,7 +48,11 @@ export class UserService {
   }
 
   async loginOrRegister(ctx: LoginContext): Promise<User> {
-    const user = await this.userRepository.upsert(ctx.externalId, ctx.email, ctx.name);
+    const user = await this.userRepository.upsert(
+      ctx.externalId,
+      ctx.email,
+      ctx.name,
+    );
     const hasRoles = await this.userRepository.hasAnyRoles(user.id);
 
     if (!hasRoles) {
@@ -60,8 +68,9 @@ export class UserService {
 
   private async withRoles(user: User): Promise<UserWithRoles> {
     const roleIds = await this.userRepository.getRoleIds(user.id);
-    const roles = (await Promise.all(roleIds.map((id) => this.roleRepository.findById(id))))
-      .filter((r): r is Role => r !== undefined);
+    const roles = (
+      await Promise.all(roleIds.map((id) => this.roleRepository.findById(id)))
+    ).filter((r): r is Role => r !== undefined);
     return { ...user, roles };
   }
 }

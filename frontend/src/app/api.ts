@@ -169,7 +169,10 @@ export const api = baseApi.injectEndpoints({
         url: `/documents/${encodeURIComponent(id)}`,
         method: "DELETE",
       }),
-      invalidatesTags: (_result, _error, id) => ["document", { type: "document", id }],
+      invalidatesTags: (_result, _error, id) => [
+        "document",
+        { type: "document", id },
+      ],
     }),
 
     getDocumentAccess: build.query<DocumentAccess, string>({
@@ -180,7 +183,10 @@ export const api = baseApi.injectEndpoints({
       providesTags: (_result, _error, id) => [{ type: "document", id }],
     }),
 
-    updateDocumentAccess: build.mutation<void, { id: string; isPublic: boolean; sharedWith: string[] }>({
+    updateDocumentAccess: build.mutation<
+      void,
+      { id: string; isPublic: boolean; sharedWith: string[] }
+    >({
       query: ({ id, ...body }) => ({
         url: `/documents/${encodeURIComponent(id)}/access`,
         method: "PUT",
@@ -371,7 +377,10 @@ export const api = baseApi.injectEndpoints({
     }),
 
     deleteSession: build.mutation<void, string>({
-      query: (id) => ({ url: `/auth/sessions/${encodeURIComponent(id)}`, method: "DELETE" }),
+      query: (id) => ({
+        url: `/auth/sessions/${encodeURIComponent(id)}`,
+        method: "DELETE",
+      }),
       invalidatesTags: ["session"],
     }),
 
@@ -386,13 +395,19 @@ export const api = baseApi.injectEndpoints({
       providesTags: ["role"],
     }),
 
-    createRole: build.mutation<{ role: AdminRole }, { name: string; description?: string }>({
+    createRole: build.mutation<
+      { role: AdminRole },
+      { name: string; description?: string }
+    >({
       query: (body) => ({ url: "/admin/roles", method: "POST", body }),
       invalidatesTags: ["role"],
     }),
 
     deleteRole: build.mutation<void, string>({
-      query: (id) => ({ url: `/admin/roles/${encodeURIComponent(id)}`, method: "DELETE" }),
+      query: (id) => ({
+        url: `/admin/roles/${encodeURIComponent(id)}`,
+        method: "DELETE",
+      }),
       invalidatesTags: ["role"],
     }),
 
@@ -420,7 +435,10 @@ export const api = baseApi.injectEndpoints({
       providesTags: ["user"],
     }),
 
-    setUserRoles: build.mutation<{ user: AdminUser }, { userId: string; roleIds: string[] }>({
+    setUserRoles: build.mutation<
+      { user: AdminUser },
+      { userId: string; roleIds: string[] }
+    >({
       query: ({ userId, roleIds }) => ({
         url: `/admin/users/${encodeURIComponent(userId)}/roles`,
         method: "PUT",
@@ -436,7 +454,10 @@ export const api = baseApi.injectEndpoints({
       providesTags: ["authConfig"],
     }),
 
-    updateAuthConfig: build.mutation<void, { anonymousRoleId?: string; defaultRoleId?: string }>({
+    updateAuthConfig: build.mutation<
+      void,
+      { anonymousRoleId?: string; defaultRoleId?: string }
+    >({
       query: (body) => ({ url: "/admin/config", method: "PUT", body }),
       invalidatesTags: ["authConfig"],
     }),
@@ -467,7 +488,14 @@ export type AdminUser = {
   email?: string;
   name?: string;
   createdAt: string;
-  roles: Array<{ id: string; name: string; isSystem: boolean; description?: string; createdAt: string; policies: string[] }>;
+  roles: Array<{
+    id: string;
+    name: string;
+    isSystem: boolean;
+    description?: string;
+    createdAt: string;
+    policies: string[];
+  }>;
 };
 
 export type AuthConfig = {
@@ -490,7 +518,9 @@ export function uploadDocumentWithProgress(
     formData.append("tags", JSON.stringify(params.tags));
     formData.append("isPublic", String(params.isPublic));
 
-    const extension = (params.file.name.split(".").pop() ?? "").toLocaleLowerCase();
+    const extension = (
+      params.file.name.split(".").pop() ?? ""
+    ).toLocaleLowerCase();
     const url = `${import.meta.env.VITE_BACKEND_URL}/documents/upload?webSocketClientId=${encodeURIComponent(params.webSocketClientId)}&extension=${encodeURIComponent(extension)}`;
 
     const xhr = new XMLHttpRequest();
@@ -503,7 +533,12 @@ export function uploadDocumentWithProgress(
 
     xhr.onload = () => {
       if (xhr.status >= 200 && xhr.status < 300) resolve();
-      else reject(new Error(xhr.statusText || `Upload failed with status ${xhr.status}`));
+      else
+        reject(
+          new Error(
+            xhr.statusText || `Upload failed with status ${xhr.status}`,
+          ),
+        );
     };
     xhr.onerror = () => reject(new Error("Network error during upload"));
 

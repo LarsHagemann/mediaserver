@@ -86,11 +86,11 @@ export const audioPlugin: FileTypePlugin = {
     const filename = uuidv4();
     process.addFilterComplex(
       "[0:a]aformat=channel_layouts=mono," +
-      "compand=gain=-6," +
-      "showwavespic=s=240x240:colors=#9cf42f[fg];" +
-      "color=s=240x240:color=#44582c," +
-      "drawgrid=width=iw/10:height=ih/5:color=#9cf42f@0.1[bg];" +
-      "[bg][fg]overlay=format=auto,drawbox=x=(iw-w)/2:y=(ih-h)/2:w=iw:h=1:color=#9cf42f",
+        "compand=gain=-6," +
+        "showwavespic=s=240x240:colors=#9cf42f[fg];" +
+        "color=s=240x240:color=#44582c," +
+        "drawgrid=width=iw/10:height=ih/5:color=#9cf42f@0.1[bg];" +
+        "[bg][fg]overlay=format=auto,drawbox=x=(iw-w)/2:y=(ih-h)/2:w=iw:h=1:color=#9cf42f",
     );
     process.addCommand("-frames:v", "1");
     await process.save("/tmp/" + filename + ".jpg");

@@ -37,7 +37,11 @@ export class RedisClient {
     await this.client.set(key, value);
   }
 
-  public async setWithTtl(key: string, value: string, ttlSeconds: number): Promise<void> {
+  public async setWithTtl(
+    key: string,
+    value: string,
+    ttlSeconds: number,
+  ): Promise<void> {
     await this.client.set(key, value, { EX: ttlSeconds });
   }
 

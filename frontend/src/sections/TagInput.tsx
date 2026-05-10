@@ -15,7 +15,10 @@ import { getWordFromCursor } from "../util/getWordFromCursor";
 import { useCursorPos } from "../hooks/useCursorPos";
 import { replaceWordAtCursor } from "../util/replaceWordAtCursor";
 import { useSelector, useDispatch } from "react-redux";
-import { selectTagInputEasyMode, setTagInputEasyMode } from "../app/persistent.slice";
+import {
+  selectTagInputEasyMode,
+  setTagInputEasyMode,
+} from "../app/persistent.slice";
 import { useTranslation } from "react-i18next";
 import { MdClose } from "react-icons/md";
 import { HiMagnifyingGlass } from "react-icons/hi2";
@@ -37,7 +40,12 @@ const parseQueryToChips = (query: string): string[] => {
   if (!query.trim()) return [];
   return query
     .split("&")
-    .map((s) => s.trim().replace(/^\(+|\)+$/g, "").trim())
+    .map((s) =>
+      s
+        .trim()
+        .replace(/^\(+|\)+$/g, "")
+        .trim(),
+    )
     .filter((s) => s.length > 0);
 };
 
@@ -144,23 +152,39 @@ export const TagInput = ({
     (e: KeyboardEvent<HTMLInputElement>) => {
       if (e.key === "ArrowDown") {
         e.preventDefault();
-        setEasyHighlightedIndex((i) => Math.min(i + 1, easySuggestions.length - 1));
+        setEasyHighlightedIndex((i) =>
+          Math.min(i + 1, easySuggestions.length - 1),
+        );
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
         setEasyHighlightedIndex((i) => Math.max(i - 1, -1));
       } else if (e.key === "Enter") {
-        if (easyHighlightedIndex >= 0 && easySuggestions[easyHighlightedIndex]) {
+        if (
+          easyHighlightedIndex >= 0 &&
+          easySuggestions[easyHighlightedIndex]
+        ) {
           addChip(easySuggestions[easyHighlightedIndex].tag);
         } else {
           addChip(easyInput);
         }
-      } else if (e.key === "Backspace" && easyInput === "" && chips.length > 0) {
+      } else if (
+        e.key === "Backspace" &&
+        easyInput === "" &&
+        chips.length > 0
+      ) {
         removeChip(chips.length - 1);
       } else if (e.key === "Escape") {
         setEasyHighlightedIndex(-1);
       }
     },
-    [easyInput, addChip, chips, removeChip, easySuggestions, easyHighlightedIndex],
+    [
+      easyInput,
+      addChip,
+      chips,
+      removeChip,
+      easySuggestions,
+      easyHighlightedIndex,
+    ],
   );
 
   const toggleButton = (
@@ -170,7 +194,11 @@ export const TagInput = ({
         dispatch(setTagInputEasyMode(!easyMode));
       }}
       className="shrink-0 text-text-muted hover:text-text-primary transition-colors text-xs px-1.5 py-0.5 rounded border border-border-subtle cursor-pointer whitespace-nowrap"
-      title={easyMode ? t("pages.gallery.switchToAdvancedMode") : t("pages.gallery.switchToEasyMode")}
+      title={
+        easyMode
+          ? t("pages.gallery.switchToAdvancedMode")
+          : t("pages.gallery.switchToEasyMode")
+      }
     >
       {easyMode ? t("pages.gallery.advancedMode") : t("pages.gallery.easyMode")}
     </button>
@@ -244,7 +272,9 @@ export const TagInput = ({
                   }}
                 >
                   {s.tag}
-                  <span className="ml-1.5 text-text-muted text-xs">({s.usageCount})</span>
+                  <span className="ml-1.5 text-text-muted text-xs">
+                    ({s.usageCount})
+                  </span>
                 </div>
               ))}
             </div>
@@ -301,7 +331,10 @@ export const TagInput = ({
             );
             onChange(newText);
             requestAnimationFrame(() => {
-              advInputRef.current?.setSelectionRange(newCursorPos, newCursorPos);
+              advInputRef.current?.setSelectionRange(
+                newCursorPos,
+                newCursorPos,
+              );
             });
           }}
           direction={direction}

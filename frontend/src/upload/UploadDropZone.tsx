@@ -9,7 +9,11 @@ type Props = {
   onChooseFiles: () => void;
 };
 
-export const UploadDropZone = ({ isDragging, hasFiles, onChooseFiles }: Props) => {
+export const UploadDropZone = ({
+  isDragging,
+  hasFiles,
+  onChooseFiles,
+}: Props) => {
   const { t } = useTranslation();
 
   const borderClass = isDragging

@@ -65,13 +65,16 @@ adminRouter.post(
 adminRouter.delete(
   "/roles/:id/policies/:action",
   requirePermission("admin:roles"),
-  apiHandler<EmptyObject, EmptyObject, EmptyObject, { id: string; action: Action }>(
-    async ({ diContainer, params: { id, action } }) => {
-      const roleService = diContainer.get<RoleService>(services.roleService);
-      await roleService.removePolicy(id, action);
-      return { status: 204, body: {} };
-    },
-  ),
+  apiHandler<
+    EmptyObject,
+    EmptyObject,
+    EmptyObject,
+    { id: string; action: Action }
+  >(async ({ diContainer, params: { id, action } }) => {
+    const roleService = diContainer.get<RoleService>(services.roleService);
+    await roleService.removePolicy(id, action);
+    return { status: 204, body: {} };
+  }),
 );
 
 // --- Users ---
@@ -114,7 +117,10 @@ adminRouter.get(
     ]);
     return {
       status: 200,
-      body: { anonymousRoleId: anonymousRoleId ?? null, defaultRoleId: defaultRoleId ?? null },
+      body: {
+        anonymousRoleId: anonymousRoleId ?? null,
+        defaultRoleId: defaultRoleId ?? null,
+      },
     };
   }),
 );

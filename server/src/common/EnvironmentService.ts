@@ -96,7 +96,7 @@ export class EnvironmentService {
       migrationsDir: this.getRequiredStringEnvVar("MIGRATIONS_DIR"),
       ignoreChecksumMismatches:
         this.getStringEnvVar("IGNORE_MIGRATION_CHECKSUM_MISMATCHES") ===
-        "true" && this.stage !== "production",
+          "true" && this.stage !== "production",
     };
   }
 
@@ -158,7 +158,10 @@ export class EnvironmentService {
   public get idpAdminUserIds(): string[] {
     const raw = this.getStringEnvVar("IDP_ADMIN_USER_IDS");
     if (!raw) return [];
-    return raw.split(",").map((s) => s.trim()).filter(Boolean);
+    return raw
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
   }
 
   public get sessionTtlSeconds(): number {

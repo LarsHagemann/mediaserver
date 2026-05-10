@@ -28,7 +28,11 @@ export const UploadContextProvider: React.FC<{
     remove: removeFromBeProcessed,
   } = useSet<FileProxy>();
   const { set: processedFiles, add: addProcessedFile } = useSet<FileProxy>();
-  const { set: failedFiles, add: addFailedFile, remove: removeFromFailedFiles } = useSet<FileProxy>();
+  const {
+    set: failedFiles,
+    add: addFailedFile,
+    remove: removeFromFailedFiles,
+  } = useSet<FileProxy>();
 
   const [progress, setProgress] = useState<Map<string, number>>(new Map());
 
@@ -36,7 +40,9 @@ export const UploadContextProvider: React.FC<{
 
   const markFileAsToBeUploaded = useCallback(
     (file: File, tags: ApiTag[], isPublic: boolean) => {
-      const failedEntry = Array.from(failedFiles).find((f) => f.name === file.name);
+      const failedEntry = Array.from(failedFiles).find(
+        (f) => f.name === file.name,
+      );
       if (failedEntry) removeFromFailedFiles(failedEntry);
       addToBeUploaded({ file, tags, isPublic });
     },
@@ -160,11 +166,16 @@ export const UploadContextProvider: React.FC<{
       uploadDocumentWithProgress(
         { file, webSocketClientId, tags, isPublic },
         (pct) => setProgress((prev) => new Map(prev).set(file.name, pct)),
-      ).then(() => {
-        enhancedApi.util.invalidateTags(["document"]);
-      }).catch((err) => {
-        markFileAsFailedRef.current(file.name, err.message || "Upload failed");
-      });
+      )
+        .then(() => {
+          enhancedApi.util.invalidateTags(["document"]);
+        })
+        .catch((err) => {
+          markFileAsFailedRef.current(
+            file.name,
+            err.message || "Upload failed",
+          );
+        });
     });
   }, [
     toBeUploaded,

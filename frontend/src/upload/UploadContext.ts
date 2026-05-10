@@ -21,7 +21,11 @@ type UploadContextType = {
   failedFiles: Set<FileProxy>;
   progress: Map<string, number>;
 
-  markFileAsToBeUploaded: (file: File, tags: ApiTag[], isPublic: boolean) => void;
+  markFileAsToBeUploaded: (
+    file: File,
+    tags: ApiTag[],
+    isPublic: boolean,
+  ) => void;
   markFileAsBeingProcessed: (file: string) => void;
   markFileAsProcessed: (file: string) => void;
   markFileAsFailed: (file: string, errorReason: string) => void;

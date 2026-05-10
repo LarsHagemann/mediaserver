@@ -96,7 +96,12 @@ export const PreviewContainer = ({
     else onClose?.();
   }, [onClose, diashowMode]);
 
-  const tabs: Tab[] = ["info", "tags", "collections", ...(canManageAccess ? (["access"] as Tab[]) : [])];
+  const tabs: Tab[] = [
+    "info",
+    "tags",
+    "collections",
+    ...(canManageAccess ? (["access"] as Tab[]) : []),
+  ];
 
   return (
     <div className="flex flex-col h-full bg-bg-base">
@@ -163,8 +168,12 @@ export const PreviewContainer = ({
               ))}
             </div>
             <div className="flex-1 overflow-hidden flex flex-col">
-              {activeTab === "info" && <InfoProperties document={currentDocument} />}
-              {activeTab === "tags" && <DocumentTagsPanel documentId={previewImageId} />}
+              {activeTab === "info" && (
+                <InfoProperties document={currentDocument} />
+              )}
+              {activeTab === "tags" && (
+                <DocumentTagsPanel documentId={previewImageId} />
+              )}
               {activeTab === "collections" && (
                 <div className="flex-1 overflow-y-auto p-3">
                   <AddDocumentToCollection documentId={previewImageId} />

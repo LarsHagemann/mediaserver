@@ -8,7 +8,11 @@ type Props = {
   fallback?: string;
 };
 
-export const PermissionGuard = ({ action, children, fallback = "/gallery" }: Props) => {
+export const PermissionGuard = ({
+  action,
+  children,
+  fallback = "/gallery",
+}: Props) => {
   const { isLoading } = useIdentity();
   const has = usePermission(action);
 

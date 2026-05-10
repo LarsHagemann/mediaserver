@@ -24,7 +24,10 @@ export class RoleService {
     return { ...role, policies };
   }
 
-  async createRole(name: string, description: string | undefined): Promise<RoleWithPolicies> {
+  async createRole(
+    name: string,
+    description: string | undefined,
+  ): Promise<RoleWithPolicies> {
     const role = await this.roleRepository.create(name, description);
     return { ...role, policies: [] };
   }
@@ -32,7 +35,8 @@ export class RoleService {
   async deleteRole(id: string): Promise<void> {
     const role = await this.roleRepository.findById(id);
     if (!role) throw new ApiError("NotFound", 404, `Role ${id} not found`);
-    if (role.isSystem) throw new ApiError("Forbidden", 403, "System roles cannot be deleted");
+    if (role.isSystem)
+      throw new ApiError("Forbidden", 403, "System roles cannot be deleted");
     await this.roleRepository.delete(id);
   }
 
