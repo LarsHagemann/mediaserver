@@ -7,8 +7,15 @@ import { NavigateToGalleryPage } from "../pages/NavigateToGalleryPage";
 import { StatePage } from "../pages/StatePage";
 import { SettingsPage } from "../pages/SettingsPage";
 import { CollectionsPage } from "../pages/CollectionsPage";
+import { LoginPage } from "../pages/LoginPage";
+import { AccountPage } from "../pages/AccountPage";
+import { PermissionGuard } from "../components/PermissionGuard";
 
 export const router = createBrowserRouter([
+  {
+    path: "/login",
+    Component: LoginPage,
+  },
   {
     path: "/",
     Component: Layout,
@@ -18,12 +25,20 @@ export const router = createBrowserRouter([
         Component: NavigateToGalleryPage,
       },
       {
+        path: "account",
+        Component: AccountPage,
+      },
+      {
         path: "gallery",
         Component: GalleryPage,
       },
       {
         path: "upload",
-        Component: UploadPage,
+        element: (
+          <PermissionGuard action="document:upload">
+            <UploadPage />
+          </PermissionGuard>
+        ),
       },
       {
         path: "tags",
@@ -31,7 +46,11 @@ export const router = createBrowserRouter([
       },
       {
         path: "state",
-        Component: StatePage,
+        element: (
+          <PermissionGuard action="admin:state">
+            <StatePage />
+          </PermissionGuard>
+        ),
       },
       {
         path: "settings",
@@ -39,7 +58,11 @@ export const router = createBrowserRouter([
       },
       {
         path: "collections",
-        Component: CollectionsPage,
+        element: (
+          <PermissionGuard action="collection:read">
+            <CollectionsPage />
+          </PermissionGuard>
+        ),
       },
     ],
   },

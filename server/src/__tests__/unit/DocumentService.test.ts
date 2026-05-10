@@ -7,16 +7,33 @@ vi.mock("fs/promises", () => ({
   stat: vi.fn().mockResolvedValue({ size: 1024 }),
 }));
 
+const SYSTEM_USER_ID = "00000000-0000-0000-0000-000000000000";
+
 const makeDocumentRepository = (): DocumentRepository =>
   ({
     createDocument: vi.fn(),
     getDocumentWithPathInfo: vi.fn(),
+    getDocumentAccess: vi.fn(),
+    updateDocumentAccess: vi.fn(),
+    deleteDocument: vi.fn(),
   }) as unknown as DocumentRepository;
 
 const makeTagService = (): TagService =>
   ({
     addTagToDocument: vi.fn(),
   }) as unknown as TagService;
+
+const mockDocWithPathInfo = {
+  id: "doc-1",
+  mime: "image/jpeg",
+  base_path: "/data/storage",
+  filename: "photo.jpg",
+  ownerId: SYSTEM_USER_ID,
+  isPublic: true,
+  previousId: undefined,
+  nextId: undefined,
+  queryIndex: 0,
+};
 
 describe("DocumentService", () => {
   let documentRepository: ReturnType<typeof makeDocumentRepository>;
@@ -37,6 +54,7 @@ describe("DocumentService", () => {
         basePath: "/data",
         filename: "photo.jpg",
         type: "image/jpeg",
+        ownerId: SYSTEM_USER_ID,
       };
 
       await documentService.createDocument(request);
@@ -57,6 +75,7 @@ describe("DocumentService", () => {
         basePath: "/data",
         filename: "video.mp4",
         type: "video/mp4",
+        ownerId: SYSTEM_USER_ID,
       });
 
       expect(tagService.addTagToDocument).toHaveBeenCalledTimes(3);
@@ -65,17 +84,9 @@ describe("DocumentService", () => {
 
   describe("getDocumentThumbnail", () => {
     it("returns the thumbnail path", async () => {
-      vi.mocked(documentRepository.getDocumentWithPathInfo).mockResolvedValue({
-        id: "doc-1",
-        mime: "image/jpeg",
-        base_path: "/data/storage",
-        filename: "photo.jpg",
-        previousId: undefined,
-        nextId: undefined,
-        queryIndex: 0,
-      });
+      vi.mocked(documentRepository.getDocumentWithPathInfo).mockResolvedValue(mockDocWithPathInfo);
 
-      const result = await documentService.getDocumentThumbnail("doc-1");
+      const result = await documentService.getDocumentThumbnail("doc-1", { type: "all" });
 
       expect(result).toBe("/data/storage/thumbnails/doc-1.jpg");
     });
@@ -83,27 +94,19 @@ describe("DocumentService", () => {
 
   describe("getDocument", () => {
     beforeEach(() => {
-      vi.mocked(documentRepository.getDocumentWithPathInfo).mockResolvedValue({
-        id: "doc-1",
-        mime: "image/jpeg",
-        base_path: "/data/storage",
-        filename: "photo.jpg",
-        previousId: undefined,
-        nextId: undefined,
-        queryIndex: 0,
-      });
+      vi.mocked(documentRepository.getDocumentWithPathInfo).mockResolvedValue(mockDocWithPathInfo);
     });
 
     it("returns FileDownload when no range header provided", async () => {
       const { FileDownload } = await import("../../ApiHandler.js");
-      const result = await documentService.getDocument("doc-1", undefined);
+      const result = await documentService.getDocument("doc-1", undefined, { type: "all" });
 
       expect(result).toBeInstanceOf(FileDownload);
     });
 
     it("returns FileStream when range header is present", async () => {
       const { FileStream } = await import("../../ApiHandler.js");
-      const result = await documentService.getDocument("doc-1", "bytes=0-511");
+      const result = await documentService.getDocument("doc-1", "bytes=0-511", { type: "all" });
 
       expect(result).toBeInstanceOf(FileStream);
     });

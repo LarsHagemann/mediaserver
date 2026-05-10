@@ -19,6 +19,8 @@ describe("DocumentRepository (integration)", () => {
     await teardown();
   });
 
+  const systemUserId = "00000000-0000-0000-0000-000000000000";
+
   describe("createDocument", () => {
     it("inserts a document without error", async () => {
       await expect(
@@ -27,6 +29,7 @@ describe("DocumentRepository (integration)", () => {
           basePath: "/data/storage",
           filename: "photo.jpg",
           type: "image/jpeg",
+          ownerId: systemUserId,
         }),
       ).resolves.toBeUndefined();
     });
@@ -37,6 +40,7 @@ describe("DocumentRepository (integration)", () => {
         basePath: "/data/storage",
         filename: "duplicate.jpg",
         type: "image/jpeg",
+        ownerId: systemUserId,
       });
 
       await expect(
@@ -45,6 +49,7 @@ describe("DocumentRepository (integration)", () => {
           basePath: "/data/storage",
           filename: "duplicate.jpg",
           type: "image/jpeg",
+          ownerId: systemUserId,
         }),
       ).rejects.toThrow();
     });
@@ -58,6 +63,7 @@ describe("DocumentRepository (integration)", () => {
         basePath: "/data/storage",
         filename: "test.jpg",
         type: "image/jpeg",
+        ownerId: systemUserId,
       });
 
       const result = await repository.getDocumentWithPathInfo(id);
@@ -67,6 +73,8 @@ describe("DocumentRepository (integration)", () => {
         mime: "image/jpeg",
         base_path: "/data/storage",
         filename: "test.jpg",
+        ownerId: systemUserId,
+        isPublic: true,
         previousId: undefined,
         nextId: undefined,
         queryIndex: 0,

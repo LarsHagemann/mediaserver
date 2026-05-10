@@ -1,5 +1,5 @@
 import type React from "react";
-import { FaCaretLeft, FaCaretRight, FaDownload } from "react-icons/fa";
+import { FaCaretLeft, FaCaretRight, FaDownload, FaLock, FaUnlock } from "react-icons/fa";
 import { LuPresentation } from "react-icons/lu";
 import { useIsMobileScreen } from "../hooks/useIsMobileScreen";
 import { MdClose } from "react-icons/md";
@@ -16,6 +16,9 @@ type Props = {
   onClose: () => void;
   tagListOpen: boolean;
   setTagListOpen: (open: boolean) => void;
+  accessOpen: boolean;
+  setAccessOpen: (open: boolean) => void;
+  canManageAccess: boolean;
 };
 
 export const DocumentPreviewControls: React.FC<Props> = ({
@@ -28,6 +31,9 @@ export const DocumentPreviewControls: React.FC<Props> = ({
   onClose,
   tagListOpen,
   setTagListOpen,
+  accessOpen,
+  setAccessOpen,
+  canManageAccess,
 }) => {
   const isMobile = useIsMobileScreen();
 
@@ -74,6 +80,18 @@ export const DocumentPreviewControls: React.FC<Props> = ({
         >
           <LuPresentation size={smallControlSize} />
         </div>
+        {canManageAccess && (
+          <div
+            className="rounded-md p-2 cursor-pointer hover:text-text-muted duration-200"
+            onClick={() => setAccessOpen(!accessOpen)}
+          >
+            {accessOpen ? (
+              <FaLock size={smallControlSize} />
+            ) : (
+              <FaUnlock size={smallControlSize} />
+            )}
+          </div>
+        )}
         <div
           className="rounded-md p-2 cursor-pointer hover:text-text-muted duration-200"
           onClick={() => {

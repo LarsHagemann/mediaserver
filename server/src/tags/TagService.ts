@@ -10,6 +10,7 @@ import type {
   DocumentWithTags,
 } from "../documents/DocumentRepository.js";
 import type { TagCache } from "./TagCache.js";
+import type { DocumentAccessScope } from "../auth/AccessScope.js";
 
 export type ListTagsRequest = {
   limit: number;
@@ -45,12 +46,16 @@ export class TagService {
 
   public async listDocuments(
     request: ListDocumentsRequest,
+    scope: DocumentAccessScope = { type: "all" },
   ): Promise<PaginatedResponse<Document>> {
-    return this.tagRepository.listDocuments(request);
+    return this.tagRepository.listDocuments({ ...request, scope });
   }
 
-  public async listDocumentsByIds(ids: string[]): Promise<DocumentWithTags[]> {
-    return this.tagRepository.listDocumentsByIds(ids);
+  public async listDocumentsByIds(
+    ids: string[],
+    scope: DocumentAccessScope = { type: "all" },
+  ): Promise<DocumentWithTags[]> {
+    return this.tagRepository.listDocumentsByIds(ids, scope);
   }
 
   public async getTagsForDocument(documentId: string): Promise<ApiTag[]> {

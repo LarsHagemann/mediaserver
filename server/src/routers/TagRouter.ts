@@ -5,11 +5,13 @@ import type { PaginatedResponse } from "../util/PaginatedResponse.js";
 import type { TagService } from "../tags/TagService.js";
 import type { ApiTag } from "../tags/TagRepository.js";
 import type { EmptyObject } from "../common/EmptyObject.js";
+import { requirePermission } from "../auth/requirePermission.js";
 
 export const tagRouter = Router();
 
 tagRouter.get(
   "/",
+  requirePermission("document:read"),
   apiHandler<
     PaginatedResponse<ApiTag>,
     { limit?: number; offset?: number; query?: string }
@@ -25,6 +27,7 @@ tagRouter.get(
 
 tagRouter.get(
   "/:documentId",
+  requirePermission("document:read"),
   apiHandler<
     { tags: ApiTag[] },
     EmptyObject,
@@ -42,6 +45,7 @@ tagRouter.get(
 
 tagRouter.post(
   "/:documentId/add",
+  requirePermission("tag:manage"),
   apiHandler<EmptyObject, EmptyObject, { tag: string }, { documentId: string }>(
     async ({ diContainer, params: { documentId }, body: { tag } }) => {
       const tagService = diContainer.get<TagService>(services.tag);
@@ -56,6 +60,7 @@ tagRouter.post(
 
 tagRouter.post(
   "/:documentId/remove",
+  requirePermission("tag:manage"),
   apiHandler<EmptyObject, EmptyObject, { tag: string }, { documentId: string }>(
     async ({ diContainer, params: { documentId }, body: { tag } }) => {
       const tagService = diContainer.get<TagService>(services.tag);

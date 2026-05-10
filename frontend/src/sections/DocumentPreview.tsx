@@ -20,6 +20,8 @@ import { useSwipeable } from "react-swipeable";
 import { useIsMobileScreen } from "../hooks/useIsMobileScreen";
 import { AddToCollectionModal } from "./AddToCollectionModal";
 import { AddDocumentToCollection } from "./AddDocumentToCollection";
+import { DocumentAccessPanel } from "./DocumentAccessPanel";
+import { Modal } from "../components/Modal";
 
 type Props = {
   id: string;
@@ -30,6 +32,8 @@ type Props = {
   setTagListOpen: Dispatch<SetStateAction<boolean>>;
   bookmarksOpen: boolean;
   setBookmarksOpen: Dispatch<SetStateAction<boolean>>;
+  accessOpen: boolean;
+  setAccessOpen: Dispatch<SetStateAction<boolean>>;
 };
 
 export const DocumentPreview = ({
@@ -41,6 +45,8 @@ export const DocumentPreview = ({
   setTagListOpen,
   bookmarksOpen,
   setBookmarksOpen,
+  accessOpen,
+  setAccessOpen,
 }: Props) => {
   const [tagInput, setTagInput] = useState("");
 
@@ -136,10 +142,10 @@ export const DocumentPreview = ({
           tagListOpen
             ? "h-1/2 sm:h-full sm:w-3/4 sm:left-1/4"
             : "h-full sm:w-full sm:left-0",
-          bookmarksOpen && !isMobile
+          (bookmarksOpen || accessOpen) && !isMobile
             ? "h-1/2 sm:h-full sm:w-3/4 sm:right-1/4"
             : "",
-          tagListOpen && bookmarksOpen && !isMobile
+          tagListOpen && (bookmarksOpen || accessOpen) && !isMobile
             ? "h-1/2 sm:h-full sm:w-1/2 sm:left-1/4"
             : "",
         )}
@@ -148,20 +154,35 @@ export const DocumentPreview = ({
         <DocumentRender documentId={id} mimeType={mimeType} />
       </div>
       {isMobile ? (
-        <AddToCollectionModal
-          documentId={id}
-          isOpen={bookmarksOpen}
-          onClose={() => setBookmarksOpen(false)}
-        />
+        <>
+          <AddToCollectionModal
+            documentId={id}
+            isOpen={bookmarksOpen}
+            onClose={() => setBookmarksOpen(false)}
+          />
+          <Modal isOpen={accessOpen} onClose={() => setAccessOpen(false)} title="">
+            <DocumentAccessPanel documentId={id} />
+          </Modal>
+        </>
       ) : (
-        <div
-          className={twMerge(
-            "h-full top-0 right-0 w-1/4 absolute flex flex-col items-start gap-2 z-20 bg-surface-1 p-2 border-b-2 border-border duration-200",
-            bookmarksOpen ? "bottom-0 right-0" : "-bottom-1/2 -right-1/4",
-          )}
-        >
-          <AddDocumentToCollection documentId={id} />
-        </div>
+        <>
+          <div
+            className={twMerge(
+              "h-full top-0 right-0 w-1/4 absolute flex flex-col items-start gap-2 z-20 bg-surface-1 p-2 border-b-2 border-border duration-200",
+              bookmarksOpen ? "bottom-0 right-0" : "-bottom-1/2 -right-1/4",
+            )}
+          >
+            <AddDocumentToCollection documentId={id} />
+          </div>
+          <div
+            className={twMerge(
+              "h-full top-0 right-0 w-1/4 absolute flex flex-col items-start z-20 bg-surface-1 border-l border-border duration-200",
+              accessOpen ? "bottom-0 right-0" : "-bottom-1/2 -right-1/4",
+            )}
+          >
+            <DocumentAccessPanel documentId={id} />
+          </div>
+        </>
       )}
     </div>
   );

@@ -16,6 +16,14 @@ import { BackendStateRepository } from "./state/BackendStateRepository.js";
 import { UploadService } from "./files/UploadService.js";
 import { CollectionRepository } from "./collections/CollectionRepository.js";
 import { CollectionService } from "./collections/CollectionService.js";
+import { AccessScopeResolver } from "./auth/AccessScopeResolver.js";
+import { RoleRepository } from "./auth/RoleRepository.js";
+import { UserRepository } from "./auth/UserRepository.js";
+import { SessionRepository } from "./auth/SessionRepository.js";
+import { RoleService } from "./auth/RoleService.js";
+import { UserService } from "./auth/UserService.js";
+import { SessionService } from "./auth/SessionService.js";
+import { OAuthService } from "./auth/OAuthService.js";
 
 export const services = {
   environment: "service.environment",
@@ -30,6 +38,11 @@ export const services = {
   backendState: "service.backendState",
   upload: "service.upload",
   collection: "service.collection",
+  accessScopeResolver: "service.accessScopeResolver",
+  roleService: "service.role",
+  userService: "service.user",
+  sessionService: "service.session",
+  oauthService: "service.oauth",
 };
 
 export const repositories = {
@@ -38,6 +51,9 @@ export const repositories = {
   tagCache: "repository.tagCache",
   backendState: "repository.backendState",
   collection: "repository.collection",
+  role: "repository.role",
+  user: "repository.user",
+  session: "repository.session",
 };
 
 export const defaultDiContainer = (diContainer: ContainerBuilder) => {
@@ -117,6 +133,42 @@ export const defaultDiContainer = (diContainer: ContainerBuilder) => {
     .register(services.collection, CollectionService)
     .addArgument(new Reference(repositories.collection))
     .addArgument(new Reference(services.tag));
+
+  diContainer.register(services.accessScopeResolver, AccessScopeResolver);
+
+  diContainer
+    .register(repositories.role, RoleRepository)
+    .addArgument(new Reference(services.db));
+
+  diContainer
+    .register(repositories.user, UserRepository)
+    .addArgument(new Reference(services.db));
+
+  diContainer
+    .register(repositories.session, SessionRepository)
+    .addArgument(new Reference(services.db));
+
+  diContainer
+    .register(services.roleService, RoleService)
+    .addArgument(new Reference(repositories.role));
+
+  diContainer
+    .register(services.userService, UserService)
+    .addArgument(new Reference(repositories.user))
+    .addArgument(new Reference(repositories.role));
+
+  diContainer
+    .register(services.sessionService, SessionService)
+    .addArgument(new Reference(repositories.session))
+    .addArgument(new Reference(repositories.user))
+    .addArgument(new Reference(repositories.role))
+    .addArgument(new Reference(services.redis))
+    .addArgument(new Reference(services.environment));
+
+  diContainer
+    .register(services.oauthService, OAuthService)
+    .addArgument(new Reference(services.environment))
+    .addArgument(new Reference(services.redis));
 
   return diContainer;
 };

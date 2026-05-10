@@ -5,11 +5,13 @@ import type { CollectionService } from "../collections/CollectionService.js";
 import type { Collection } from "../collections/CollectionRepository.js";
 import type { PaginatedResponse } from "../util/PaginatedResponse.js";
 import type { EmptyObject } from "../common/EmptyObject.js";
+import { requirePermission } from "../auth/requirePermission.js";
 
 export const collectionRouter = Router();
 
 collectionRouter.get(
   "/",
+  requirePermission("collection:read"),
   apiHandler<
     PaginatedResponse<Collection>,
     { limit?: number; offset?: number; type: "dynamic" | "static" | undefined }
@@ -33,6 +35,7 @@ collectionRouter.get(
 
 collectionRouter.post(
   "/",
+  requirePermission("collection:create"),
   apiHandler<
     Collection,
     EmptyObject,
@@ -61,6 +64,7 @@ collectionRouter.post(
 
 collectionRouter.get(
   "/:id",
+  requirePermission("collection:read"),
   apiHandler<Collection, EmptyObject, EmptyObject, { id: string }>(
     async ({ diContainer, params: { id } }) => {
       const collectionService = diContainer.get<CollectionService>(
@@ -74,6 +78,7 @@ collectionRouter.get(
 
 collectionRouter.put(
   "/:id",
+  requirePermission("collection:update"),
   apiHandler<
     Collection,
     EmptyObject,
@@ -101,6 +106,7 @@ collectionRouter.put(
 
 collectionRouter.delete(
   "/:id",
+  requirePermission("collection:delete"),
   apiHandler<EmptyObject, EmptyObject, EmptyObject, { id: string }>(
     async ({ diContainer, params: { id } }) => {
       const collectionService = diContainer.get<CollectionService>(
@@ -114,6 +120,7 @@ collectionRouter.delete(
 
 collectionRouter.post(
   "/:id/members",
+  requirePermission("collection:update"),
   apiHandler<EmptyObject, EmptyObject, { documentId: string }, { id: string }>(
     async ({ diContainer, params: { id }, body }) => {
       const collectionService = diContainer.get<CollectionService>(
@@ -127,6 +134,7 @@ collectionRouter.post(
 
 collectionRouter.delete(
   "/:id/members/:documentId",
+  requirePermission("collection:update"),
   apiHandler<
     EmptyObject,
     EmptyObject,

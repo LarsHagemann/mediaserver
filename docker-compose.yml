@@ -30,6 +30,16 @@ services:
       MAX_FILE_UPLOAD_SIZE: 2147483648 # 2GB
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      CORS_ORIGIN: http://localhost:5173
+      # IdP — set IDP_ENABLED=true to activate OIDC login (requires '127.0.0.1 keycloak' in /etc/hosts)
+      IDP_ENABLED: true
+      IDP_OIDC_DISCOVERY_URL: http://keycloak:8100/realms/mediaserver/.well-known/openid-configuration
+      IDP_CLIENT_ID: mediaserver-app
+      IDP_CLIENT_SECRET: "dein-sicheres-secret-hier"
+      IDP_REDIRECT_URI: http://localhost:${BACKEND_PORT}/auth/callback
+      IDP_FRONTEND_URL: http://localhost:5173
+      IDP_ADMIN_USER_IDS: ceac4763-4524-4961-8ec2-4e0ea15e241e
+      IDP_REGISTRATION_ALLOWED: true
     volumes:
       - ./server:/app
       - server_data:/store-0
@@ -69,6 +79,25 @@ services:
     ports:
       - 5432:5432
 
+  # Keycloak dev IdP — browse to http://keycloak:8100/admin (admin/admin) after adding
+  # '127.0.0.1 keycloak' to /etc/hosts on your host machine.
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.2
+    command: start-dev --import-realm
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+      KC_HTTP_ENABLED: "true"
+      KC_HTTP_PORT: 8100
+    restart: always
+    volumes:
+      - ./devops/keycloak:/opt/keycloak/data/import
+      - keycloak_data:/opt/keycloak/data
+    ports:
+      - 8100:8100
+
   redis:
     image: redis:latest
     healthcheck:
@@ -89,3 +118,4 @@ volumes:
   server_dist:
   redis_data:
   server_data:
+  keycloak_data:

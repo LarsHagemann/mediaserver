@@ -26,6 +26,7 @@
   "devDependencies": {
     "@eslint/js": "^9.34.0",
     "@testcontainers/postgresql": "^11.14.0",
+    "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/express-fileupload": "^1.5.1",
@@ -48,11 +49,14 @@
   },
   "dependencies": {
     "@lars_hagemann/tags": "^1.0.6",
+    "bowser": "^2.14.1",
     "check-disk-space": "^3.4.0",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "express-fileupload": "^1.5.2",
     "ffmpeg": "^0.0.4",
+    "jose": "^6.2.3",
     "node-dependency-injection": "^3.2.2",
     "pdf-thumbnail": "^1.0.6",
     "pg": "^8.16.3",

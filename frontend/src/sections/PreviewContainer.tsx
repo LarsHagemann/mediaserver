@@ -1,5 +1,6 @@
 import type { SkipToken } from "@reduxjs/toolkit/query";
 import { enhancedApi } from "../app/enhancedApi";
+import { api } from "../app/api";
 import { ThumbnailContainer } from "../components/ThumbnailContainer";
 import { DocumentPreview } from "./DocumentPreview";
 import { useCallback, useEffect, useState } from "react";
@@ -44,9 +45,17 @@ export const PreviewContainer = ({
 
   const [diashowMode, setDiashowMode] = useState<boolean>(false);
   const [wasFullscreen, setWasFullscreen] = useState<boolean>(false);
-  const [addToCollectionModalOpen, setAddToCollectionModalOpen] =
-    useState(false);
+  const [addToCollectionModalOpen, setAddToCollectionModalOpen] = useState(false);
   const [tagListOpen, setTagListOpen] = useState(false);
+  const [accessOpen, setAccessOpen] = useState(false);
+
+  const { data: identity } = api.useGetMeQuery();
+  const currentDocument = data?.items.find((d) => d.id === previewImageId);
+  const SYSTEM_USER_ID = "00000000-0000-0000-0000-000000000000";
+  const canManageAccess = !!identity && (
+    identity.permissions.includes("admin:users") ||
+    (identity.userId !== null && identity.userId !== SYSTEM_USER_ID && identity.userId === currentDocument?.ownerId)
+  );
 
   useEffect(() => {
     const keyDownHandler = (event: KeyboardEvent) => {
@@ -119,9 +128,18 @@ export const PreviewContainer = ({
               toggleDiashow={() => setDiashowMode(!diashowMode)}
               onClose={onCloseImpl}
               bookmarksOpen={addToCollectionModalOpen}
-              setBookmarksOpen={setAddToCollectionModalOpen}
+              setBookmarksOpen={(open) => {
+                setAddToCollectionModalOpen(open);
+                if (open) setAccessOpen(false);
+              }}
               tagListOpen={tagListOpen}
               setTagListOpen={setTagListOpen}
+              accessOpen={accessOpen}
+              setAccessOpen={(open) => {
+                setAccessOpen(open);
+                if (open) setAddToCollectionModalOpen(false);
+              }}
+              canManageAccess={canManageAccess}
             />
           </div>
           <div className="flex flex-1 w-full">
@@ -143,6 +161,8 @@ export const PreviewContainer = ({
                 setTagListOpen={setTagListOpen}
                 bookmarksOpen={addToCollectionModalOpen}
                 setBookmarksOpen={setAddToCollectionModalOpen}
+                accessOpen={accessOpen}
+                setAccessOpen={setAccessOpen}
               />
             )}
           </div>

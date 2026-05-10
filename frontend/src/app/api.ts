@@ -14,6 +14,20 @@ export type Document = {
   previousId: string | undefined;
   nextId: string | undefined;
   queryIndex: number;
+  ownerId: string;
+  isPublic: boolean;
+};
+
+export type DocumentShareEntry = {
+  userId: string;
+  name: string | null;
+  email: string | null;
+};
+
+export type DocumentAccess = {
+  ownerId: string;
+  isPublic: boolean;
+  shares: DocumentShareEntry[];
 };
 
 export type DocumentWithTags = Document & {
@@ -69,6 +83,16 @@ type BulkEditDocumentsRequest = {
   documentIds: string[];
   tagsToAdd: ApiTag[];
   tagsToRemove: ApiTag[];
+};
+
+export type Session = {
+  id: string;
+  createdAt: string;
+  expiresAt: string;
+  isCurrent: boolean;
+  browser: string | null;
+  os: string | null;
+  platform: string | null;
 };
 
 export const api = baseApi.injectEndpoints({
@@ -136,6 +160,31 @@ export const api = baseApi.injectEndpoints({
         body,
       }),
       invalidatesTags: ["document", "tag"],
+    }),
+
+    deleteDocument: build.mutation<void, string>({
+      query: (id) => ({
+        url: `/documents/${encodeURIComponent(id)}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (_result, _error, id) => ["document", { type: "document", id }],
+    }),
+
+    getDocumentAccess: build.query<DocumentAccess, string>({
+      query: (id) => ({
+        url: `/documents/${encodeURIComponent(id)}/access`,
+        method: "GET",
+      }),
+      providesTags: (_result, _error, id) => [{ type: "document", id }],
+    }),
+
+    updateDocumentAccess: build.mutation<void, { id: string; isPublic: boolean; sharedWith: string[] }>({
+      query: ({ id, ...body }) => ({
+        url: `/documents/${encodeURIComponent(id)}/access`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: (_result, _error, { id }) => [{ type: "document", id }],
     }),
 
     getDocumentTags: build.query<{ tags: ApiTag[] }, string>({
@@ -305,5 +354,121 @@ export const api = baseApi.injectEndpoints({
         "tag",
       ],
     }),
+
+    // --- Auth ---
+
+    getMe: build.query<Identity, void>({
+      query: () => ({ url: "/auth/me", method: "GET" }),
+      providesTags: ["identity"],
+      keepUnusedDataFor: 0,
+    }),
+
+    listSessions: build.query<{ sessions: Session[] }, void>({
+      query: () => ({ url: "/auth/sessions", method: "GET" }),
+      providesTags: ["session"],
+    }),
+
+    deleteSession: build.mutation<void, string>({
+      query: (id) => ({ url: `/auth/sessions/${encodeURIComponent(id)}`, method: "DELETE" }),
+      invalidatesTags: ["session"],
+    }),
+
+    getActions: build.query<{ actions: string[] }, void>({
+      query: () => ({ url: "/auth/actions", method: "GET" }),
+    }),
+
+    // --- Admin: Roles ---
+
+    listRoles: build.query<{ roles: AdminRole[] }, void>({
+      query: () => ({ url: "/admin/roles", method: "GET" }),
+      providesTags: ["role"],
+    }),
+
+    createRole: build.mutation<{ role: AdminRole }, { name: string; description?: string }>({
+      query: (body) => ({ url: "/admin/roles", method: "POST", body }),
+      invalidatesTags: ["role"],
+    }),
+
+    deleteRole: build.mutation<void, string>({
+      query: (id) => ({ url: `/admin/roles/${encodeURIComponent(id)}`, method: "DELETE" }),
+      invalidatesTags: ["role"],
+    }),
+
+    addRolePolicy: build.mutation<void, { roleId: string; action: string }>({
+      query: ({ roleId, action }) => ({
+        url: `/admin/roles/${encodeURIComponent(roleId)}/policies`,
+        method: "POST",
+        body: { action },
+      }),
+      invalidatesTags: ["role"],
+    }),
+
+    removeRolePolicy: build.mutation<void, { roleId: string; action: string }>({
+      query: ({ roleId, action }) => ({
+        url: `/admin/roles/${encodeURIComponent(roleId)}/policies/${encodeURIComponent(action)}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["role"],
+    }),
+
+    // --- Admin: Users ---
+
+    listUsers: build.query<{ users: AdminUser[] }, void>({
+      query: () => ({ url: "/admin/users", method: "GET" }),
+      providesTags: ["user"],
+    }),
+
+    setUserRoles: build.mutation<{ user: AdminUser }, { userId: string; roleIds: string[] }>({
+      query: ({ userId, roleIds }) => ({
+        url: `/admin/users/${encodeURIComponent(userId)}/roles`,
+        method: "PUT",
+        body: { roleIds },
+      }),
+      invalidatesTags: ["user"],
+    }),
+
+    // --- Admin: Config ---
+
+    getAuthConfig: build.query<AuthConfig, void>({
+      query: () => ({ url: "/admin/config", method: "GET" }),
+      providesTags: ["authConfig"],
+    }),
+
+    updateAuthConfig: build.mutation<void, { anonymousRoleId?: string; defaultRoleId?: string }>({
+      query: (body) => ({ url: "/admin/config", method: "PUT", body }),
+      invalidatesTags: ["authConfig"],
+    }),
   }),
 });
+
+export type Identity = {
+  userId: string | null;
+  isAuthenticated: boolean;
+  permissions: string[];
+  name: string | null;
+  email: string | null;
+  registrationAllowed: boolean;
+};
+
+export type AdminRole = {
+  id: string;
+  name: string;
+  description?: string;
+  isSystem: boolean;
+  createdAt: string;
+  policies: string[];
+};
+
+export type AdminUser = {
+  id: string;
+  externalId: string;
+  email?: string;
+  name?: string;
+  createdAt: string;
+  roles: Array<{ id: string; name: string; isSystem: boolean; description?: string; createdAt: string; policies: string[] }>;
+};
+
+export type AuthConfig = {
+  anonymousRoleId: string | null;
+  defaultRoleId: string | null;
+};

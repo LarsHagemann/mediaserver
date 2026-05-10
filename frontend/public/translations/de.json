@@ -58,7 +58,90 @@
     "settings": "Einstellungen",
     "tags": "Tags",
     "collections": "Sammlungen",
-    "serverState": "Server Status"
+    "serverState": "Server Status",
+    "logout": "Abmelden",
+    "login": "Anmelden",
+    "notSignedIn": "Nicht angemeldet",
+    "signInPrompt": "Melden Sie sich an, um Ihre Bibliothek zu verwalten.",
+    "registrationDisabled": "Registrierung deaktiviert",
+    "user": "Benutzer"
+  },
+  "login": {
+    "title": "Anmelden",
+    "description": "Melden Sie sich an, um auf den Medienserver zuzugreifen.",
+    "signIn": "Anmelden",
+    "redirectNotice": "Sie werden zu Ihrem Identitätsanbieter weitergeleitet.",
+    "registrationDisabledNotice": "Die Registrierung ist derzeit deaktiviert. Wenden Sie sich an Ihren Administrator.",
+    "register": "Konto erstellen"
+  },
+  "pendingApproval": {
+    "title": "Warten auf Freischaltung",
+    "description": "Ihr Konto wurde erstellt. Ein Administrator muss es freischalten, bevor Sie auf die Bibliothek zugreifen können."
+  },
+  "account": {
+    "user": "Benutzer",
+    "tabs": {
+      "profile": "Profil",
+      "sessions": "Sitzungen"
+    },
+    "profile": {
+      "name": "Anzeigename",
+      "email": "E-Mail",
+      "userId": "Benutzer-ID"
+    },
+    "sessions": {
+      "current": "Aktuelle Sitzung",
+      "started": "Gestartet am {{date}}",
+      "unknownDevice": "Unbekanntes Gerät",
+      "delete": "Sitzung löschen"
+    }
+  },
+  "common": {
+    "loading": "Lädt...",
+    "create": "Erstellen",
+    "delete": "Löschen",
+    "save": "Speichern",
+    "cancel": "Abbrechen"
+  },
+  "admin": {
+    "title": "Administration",
+    "tabs": {
+      "roles": "Rollen",
+      "users": "Benutzer",
+      "config": "Konfiguration"
+    },
+    "roles": {
+      "create": "Rolle erstellen",
+      "createRole": "Rolle erstellen",
+      "namePlaceholder": "Rollenname",
+      "descriptionPlaceholder": "Beschreibung (optional)",
+      "system": "System",
+      "systemSection": "Systemrollen",
+      "systemSectionHint": "Integriert. Berechtigungen sind unveränderlich.",
+      "customSection": "Benutzerdefinierte Rollen",
+      "permissions": "Berechtigungen",
+      "users": "Benutzer",
+      "newRole": "Neue Rolle",
+      "clone": "Klonen",
+      "cloneNamed": "\"{{name}}\" klonen",
+      "search": "Rollen suchen...",
+      "clearAll": "Alle entfernen",
+      "grantAll": "Alle gewähren",
+      "grantRemaining": "Verbleibende gewähren",
+      "assigned": "zugewiesen",
+      "permissionsGranted": "Berechtigungen vergeben",
+      "selectRole": "Wählen Sie eine Rolle aus, um deren Berechtigungen anzuzeigen."
+    },
+    "users": {
+      "empty": "Noch keine Benutzer angemeldet."
+    },
+    "config": {
+      "anonymousRole": "Rolle für anonyme Benutzer",
+      "anonymousRoleHint": "Berechtigungen für nicht angemeldete Besucher.",
+      "defaultRole": "Standardrolle für neue Benutzer",
+      "defaultRoleHint": "Rolle, die neuen Benutzern bei der ersten Anmeldung zugewiesen wird.",
+      "noRole": "— keine —"
+    }
   },
   "collections": {
     "title": "Sammlungen",
@@ -103,12 +186,27 @@
     }
   },
   "document": {
-    "addTagPlaceholder": "Tag hinzufügen..."
+    "addTagPlaceholder": "Tag hinzufügen...",
+    "access": {
+      "title": "Zugriff",
+      "public": "Öffentlich",
+      "publicDescription": "Für alle mit Dokumentenzugriff sichtbar",
+      "private": "Privat",
+      "privateDescription": "Nur für Sie und Personen, mit denen Sie teilen, sichtbar",
+      "sharedWith": "Geteilt mit",
+      "addUser": "Benutzer hinzufügen...",
+      "removeUser": "Entfernen",
+      "noShares": "Nicht geteilt",
+      "saveSuccess": "Zugriffseinstellungen gespeichert",
+      "owner": "Eigentümer"
+    }
   },
   "settings": {
     "title": "Einstellungen",
     "selectLanguage": "Sprache auswählen",
     "themes": "Themes",
+    "translations": "Übersetzungen",
+    "plugins": "Plugins",
     "loadedTranslations": "Geladene Übersetzungen",
     "loadedPlugins": "Geladene Plugins",
     "languageExtension": {

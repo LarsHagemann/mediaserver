@@ -17,7 +17,9 @@ import type {
   Document,
   DocumentWithTags,
 } from "../documents/DocumentRepository.js";
+import { buildScopeHaving } from "../documents/DocumentRepository.js";
 import type { TagCache } from "./TagCache.js";
+import type { DocumentAccessScope } from "../auth/AccessScope.js";
 
 export interface ListTagsRequest {
   limit: number;
@@ -30,6 +32,7 @@ export type ListDocumentsRequest = {
   limit: number;
   query: string;
   seed?: string;
+  scope?: DocumentAccessScope;
 };
 
 const documentRowSchema = z.object({
@@ -38,6 +41,8 @@ const documentRowSchema = z.object({
   previous_id: z.string().nullable(),
   next_id: z.string().nullable(),
   query_index: z.coerce.number().int().min(0),
+  owner_id: z.string(),
+  is_public: z.boolean(),
 });
 
 const tagRowSchema = z.object({
@@ -71,7 +76,7 @@ export class TagRepository {
     this.sqlBuilder = new TagSqlBuilder(
       {
         userdataTableName: "documents",
-        userdataTableColumns: ["id", "mime"],
+        userdataTableColumns: ["id", "mime", "owner_id", "is_public"],
         userdataTableIdColumn: "id",
       },
       tagCache,
@@ -83,7 +88,12 @@ export class TagRepository {
     limit,
     query,
     seed,
+    scope = { type: "all" },
   }: ListDocumentsRequest): Promise<PaginatedResponse<Document>> {
+    if (scope.type === "none") {
+      return { items: [], total: 0 };
+    }
+
     const filter = new TagParser(query).parse();
     const sql = await this.sqlBuilder.buildListFilteredEntitiesQuery(filter);
 
@@ -91,10 +101,26 @@ export class TagRepository {
       const isRandom =
         sql.stmt.sort?.find((s) => s.field === "_rand") !== undefined;
 
+      const scopeHaving = buildScopeHaving(scope, "u");
+      if (scopeHaving) {
+        if (isRandom && sql.stmt.with?.[0]) {
+          sql.stmt.with[0].body += scopeHaving;
+        } else {
+          sql.stmt.having = sql.stmt.having
+            ? `(${sql.stmt.having})${scopeHaving}`
+            : scopeHaving.replace(/^ AND /, "");
+        }
+      }
+
+      const baseParams = isRandom ? { limit, offset, seed: seed ?? null } : { limit, offset };
+      const params = scope.type === "accessible-by"
+        ? { ...baseParams, userId: scope.userId }
+        : baseParams;
+
       const items = await this.dbService.any(
         paginated(documentRowSchema),
         buildQueryFromSelectStatement(sql.stmt),
-        isRandom ? { limit, offset, seed: seed ?? null } : { limit, offset },
+        params,
       );
 
       return toPaginatedResponse(
@@ -104,6 +130,8 @@ export class TagRepository {
           previousId: item.previous_id ?? undefined,
           nextId: item.next_id ?? undefined,
           queryIndex: item.query_index,
+          ownerId: item.owner_id,
+          isPublic: item.is_public,
           __total: item.__total,
         })),
       );
@@ -112,23 +140,39 @@ export class TagRepository {
     }
   }
 
-  public async listDocumentsByIds(ids: string[]): Promise<DocumentWithTags[]> {
+  public async listDocumentsByIds(
+    ids: string[],
+    scope: DocumentAccessScope = { type: "all" },
+  ): Promise<DocumentWithTags[]> {
+    if (scope.type === "none") return [];
+
+    let scopeClause = "";
+    const params: Record<string, unknown> = { ids };
+    if (scope.type === "public-only") {
+      scopeClause = " AND documents.is_public = true";
+    } else if (scope.type === "accessible-by") {
+      scopeClause = " AND (documents.is_public = true OR documents.owner_id = $userId OR EXISTS (SELECT 1 FROM document_shares ds WHERE ds.document_id = documents.id AND ds.shared_with_user_id = $userId))";
+      params.userId = scope.userId;
+    }
+
     const items = await this.dbService.any(
       documentRowSchema.and(tagRowSchema.omit({ id: true }).nullable()),
-      `SELECT 
-        documents.id, 
-        mime, 
-        NULL as previous_id, 
-        NULL as next_id, 
-        0 as query_index, 
-        tags.key, 
-        tags.value, 
+      `SELECT
+        documents.id,
+        mime,
+        owner_id,
+        is_public,
+        NULL as previous_id,
+        NULL as next_id,
+        0 as query_index,
+        tags.key,
+        tags.value,
         tags.type
-      FROM documents 
+      FROM documents
       LEFT JOIN userdata_tags ON documents.id = userdata_tags.userdata_id
       LEFT JOIN tags ON userdata_tags.tag_id = tags.id
-      WHERE documents.id = ANY($ids)`,
-      { ids },
+      WHERE documents.id = ANY($ids)${scopeClause}`,
+      params,
     );
 
     const documentsMap: Record<string, DocumentWithTags> = {};
@@ -138,6 +182,8 @@ export class TagRepository {
         documentsMap[item.id] = {
           id: item.id,
           mime: item.mime,
+          ownerId: item.owner_id,
+          isPublic: item.is_public,
           previousId: undefined,
           nextId: undefined,
           queryIndex: 0,

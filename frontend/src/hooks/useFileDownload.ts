@@ -28,7 +28,7 @@ export const useFileDownload = (url: string, skip = false) => {
       return;
     }
 
-    fetch(url)
+    fetch(url, { credentials: "include" })
       .then((data) => data.blob())
       .then((blob) => {
         const objectUrl = URL.createObjectURL(blob);

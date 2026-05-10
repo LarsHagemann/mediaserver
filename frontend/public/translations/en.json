@@ -58,7 +58,90 @@
     "settings": "Settings",
     "tags": "Tags",
     "collections": "Collections",
-    "serverState": "Server Status"
+    "serverState": "Server Status",
+    "logout": "Sign out",
+    "login": "Sign in",
+    "notSignedIn": "Not signed in",
+    "signInPrompt": "Sign in to upload and manage your library.",
+    "registrationDisabled": "Registration disabled",
+    "user": "User"
+  },
+  "login": {
+    "title": "Sign in",
+    "description": "Sign in to access the media server.",
+    "signIn": "Sign in",
+    "redirectNotice": "You'll be redirected to your identity provider.",
+    "registrationDisabledNotice": "Registration is currently disabled. Contact your administrator for access.",
+    "register": "Create an account"
+  },
+  "pendingApproval": {
+    "title": "Waiting for approval",
+    "description": "Your account has been created. An administrator needs to enable it before you can access the library."
+  },
+  "account": {
+    "user": "User",
+    "tabs": {
+      "profile": "Profile",
+      "sessions": "Sessions"
+    },
+    "profile": {
+      "name": "Display name",
+      "email": "Email",
+      "userId": "User ID"
+    },
+    "sessions": {
+      "current": "Current session",
+      "started": "Started {{date}}",
+      "unknownDevice": "Unknown device",
+      "delete": "Delete session"
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "create": "Create",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel"
+  },
+  "admin": {
+    "title": "Administration",
+    "tabs": {
+      "roles": "Roles",
+      "users": "Users",
+      "config": "Configuration"
+    },
+    "roles": {
+      "create": "Create Role",
+      "createRole": "Create role",
+      "namePlaceholder": "Role name",
+      "descriptionPlaceholder": "Description (optional)",
+      "system": "system",
+      "systemSection": "System roles",
+      "systemSectionHint": "Built-in. Permissions are fixed.",
+      "customSection": "Custom roles",
+      "permissions": "permissions",
+      "users": "users",
+      "newRole": "New role",
+      "clone": "Clone",
+      "cloneNamed": "Clone \"{{name}}\"",
+      "search": "Search roles...",
+      "clearAll": "Clear all",
+      "grantAll": "Grant all",
+      "grantRemaining": "Grant remaining",
+      "assigned": "assigned",
+      "permissionsGranted": "permissions granted",
+      "selectRole": "Select a role to view its permissions."
+    },
+    "users": {
+      "empty": "No users have logged in yet."
+    },
+    "config": {
+      "anonymousRole": "Anonymous user role",
+      "anonymousRoleHint": "Permissions granted to unauthenticated visitors.",
+      "defaultRole": "Default role for new users",
+      "defaultRoleHint": "Role assigned to users when they log in for the first time.",
+      "noRole": "— none —"
+    }
   },
   "collections": {
     "title": "Collections",
@@ -103,12 +186,27 @@
     }
   },
   "document": {
-    "addTagPlaceholder": "Add a tag..."
+    "addTagPlaceholder": "Add a tag...",
+    "access": {
+      "title": "Access",
+      "public": "Public",
+      "publicDescription": "Visible to everyone with document access",
+      "private": "Private",
+      "privateDescription": "Only visible to you and people you share with",
+      "sharedWith": "Shared with",
+      "addUser": "Add user...",
+      "removeUser": "Remove",
+      "noShares": "Not shared with anyone",
+      "saveSuccess": "Access settings saved",
+      "owner": "Owner"
+    }
   },
   "settings": {
     "title": "Settings",
     "selectLanguage": "Select Language",
     "themes": "Themes",
+    "translations": "Translations",
+    "plugins": "Plugins",
     "loadedTranslations": "Loaded Translations",
     "loadedPlugins": "Loaded Plugins",
     "languageExtension": {
