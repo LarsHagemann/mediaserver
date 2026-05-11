@@ -57,12 +57,16 @@ describe("TagRepository (integration)", () => {
       basePath: "/data",
       filename: "photo.jpg",
       type: "image/jpeg",
+      isPublic: true,
+      ownerId: "00000000-0000-0000-0000-000000000000",
     });
     await documentRepository.createDocument({
       id: DOC_ID_2,
       basePath: "/data",
       filename: "video.mp4",
       type: "video/mp4",
+      isPublic: true,
+      ownerId: "00000000-0000-0000-0000-000000000000",
     });
   });
 

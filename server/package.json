@@ -8,9 +8,9 @@
     "url": "https://github.com/de-treelab/mediaserver"
   },
   "scripts": {
-    "build": "tsc",
-    "build:watch": "tsc --watch",
-    "dev": "tsc-watch --onSuccess \"node --enable-source-maps dist/index.js\"",
+    "build": "tsc -p tsconfig.json",
+    "build:watch": "tsc -p tsconfig.json --watch",
+    "dev": "tsc-watch -p tsconfig.json --onSuccess \"node --enable-source-maps dist/index.js\"",
     "lint:check": "eslint .",
     "lint:fix": "eslint . --fix",
     "style:check": "prettier --check src/**/*.ts",

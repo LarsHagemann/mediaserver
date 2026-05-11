@@ -30,6 +30,7 @@ describe("DocumentRepository (integration)", () => {
           filename: "photo.jpg",
           type: "image/jpeg",
           ownerId: systemUserId,
+          isPublic: true,
         }),
       ).resolves.toBeUndefined();
     });
@@ -41,6 +42,7 @@ describe("DocumentRepository (integration)", () => {
         filename: "duplicate.jpg",
         type: "image/jpeg",
         ownerId: systemUserId,
+        isPublic: true,
       });
 
       await expect(
@@ -50,6 +52,7 @@ describe("DocumentRepository (integration)", () => {
           filename: "duplicate.jpg",
           type: "image/jpeg",
           ownerId: systemUserId,
+          isPublic: true,
         }),
       ).rejects.toThrow();
     });
@@ -64,6 +67,7 @@ describe("DocumentRepository (integration)", () => {
         filename: "test.jpg",
         type: "image/jpeg",
         ownerId: systemUserId,
+        isPublic: true,
       });
 
       const result = await repository.getDocumentWithPathInfo(id);
