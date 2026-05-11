@@ -2,12 +2,15 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { DocumentService } from "../../documents/DocumentService.js";
 import type { DocumentRepository } from "../../documents/DocumentRepository.js";
 import type { TagService } from "../../tags/TagService.js";
+import type { Identity } from "../../auth/Identity.js";
 
 vi.mock("fs/promises", () => ({
   stat: vi.fn().mockResolvedValue({ size: 1024 }),
 }));
 
 const SYSTEM_USER_ID = "00000000-0000-0000-0000-000000000000";
+const OWNER_USER_ID = "00000000-0000-0000-0000-000000000001";
+const OTHER_USER_ID = "00000000-0000-0000-0000-000000000002";
 
 const makeDocumentRepository = (): DocumentRepository =>
   ({
@@ -15,6 +18,7 @@ const makeDocumentRepository = (): DocumentRepository =>
     getDocumentWithPathInfo: vi.fn(),
     getDocumentAccess: vi.fn(),
     updateDocumentAccess: vi.fn(),
+    updateFriendlyName: vi.fn(),
     deleteDocument: vi.fn(),
   }) as unknown as DocumentRepository;
 
@@ -23,12 +27,19 @@ const makeTagService = (): TagService =>
     addTagToDocument: vi.fn(),
   }) as unknown as TagService;
 
+const makeIdentity = (userId: string | null, permissions: string[] = []): Identity =>
+  ({
+    userId,
+    hasPermission: (p: string) => permissions.includes(p),
+  }) as unknown as Identity;
+
 const mockDocWithPathInfo = {
   id: "doc-1",
   mime: "image/jpeg",
   base_path: "/data/storage",
   filename: "photo.jpg",
-  ownerId: SYSTEM_USER_ID,
+  friendlyName: "My Photo",
+  ownerId: OWNER_USER_ID,
   isPublic: true,
   previousId: undefined,
   nextId: undefined,
@@ -53,8 +64,10 @@ describe("DocumentService", () => {
         id: "doc-1",
         basePath: "/data",
         filename: "photo.jpg",
+        friendlyName: "photo.jpg",
         type: "image/jpeg",
         ownerId: SYSTEM_USER_ID,
+        isPublic: false,
       };
 
       await documentService.createDocument(request);
@@ -74,8 +87,10 @@ describe("DocumentService", () => {
         id: "doc-2",
         basePath: "/data",
         filename: "video.mp4",
+        friendlyName: "video.mp4",
         type: "video/mp4",
         ownerId: SYSTEM_USER_ID,
+        isPublic: false,
       });
 
       expect(tagService.addTagToDocument).toHaveBeenCalledTimes(3);
@@ -109,6 +124,42 @@ describe("DocumentService", () => {
       const result = await documentService.getDocument("doc-1", "bytes=0-511", { type: "all" });
 
       expect(result).toBeInstanceOf(FileStream);
+    });
+  });
+
+  describe("updateFriendlyName", () => {
+    beforeEach(() => {
+      vi.mocked(documentRepository.getDocumentAccess).mockResolvedValue({
+        ownerId: OWNER_USER_ID,
+        isPublic: true,
+        shares: [],
+      });
+    });
+
+    it("allows owner to update friendly name", async () => {
+      const identity = makeIdentity(OWNER_USER_ID);
+
+      await documentService.updateFriendlyName("doc-1", identity, "New Name");
+
+      expect(documentRepository.updateFriendlyName).toHaveBeenCalledWith("doc-1", "New Name");
+    });
+
+    it("allows admin to update friendly name", async () => {
+      const identity = makeIdentity(OTHER_USER_ID, ["admin:users"]);
+
+      await documentService.updateFriendlyName("doc-1", identity, "Admin Name");
+
+      expect(documentRepository.updateFriendlyName).toHaveBeenCalledWith("doc-1", "Admin Name");
+    });
+
+    it("rejects non-owner without admin permission", async () => {
+      const identity = makeIdentity(OTHER_USER_ID);
+
+      await expect(
+        documentService.updateFriendlyName("doc-1", identity, "Stolen Name"),
+      ).rejects.toThrow();
+
+      expect(documentRepository.updateFriendlyName).not.toHaveBeenCalled();
     });
   });
 });

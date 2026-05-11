@@ -1,10 +1,15 @@
 import type React from "react";
+import { useState } from "react";
 import { FaCaretLeft, FaCaretRight, FaDownload, FaFile } from "react-icons/fa";
 import { LuPresentation } from "react-icons/lu";
-import { MdClose } from "react-icons/md";
+import { MdClose, MdEdit } from "react-icons/md";
+import { updateDocumentFriendlyName } from "../app/api";
+import { enhancedApi } from "../app/enhancedApi";
+import { useAppDispatch } from "../app/store";
 
 type Props = {
   documentId: string;
+  friendlyName?: string;
   previewImageIndex: number;
   totalDocuments: number;
   mimeType?: string;
@@ -17,6 +22,7 @@ type Props = {
 
 export const DocumentPreviewControls: React.FC<Props> = ({
   documentId,
+  friendlyName,
   previewImageIndex,
   totalDocuments,
   mimeType,
@@ -27,8 +33,23 @@ export const DocumentPreviewControls: React.FC<Props> = ({
   onClose,
 }) => {
   const ext = mimeType?.split("/")[1];
-  const displayName = ext ? `document.${ext}` : documentId.slice(0, 8);
+  const displayName =
+    friendlyName || (ext ? `document.${ext}` : documentId.slice(0, 8));
   const current = previewImageIndex + 1;
+  const dispatch = useAppDispatch();
+  const [editing, setEditing] = useState(false);
+  const [nameValue, setNameValue] = useState(displayName);
+
+  const commitRename = async () => {
+    const trimmed = nameValue.trim();
+    if (trimmed && trimmed !== displayName) {
+      await updateDocumentFriendlyName(documentId, trimmed);
+      dispatch(enhancedApi.util.invalidateTags(["document"]));
+    } else {
+      setNameValue(displayName);
+    }
+    setEditing(false);
+  };
 
   return (
     <div className="flex items-center justify-between px-4 h-full gap-6">
@@ -37,8 +58,39 @@ export const DocumentPreviewControls: React.FC<Props> = ({
           <FaFile size="0.875rem" />
         </div>
         <div className="min-w-0">
-          <div className="text-sm font-semibold text-text-primary truncate">
-            {displayName}
+          <div className="flex items-center gap-1">
+            {editing ? (
+              <input
+                autoFocus
+                className="text-sm font-semibold bg-surface-2 border border-border rounded px-1.5 py-0.5 outline-none focus:border-border-strong"
+                value={nameValue}
+                onChange={(e) => setNameValue(e.target.value)}
+                onBlur={commitRename}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") void commitRename();
+                  if (e.key === "Escape") {
+                    setNameValue(displayName);
+                    setEditing(false);
+                  }
+                }}
+              />
+            ) : (
+              <>
+                <div className="text-sm font-semibold text-text-primary truncate">
+                  {displayName}
+                </div>
+                <button
+                  onClick={() => {
+                    setNameValue(displayName);
+                    setEditing(true);
+                  }}
+                  className="p-1 rounded hover:bg-surface-2 text-text-faint hover:text-text-muted transition-colors shrink-0"
+                  title="Rename"
+                >
+                  <MdEdit size="0.75rem" />
+                </button>
+              </>
+            )}
           </div>
           <div className="text-xs text-text-muted">
             {current} of {totalDocuments}

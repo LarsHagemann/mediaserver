@@ -86,7 +86,7 @@ export const DocumentCard = ({
         {!isLoading && !error && objectUrl ? (
           <img
             src={objectUrl}
-            alt={document.id}
+            alt={document.friendlyName || document.id}
             className="w-full h-full object-cover"
           />
         ) : (
@@ -125,7 +125,7 @@ export const DocumentCard = ({
       {/* Card footer */}
       <div className="p-3 flex flex-col gap-1.5">
         <p className="text-sm font-medium text-text-primary truncate leading-tight">
-          {document.id}
+          {document.friendlyName || document.id}
         </p>
         <div className="flex items-center gap-1.5 text-xs text-text-muted">
           <span className="px-1 py-0.5 bg-surface-2 border border-border-subtle text-[10px] font-bold rounded text-text-muted leading-tight">

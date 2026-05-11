@@ -7,11 +7,13 @@ type DocumentUpload = {
   webSocketClientId: string;
   tags: ApiTag[];
   isPublic: boolean;
+  friendlyName: string;
 };
 
 export type Document = {
   id: string;
   mime: string;
+  friendlyName: string;
   previousId: string | undefined;
   nextId: string | undefined;
   queryIndex: number;
@@ -503,12 +505,29 @@ export type AuthConfig = {
   defaultRoleId: string | null;
 };
 
+export async function updateDocumentFriendlyName(
+  id: string,
+  friendlyName: string,
+): Promise<void> {
+  const res = await fetch(
+    `${import.meta.env.VITE_BACKEND_URL}/documents/${id}/friendly-name`,
+    {
+      method: "PATCH",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ friendlyName }),
+    },
+  );
+  if (!res.ok) throw new Error(`Failed to update friendly name: ${res.status}`);
+}
+
 export function uploadDocumentWithProgress(
   params: {
     file: File;
     webSocketClientId: string;
     tags: ApiTag[];
     isPublic: boolean;
+    friendlyName: string;
   },
   onProgress: (pct: number) => void,
 ): Promise<void> {
@@ -517,6 +536,7 @@ export function uploadDocumentWithProgress(
     formData.append("upload", params.file);
     formData.append("tags", JSON.stringify(params.tags));
     formData.append("isPublic", String(params.isPublic));
+    formData.append("friendlyName", params.friendlyName);
 
     const extension = (
       params.file.name.split(".").pop() ?? ""

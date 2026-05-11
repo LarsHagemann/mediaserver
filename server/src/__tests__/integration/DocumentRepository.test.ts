@@ -28,6 +28,7 @@ describe("DocumentRepository (integration)", () => {
           id: "00000000-0000-0000-0000-000000000001",
           basePath: "/data/storage",
           filename: "photo.jpg",
+          friendlyName: "photo.jpg",
           type: "image/jpeg",
           ownerId: systemUserId,
           isPublic: true,
@@ -40,6 +41,7 @@ describe("DocumentRepository (integration)", () => {
         id: "00000000-0000-0000-0000-000000000002",
         basePath: "/data/storage",
         filename: "duplicate.jpg",
+        friendlyName: "duplicate.jpg",
         type: "image/jpeg",
         ownerId: systemUserId,
         isPublic: true,
@@ -50,6 +52,7 @@ describe("DocumentRepository (integration)", () => {
           id: "00000000-0000-0000-0000-000000000002",
           basePath: "/data/storage",
           filename: "duplicate.jpg",
+          friendlyName: "duplicate.jpg",
           type: "image/jpeg",
           ownerId: systemUserId,
           isPublic: true,
@@ -65,6 +68,7 @@ describe("DocumentRepository (integration)", () => {
         id,
         basePath: "/data/storage",
         filename: "test.jpg",
+        friendlyName: "My Test Photo",
         type: "image/jpeg",
         ownerId: systemUserId,
         isPublic: true,
@@ -77,6 +81,7 @@ describe("DocumentRepository (integration)", () => {
         mime: "image/jpeg",
         base_path: "/data/storage",
         filename: "test.jpg",
+        friendlyName: "My Test Photo",
         ownerId: systemUserId,
         isPublic: true,
         previousId: undefined,
@@ -89,6 +94,111 @@ describe("DocumentRepository (integration)", () => {
       await expect(
         repository.getDocumentWithPathInfo("00000000-0000-0000-0000-999999999999"),
       ).rejects.toThrow();
+    });
+  });
+
+  describe("updateFriendlyName", () => {
+    it("updates the friendly name", async () => {
+      const id = "00000000-0000-0000-0000-000000000010";
+      await repository.createDocument({
+        id,
+        basePath: "/data/storage",
+        filename: "rename-me.jpg",
+        friendlyName: "Original Name",
+        type: "image/jpeg",
+        ownerId: systemUserId,
+        isPublic: true,
+      });
+
+      await repository.updateFriendlyName(id, "Updated Name");
+
+      const result = await repository.getDocumentWithPathInfo(id);
+      expect(result.friendlyName).toBe("Updated Name");
+    });
+  });
+
+  describe("ownerId", () => {
+    it("stores and returns the correct ownerId", async () => {
+      const id = "00000000-0000-0000-0000-000000000020";
+      await repository.createDocument({
+        id,
+        basePath: "/data/storage",
+        filename: "owned.jpg",
+        friendlyName: "owned.jpg",
+        type: "image/jpeg",
+        ownerId: systemUserId,
+        isPublic: false,
+      });
+
+      const result = await repository.getDocumentWithPathInfo(id);
+      expect(result.ownerId).toBe(systemUserId);
+    });
+  });
+
+  describe("isPublic", () => {
+    it("stores private flag correctly", async () => {
+      const id = "00000000-0000-0000-0000-000000000030";
+      await repository.createDocument({
+        id,
+        basePath: "/data/storage",
+        filename: "private.jpg",
+        friendlyName: "private.jpg",
+        type: "image/jpeg",
+        ownerId: systemUserId,
+        isPublic: false,
+      });
+
+      const result = await repository.getDocumentWithPathInfo(id);
+      expect(result.isPublic).toBe(false);
+    });
+
+    it("stores public flag correctly", async () => {
+      const id = "00000000-0000-0000-0000-000000000031";
+      await repository.createDocument({
+        id,
+        basePath: "/data/storage",
+        filename: "public.jpg",
+        friendlyName: "public.jpg",
+        type: "image/jpeg",
+        ownerId: systemUserId,
+        isPublic: true,
+      });
+
+      const result = await repository.getDocumentWithPathInfo(id);
+      expect(result.isPublic).toBe(true);
+    });
+
+    it("hides private documents from public-only scope", async () => {
+      const id = "00000000-0000-0000-0000-000000000032";
+      await repository.createDocument({
+        id,
+        basePath: "/data/storage",
+        filename: "hidden.jpg",
+        friendlyName: "hidden.jpg",
+        type: "image/jpeg",
+        ownerId: systemUserId,
+        isPublic: false,
+      });
+
+      await expect(
+        repository.getDocumentWithPathInfo(id, { type: "public-only" }),
+      ).rejects.toThrow();
+    });
+
+    it("exposes public documents via public-only scope", async () => {
+      const id = "00000000-0000-0000-0000-000000000033";
+      await repository.createDocument({
+        id,
+        basePath: "/data/storage",
+        filename: "visible.jpg",
+        friendlyName: "visible.jpg",
+        type: "image/jpeg",
+        ownerId: systemUserId,
+        isPublic: true,
+      });
+
+      const result = await repository.getDocumentWithPathInfo(id, { type: "public-only" });
+      expect(result.id).toBe(id);
     });
   });
 });

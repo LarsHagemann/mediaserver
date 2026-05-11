@@ -29,6 +29,7 @@ type QueuedFile = {
   id: string;
   file: File;
   extraTags: ApiTag[];
+  friendlyName: string;
 };
 
 export const UploadPage = () => {
@@ -57,7 +58,7 @@ export const UploadPage = () => {
     const newItems: QueuedFile[] = files.map((file) => {
       const id = `${file.name}-${file.size}-${Date.now()}-${Math.random()}`;
       fileStoreRef.current.set(id, file);
-      return { id, file, extraTags: [] };
+      return { id, file, extraTags: [], friendlyName: file.name };
     });
     setQueuedFiles((prev) => [...prev, ...newItems]);
   }, []);
@@ -73,6 +74,7 @@ export const UploadPage = () => {
         qf.file,
         [...batchTags, ...qf.extraTags],
         visibility === "public",
+        qf.friendlyName,
       );
     });
     setQueuedFiles([]);
@@ -82,7 +84,12 @@ export const UploadPage = () => {
     (fileName: string) => {
       for (const [, file] of fileStoreRef.current) {
         if (file.name === fileName) {
-          markFileAsToBeUploaded(file, batchTags, visibility === "public");
+          markFileAsToBeUploaded(
+            file,
+            batchTags,
+            visibility === "public",
+            file.name,
+          );
           return;
         }
       }
@@ -234,6 +241,14 @@ export const UploadPage = () => {
                 status="queued"
                 batchTags={batchTags}
                 extraTags={qf.extraTags}
+                friendlyName={qf.friendlyName}
+                onFriendlyNameChange={(name) =>
+                  setQueuedFiles((prev) =>
+                    prev.map((f) =>
+                      f.id === qf.id ? { ...f, friendlyName: name } : f,
+                    ),
+                  )
+                }
                 onRemove={() => removeQueued(qf.id)}
                 onAddTag={(tag) =>
                   setQueuedFiles((prev) =>

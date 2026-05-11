@@ -23,6 +23,7 @@ export const documentRouter = Router();
 type DocumentUpload = {
   tags: string;
   isPublic: string;
+  friendlyName?: string;
 };
 
 type BulkEditDocumentsRequest = {
@@ -48,7 +49,7 @@ documentRouter.post(
       diContainer,
       files,
       query: { webSocketClientId, extension },
-      body: { tags, isPublic },
+      body: { tags, isPublic, friendlyName },
       identity,
     }) => {
       const file = files?.upload;
@@ -83,6 +84,7 @@ documentRouter.post(
         extension,
         ownerId,
         isPublic: isPublic === "true",
+        friendlyName: friendlyName ?? file.name,
         tags: z
           .array(
             z.object({
@@ -236,6 +238,24 @@ documentRouter.put(
       status: 204,
       body: {},
     };
+  }),
+);
+
+documentRouter.patch(
+  "/:id/friendly-name",
+  requirePermission("document:read"),
+  apiHandler<
+    EmptyObject,
+    EmptyObject,
+    { friendlyName: string },
+    { id: string }
+  >(async ({ diContainer, params: { id }, body, identity }) => {
+    const { friendlyName } = z
+      .object({ friendlyName: z.string().min(1) })
+      .parse(body);
+    const documentService = diContainer.get<DocumentService>(services.document);
+    await documentService.updateFriendlyName(id, identity, friendlyName);
+    return { status: 204, body: {} };
   }),
 );
 

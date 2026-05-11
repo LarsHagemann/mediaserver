@@ -12,6 +12,7 @@ export type FileWithTags = {
   file: File;
   tags: ApiTag[];
   isPublic: boolean;
+  friendlyName: string;
 };
 
 type UploadContextType = {
@@ -25,6 +26,7 @@ type UploadContextType = {
     file: File,
     tags: ApiTag[],
     isPublic: boolean,
+    friendlyName: string,
   ) => void;
   markFileAsBeingProcessed: (file: string) => void;
   markFileAsProcessed: (file: string) => void;

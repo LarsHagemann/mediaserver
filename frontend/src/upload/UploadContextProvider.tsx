@@ -10,7 +10,7 @@ import {
   type WebSocketIncomingMessageSchema,
 } from "../websocket/WebSocketContext";
 import { uploadDocumentWithProgress, type ApiTag } from "../app/api";
-import { useAppSelector } from "../app/store";
+import { useAppDispatch, useAppSelector } from "../app/store";
 import { selectMaxConcurrentUploads } from "../app/persistent.slice";
 import { enhancedApi } from "../app/enhancedApi";
 
@@ -36,15 +36,16 @@ export const UploadContextProvider: React.FC<{
 
   const [progress, setProgress] = useState<Map<string, number>>(new Map());
 
+  const dispatch = useAppDispatch();
   const maxConcurrentUploads = useAppSelector(selectMaxConcurrentUploads);
 
   const markFileAsToBeUploaded = useCallback(
-    (file: File, tags: ApiTag[], isPublic: boolean) => {
+    (file: File, tags: ApiTag[], isPublic: boolean, friendlyName: string) => {
       const failedEntry = Array.from(failedFiles).find(
         (f) => f.name === file.name,
       );
       if (failedEntry) removeFromFailedFiles(failedEntry);
-      addToBeUploaded({ file, tags, isPublic });
+      addToBeUploaded({ file, tags, isPublic, friendlyName });
     },
     [addToBeUploaded, failedFiles, removeFromFailedFiles],
   );
@@ -161,14 +162,14 @@ export const UploadContextProvider: React.FC<{
     const slots = maxConcurrentUploads - toBeProcessed.size;
     if (slots <= 0) return;
     const batch = Array.from(toBeUploaded).slice(0, slots);
-    batch.forEach(({ file, tags, isPublic }) => {
+    batch.forEach(({ file, tags, isPublic, friendlyName }) => {
       markFileAsBeingProcessed(file.name);
       uploadDocumentWithProgress(
-        { file, webSocketClientId, tags, isPublic },
+        { file, webSocketClientId, tags, isPublic, friendlyName },
         (pct) => setProgress((prev) => new Map(prev).set(file.name, pct)),
       )
         .then(() => {
-          enhancedApi.util.invalidateTags(["document"]);
+          dispatch(enhancedApi.util.invalidateTags(["document"]));
         })
         .catch((err) => {
           markFileAsFailedRef.current(
@@ -183,6 +184,7 @@ export const UploadContextProvider: React.FC<{
     maxConcurrentUploads,
     markFileAsBeingProcessed,
     webSocketClientId,
+    dispatch,
   ]);
 
   return (

@@ -109,6 +109,7 @@ export const PreviewContainer = ({
       <div className="flex-shrink-0 h-14 bg-surface-1 border-b border-border">
         <DocumentPreviewControls
           documentId={previewImageId}
+          friendlyName={currentDocument?.friendlyName}
           previewImageIndex={previewImageIndex}
           totalDocuments={totalDocuments}
           mimeType={mimeType}

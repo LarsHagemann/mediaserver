@@ -32,6 +32,22 @@ export class DocumentService {
     );
   }
 
+  public async updateFriendlyName(
+    documentId: string,
+    identity: Identity,
+    friendlyName: string,
+  ): Promise<void> {
+    const access = await this.documentRepository.getDocumentAccess(documentId);
+    if (!canManageAccess(identity, access.ownerId)) {
+      throw new ApiError(
+        "Forbidden",
+        403,
+        "Only the document owner or an admin can update the document name",
+      );
+    }
+    await this.documentRepository.updateFriendlyName(documentId, friendlyName);
+  }
+
   public async getDocumentThumbnail(
     id: string,
     scope: DocumentAccessScope,

@@ -40,6 +40,7 @@ export type ListDocumentsRequest = {
 const documentRowSchema = z.object({
   id: z.string(),
   mime: z.string(),
+  friendly_name: z.string(),
   previous_id: z.string().nullable(),
   next_id: z.string().nullable(),
   query_index: z.coerce.number().int().min(0),
@@ -72,7 +73,13 @@ export class TagRepository {
     this.sqlBuilder = new TagSqlBuilder(
       {
         userdataTableName: "documents",
-        userdataTableColumns: ["id", "mime", "owner_id", "is_public"],
+        userdataTableColumns: [
+          "id",
+          "mime",
+          "friendly_name",
+          "owner_id",
+          "is_public",
+        ],
         userdataTableIdColumn: "id",
       },
       tagCache,
@@ -126,6 +133,7 @@ export class TagRepository {
         items.map((item) => ({
           id: item.id,
           mime: item.mime,
+          friendlyName: item.friendly_name,
           previousId: item.previous_id ?? undefined,
           nextId: item.next_id ?? undefined,
           queryIndex: item.query_index,
@@ -160,6 +168,7 @@ export class TagRepository {
       `SELECT
         documents.id,
         mime,
+        friendly_name,
         owner_id,
         is_public,
         NULL as previous_id,
@@ -182,6 +191,7 @@ export class TagRepository {
         documentsMap[item.id] = {
           id: item.id,
           mime: item.mime,
+          friendlyName: item.friendly_name,
           ownerId: item.owner_id,
           isPublic: item.is_public,
           previousId: undefined,

@@ -8,6 +8,7 @@ export type CreateDocumentRequest = {
   id: string;
   basePath: string;
   filename: string;
+  friendlyName: string;
   type: string;
   ownerId: string;
   isPublic: boolean;
@@ -16,6 +17,7 @@ export type CreateDocumentRequest = {
 export type Document = {
   id: string;
   mime: string;
+  friendlyName: string;
   previousId: string | undefined;
   nextId: string | undefined;
   queryIndex: number;
@@ -43,6 +45,7 @@ const documentWithPathInfoSchema = z.object({
   mime: z.string(),
   base_path: z.string(),
   filename: z.string(),
+  friendly_name: z.string(),
   owner_id: z.string(),
   is_public: z.boolean(),
 });
@@ -52,7 +55,7 @@ export class DocumentRepository {
 
   public async createDocument(request: CreateDocumentRequest): Promise<void> {
     await this.dbService.none(
-      "INSERT INTO documents (id, base_path, filename, mime, owner_id, is_public) VALUES ($id, $basePath, $filename, $type, $ownerId, $isPublic)",
+      "INSERT INTO documents (id, base_path, filename, friendly_name, mime, owner_id, is_public) VALUES ($id, $basePath, $filename, $friendlyName, $type, $ownerId, $isPublic)",
       request,
     );
   }
@@ -71,7 +74,7 @@ export class DocumentRepository {
 
     const result = await this.dbService.oneOrNone(
       documentWithPathInfoSchema,
-      `SELECT id, mime, base_path, filename, owner_id, is_public FROM documents WHERE id = $id${scopeClause}`,
+      `SELECT id, mime, base_path, filename, friendly_name, owner_id, is_public FROM documents WHERE id = $id${scopeClause}`,
       params,
     );
 
@@ -84,6 +87,7 @@ export class DocumentRepository {
       mime: result.mime,
       base_path: result.base_path,
       filename: result.filename,
+      friendlyName: result.friendly_name,
       ownerId: result.owner_id,
       isPublic: result.is_public,
       previousId: undefined,
@@ -147,6 +151,16 @@ export class DocumentRepository {
         );
       }
     });
+  }
+
+  public async updateFriendlyName(
+    documentId: string,
+    friendlyName: string,
+  ): Promise<void> {
+    await this.dbService.none(
+      "UPDATE documents SET friendly_name = $friendlyName WHERE id = $documentId",
+      { documentId, friendlyName },
+    );
   }
 
   public async deleteDocument(documentId: string): Promise<void> {
