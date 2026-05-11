@@ -11,23 +11,26 @@ export const pdfPlugin: FileTypePlugin = {
     const tmpId = uuidv4();
     const pdfBuffer = fs2.createReadStream(path);
     const pdfThumbnailStream = await pdf.default(pdfBuffer, {
-      resize: { width: 240, height: 240 },
+      resize: { width: 400, height: 400 },
       crop: {
-        width: 240,
-        height: 240,
+        width: 400,
+        height: 400,
         x: 0,
         y: 0,
         ratio: true,
       },
       compress: { type: "JPEG" },
     });
-    const thumbnailBuffer = await new Promise<Buffer>((resolve, reject) => {
+    const pdfJpegBuffer = await new Promise<Buffer>((resolve, reject) => {
       const chunks: Buffer[] = [];
       pdfThumbnailStream.on("data", (chunk) => chunks.push(chunk));
       pdfThumbnailStream.on("end", () => resolve(Buffer.concat(chunks)));
       pdfThumbnailStream.on("error", reject);
     });
-    const tmpPath = "/tmp/" + tmpId + "_thumbnail.jpg";
+    const thumbnailBuffer = await sharp(pdfJpegBuffer)
+      .webp({ quality: 80 })
+      .toBuffer();
+    const tmpPath = "/tmp/" + tmpId + "_thumbnail.webp";
     fs2.writeFileSync(tmpPath, thumbnailBuffer);
     return { path: tmpPath };
   },
@@ -42,13 +45,13 @@ export const imagePlugin: FileTypePlugin = {
   thumbnailCreator: async ({ path, uuidv4 }) => {
     // Implement image thumbnail creation logic
     const tmpId = uuidv4();
-    const tmpPath = "/tmp/" + tmpId + "_thumbnail.jpg";
+    const tmpPath = "/tmp/" + tmpId + "_thumbnail.webp";
     await sharp(path)
       .rotate()
-      .resize(240, 240, {
+      .resize(400, 400, {
         fit: "inside",
       })
-      .jpeg({ mozjpeg: true })
+      .webp({ quality: 80 })
       .toFile(tmpPath);
 
     return { path: tmpPath };
@@ -68,7 +71,7 @@ export const videoPlugin: FileTypePlugin = {
       number: 1,
       every_n_percentage: 50,
       file_name: filename + ".jpg",
-      size: "240x240",
+      size: "400x400",
     });
 
     return { path: "/tmp/" + filename + "_1.jpg" };
@@ -87,8 +90,8 @@ export const audioPlugin: FileTypePlugin = {
     process.addFilterComplex(
       "[0:a]aformat=channel_layouts=mono," +
         "compand=gain=-6," +
-        "showwavespic=s=240x240:colors=#9cf42f[fg];" +
-        "color=s=240x240:color=#44582c," +
+        "showwavespic=s=400x400:colors=#9cf42f[fg];" +
+        "color=s=400x400:color=#44582c," +
         "drawgrid=width=iw/10:height=ih/5:color=#9cf42f@0.1[bg];" +
         "[bg][fg]overlay=format=auto,drawbox=x=(iw-w)/2:y=(ih-h)/2:w=iw:h=1:color=#9cf42f",
     );

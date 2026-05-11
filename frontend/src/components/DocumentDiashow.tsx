@@ -63,10 +63,7 @@ export const DocumentDiashow = ({
   }
 
   return (
-    <div
-      className="fixed z-10 bg-surface-1 w-screen h-screen left-0 top-0"
-      {...handlers}
-    >
+    <div className="relative w-full h-full bg-surface-1" {...handlers}>
       <DocumentDiashowControls
         nextDocument={nextDocument}
         previousDocument={previousDocument}
