@@ -74,8 +74,22 @@ export type Collection = {
   filterExpression: string;
   isFavorite: boolean;
   type: CollectionType;
+  ownerId: string;
+  isPublic: boolean;
   createdAt: string;
   updatedAt: string;
+};
+
+export type CollectionShareEntry = {
+  userId: string;
+  name: string | null;
+  email: string | null;
+};
+
+export type CollectionAccess = {
+  ownerId: string;
+  isPublic: boolean;
+  shares: CollectionShareEntry[];
 };
 
 type ApiTagWithCount = ApiTag & {
@@ -293,6 +307,7 @@ export const api = baseApi.injectEndpoints({
         filterExpression?: string;
         isFavorite: boolean;
         type: CollectionType;
+        isPublic?: boolean;
       }
     >({
       query: (body) => ({
@@ -330,6 +345,28 @@ export const api = baseApi.injectEndpoints({
       }),
       invalidatesTags: (_result, _error, id) => [
         "collection",
+        { type: "collection", id },
+      ],
+    }),
+
+    getCollectionAccess: build.query<CollectionAccess, string>({
+      query: (id) => ({
+        url: `/collections/${encodeURIComponent(id)}/access`,
+        method: "GET",
+      }),
+      providesTags: (_result, _error, id) => [{ type: "collection", id }],
+    }),
+
+    updateCollectionAccess: build.mutation<
+      void,
+      { id: string; isPublic: boolean; sharedWith: string[] }
+    >({
+      query: ({ id, ...body }) => ({
+        url: `/collections/${encodeURIComponent(id)}/access`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: (_result, _error, { id }) => [
         { type: "collection", id },
       ],
     }),

@@ -162,4 +162,149 @@ describe("DocumentService", () => {
       expect(documentRepository.updateFriendlyName).not.toHaveBeenCalled();
     });
   });
+
+  describe("getDocumentAccess", () => {
+    beforeEach(() => {
+      vi.mocked(documentRepository.getDocumentAccess).mockResolvedValue({
+        ownerId: OWNER_USER_ID,
+        isPublic: true,
+        shares: [],
+      });
+    });
+
+    it("allows owner to get access info", async () => {
+      const identity = makeIdentity(OWNER_USER_ID);
+
+      const result = await documentService.getDocumentAccess("doc-1", identity);
+
+      expect(result.ownerId).toBe(OWNER_USER_ID);
+    });
+
+    it("allows admin to get access info", async () => {
+      const identity = makeIdentity(OTHER_USER_ID, ["admin:users"]);
+
+      const result = await documentService.getDocumentAccess("doc-1", identity);
+
+      expect(result.ownerId).toBe(OWNER_USER_ID);
+    });
+
+    it("rejects non-owner without admin permission", async () => {
+      const identity = makeIdentity(OTHER_USER_ID);
+
+      await expect(
+        documentService.getDocumentAccess("doc-1", identity),
+      ).rejects.toThrow();
+    });
+
+    it("rejects system identity (not an owner) for user-owned document", async () => {
+      const identity = makeIdentity("system");
+
+      await expect(
+        documentService.getDocumentAccess("doc-1", identity),
+      ).rejects.toThrow();
+    });
+
+    it("rejects regular user from system-owned document access info", async () => {
+      vi.mocked(documentRepository.getDocumentAccess).mockResolvedValue({
+        ownerId: SYSTEM_USER_ID,
+        isPublic: false,
+        shares: [],
+      });
+      const identity = makeIdentity(OTHER_USER_ID);
+
+      await expect(
+        documentService.getDocumentAccess("doc-1", identity),
+      ).rejects.toThrow();
+    });
+
+    it("allows admin to get access info for system-owned document", async () => {
+      vi.mocked(documentRepository.getDocumentAccess).mockResolvedValue({
+        ownerId: SYSTEM_USER_ID,
+        isPublic: false,
+        shares: [],
+      });
+      const identity = makeIdentity(OTHER_USER_ID, ["admin:users"]);
+
+      const result = await documentService.getDocumentAccess("doc-1", identity);
+
+      expect(result.ownerId).toBe(SYSTEM_USER_ID);
+    });
+  });
+
+  describe("updateDocumentAccess", () => {
+    const update = { isPublic: false, sharedWith: [] };
+
+    beforeEach(() => {
+      vi.mocked(documentRepository.getDocumentAccess).mockResolvedValue({
+        ownerId: OWNER_USER_ID,
+        isPublic: true,
+        shares: [],
+      });
+      vi.mocked(documentRepository.updateDocumentAccess).mockResolvedValue(undefined);
+    });
+
+    it("allows owner to update access", async () => {
+      const identity = makeIdentity(OWNER_USER_ID);
+
+      await documentService.updateDocumentAccess("doc-1", identity, update);
+
+      expect(documentRepository.updateDocumentAccess).toHaveBeenCalledWith("doc-1", update);
+    });
+
+    it("allows admin to update access", async () => {
+      const identity = makeIdentity(OTHER_USER_ID, ["admin:users"]);
+
+      await documentService.updateDocumentAccess("doc-1", identity, update);
+
+      expect(documentRepository.updateDocumentAccess).toHaveBeenCalledWith("doc-1", update);
+    });
+
+    it("rejects non-owner without admin permission", async () => {
+      const identity = makeIdentity(OTHER_USER_ID);
+
+      await expect(
+        documentService.updateDocumentAccess("doc-1", identity, update),
+      ).rejects.toThrow();
+
+      expect(documentRepository.updateDocumentAccess).not.toHaveBeenCalled();
+    });
+
+    it("rejects null userId (anonymous) from updating access", async () => {
+      const identity = makeIdentity(null);
+
+      await expect(
+        documentService.updateDocumentAccess("doc-1", identity, update),
+      ).rejects.toThrow();
+
+      expect(documentRepository.updateDocumentAccess).not.toHaveBeenCalled();
+    });
+
+    it("rejects regular user from updating system-owned document access", async () => {
+      vi.mocked(documentRepository.getDocumentAccess).mockResolvedValue({
+        ownerId: SYSTEM_USER_ID,
+        isPublic: true,
+        shares: [],
+      });
+      const identity = makeIdentity(OTHER_USER_ID);
+
+      await expect(
+        documentService.updateDocumentAccess("doc-1", identity, update),
+      ).rejects.toThrow();
+
+      expect(documentRepository.updateDocumentAccess).not.toHaveBeenCalled();
+    });
+
+    it("allows admin to update system-owned document access", async () => {
+      vi.mocked(documentRepository.getDocumentAccess).mockResolvedValue({
+        ownerId: SYSTEM_USER_ID,
+        isPublic: true,
+        shares: [],
+      });
+      const identity = makeIdentity(OTHER_USER_ID, ["admin:users"]);
+
+      await documentService.updateDocumentAccess("doc-1", identity, update);
+
+      expect(documentRepository.updateDocumentAccess).toHaveBeenCalledWith("doc-1", update);
+    });
+  });
 });

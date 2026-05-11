@@ -6,9 +6,14 @@ import type {
 
 export class AccessScopeResolver {
   collectionScope(identity: Identity): CollectionAccessScope {
-    return identity.hasPermission("collection:read")
-      ? { type: "all" }
-      : { type: "none" };
+    if (!identity.hasPermission("collection:read")) return { type: "none" };
+    if (identity.userId === "system" || identity.hasPermission("admin:users")) {
+      return { type: "all" };
+    }
+    if (identity.userId !== null) {
+      return { type: "accessible-by", userId: identity.userId };
+    }
+    return { type: "public-only" };
   }
 
   documentScope(identity: Identity): DocumentAccessScope {

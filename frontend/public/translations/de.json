@@ -241,6 +241,20 @@
       "owner": "Eigentümer"
     }
   },
+  "collection": {
+    "access": {
+      "title": "Sichtbarkeit",
+      "public": "Öffentlich",
+      "publicDescription": "Für alle mit Sammlungszugriff sichtbar",
+      "private": "Privat",
+      "privateDescription": "Nur für dich und Personen sichtbar, mit denen du teilst",
+      "sharedWith": "Geteilt mit",
+      "addUser": "Benutzer hinzufügen...",
+      "removeUser": "Entfernen",
+      "noShares": "Nicht geteilt",
+      "owner": "Eigentümer"
+    }
+  },
   "settings": {
     "title": "Einstellungen",
     "selectLanguage": "Sprache auswählen",

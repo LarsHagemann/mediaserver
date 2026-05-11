@@ -241,6 +241,20 @@
       "owner": "Owner"
     }
   },
+  "collection": {
+    "access": {
+      "title": "Visibility",
+      "public": "Public",
+      "publicDescription": "Visible to everyone with collection access",
+      "private": "Private",
+      "privateDescription": "Only visible to you and people you share with",
+      "sharedWith": "Shared with",
+      "addUser": "Add user...",
+      "removeUser": "Remove",
+      "noShares": "Not shared with anyone",
+      "owner": "Owner"
+    }
+  },
   "settings": {
     "title": "Settings",
     "selectLanguage": "Select Language",
