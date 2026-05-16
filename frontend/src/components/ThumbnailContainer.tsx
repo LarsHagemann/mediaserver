@@ -1,5 +1,6 @@
 import { Thumbnail } from "../sections/Thumbnail";
-import { type Document } from "../app/api";
+import { DocumentCard } from "../sections/DocumentCard";
+import { type Document, type ApiTag } from "../app/api";
 import { twMerge } from "tailwind-merge";
 
 const alignments = {
@@ -29,6 +30,8 @@ type Props = {
   className?: string;
   size?: "normal" | "small";
   onSelect?: (id: string, selected: boolean) => void;
+  tagsMap?: Record<string, ApiTag[]>;
+  popularTagKeys?: Set<string>;
 };
 
 export const ThumbnailContainer = ({
@@ -43,7 +46,36 @@ export const ThumbnailContainer = ({
   selectedDocuments,
   className,
   onSelect,
+  tagsMap,
+  popularTagKeys,
 }: Props) => {
+  if (layout === "grid" && size === "normal") {
+    return (
+      <div
+        className={twMerge(
+          "grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4",
+          className,
+        )}
+      >
+        {thumbnails.map((thumbnail) => (
+          <DocumentCard
+            key={thumbnail.id}
+            document={thumbnail}
+            tags={tagsMap?.[thumbnail.id]}
+            popularTagKeys={popularTagKeys}
+            onClick={() => onClick?.(thumbnail.id)}
+            selected={selectedDocuments?.has(thumbnail.id)}
+            onSelect={
+              onSelect
+                ? (selected) => onSelect(thumbnail.id, selected)
+                : undefined
+            }
+          />
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div
       className={twMerge(

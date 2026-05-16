@@ -64,6 +64,10 @@ export class EnvironmentService {
     return this.getRequiredNumberEnvVar("BACKEND_PORT");
   }
 
+  public get corsOrigin(): string {
+    return this.getRequiredStringEnvVar("CORS_ORIGIN");
+  }
+
   public get databaseConfig(): DbServiceConfig {
     return {
       host: this.getRequiredStringEnvVar("POSTGRES_HOST"),
@@ -121,6 +125,47 @@ export class EnvironmentService {
 
   public get redisPort(): number {
     return this.getRequiredNumberEnvVar("REDIS_PORT");
+  }
+
+  public get idpEnabled(): boolean {
+    return this.getStringEnvVar("IDP_ENABLED") === "true";
+  }
+
+  public get idpRegistrationAllowed(): boolean {
+    return this.getStringEnvVar("IDP_REGISTRATION_ALLOWED") === "true";
+  }
+
+  public get idpOidcDiscoveryUrl(): string {
+    return this.getRequiredStringEnvVar("IDP_OIDC_DISCOVERY_URL");
+  }
+
+  public get idpClientId(): string {
+    return this.getRequiredStringEnvVar("IDP_CLIENT_ID");
+  }
+
+  public get idpClientSecret(): string {
+    return this.getRequiredStringEnvVar("IDP_CLIENT_SECRET");
+  }
+
+  public get idpRedirectUri(): string {
+    return this.getRequiredStringEnvVar("IDP_REDIRECT_URI");
+  }
+
+  public get idpFrontendUrl(): string {
+    return this.getRequiredStringEnvVar("IDP_FRONTEND_URL");
+  }
+
+  public get idpAdminUserIds(): string[] {
+    const raw = this.getStringEnvVar("IDP_ADMIN_USER_IDS");
+    if (!raw) return [];
+    return raw
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+
+  public get sessionTtlSeconds(): number {
+    return this.getNumberEnvVar("SESSION_TTL_SECONDS") ?? 86400;
   }
 
   public get logLevel(): string {

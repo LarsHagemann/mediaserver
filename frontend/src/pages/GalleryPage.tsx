@@ -12,10 +12,17 @@ import { useFinalGalleryQuery } from "../hooks/useFinalGalleryQuery";
 import { usePreviewNavigation } from "../hooks/usePreviewNavigation";
 import { EditModePanel } from "../sections/EditModePanel";
 import { GallerySearchBar } from "../sections/GallerySearchBar";
-import { GalleryControls } from "../sections/GalleryControls";
+import { GalleryControls, type TypeFilter } from "../sections/GalleryControls";
 import { PaginatedThumbnailContainer } from "../sections/PaginatedThumbnailContainer";
+import { useNavigate } from "react-router";
+import { usePermission } from "../hooks/usePermission";
+import { AiOutlineUpload } from "react-icons/ai";
+import { MdEdit } from "react-icons/md";
+import { Button } from "../components/Button";
 
 export const GalleryPage = () => {
+  const navigate = useNavigate();
+  const canUpload = usePermission("document:upload");
   const [layoutType, setLayoutType] = useState<"grid" | "list">("grid");
   const [collectionModalOpen, setCollectionModalOpen] = useState(false);
   const [createCollection] = enhancedApi.useCreateCollectionMutation();
@@ -23,6 +30,7 @@ export const GalleryPage = () => {
   const [editDocuments, setEditDocuments] = useState<Set<string>>(new Set());
   const [editDocumentsModalOpen, setEditDocumentsModalOpen] = useState(false);
   const [tagInput, setTagInput] = useState("");
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
 
   const { limit, offset, page, setPage } = usePageOffsetAndLimitParams();
 
@@ -31,11 +39,15 @@ export const GalleryPage = () => {
       preview: previewDocumentSearchParam,
       q: query,
       collection: collectionSearchParam,
+      sort: sortParam,
     },
     setSearchParams,
     addSearchParam,
     removeSearchParam,
-  } = useEasySearchParams(["preview", "q", "collection"]);
+  } = useEasySearchParams(["preview", "q", "collection", "sort"]);
+
+  const sortMode: "newest" | "random" =
+    sortParam === "random" ? "random" : "newest";
 
   const { data: collection } = enhancedApi.useGetCollectionByIdQuery(
     collectionSearchParam ?? skipToken,
@@ -43,8 +55,36 @@ export const GalleryPage = () => {
 
   const { seed, reseedGallery } = useGallerySeed();
 
+  const { data: allTagsData } = enhancedApi.useListTagsQuery({
+    limit: 20,
+    offset: 0,
+    query: "",
+  });
+  const popularTags = useMemo(() => {
+    if (!allTagsData) return [];
+    return allTagsData.items
+      .filter((tag) => tag.type !== "meta" && tag.type !== "collection")
+      .slice(0, 5);
+  }, [allTagsData]);
+
+  const effectiveQuery = useMemo(() => {
+    const parts: string[] = [];
+    if (typeFilter !== "all") parts.push(typeFilter);
+    if (query?.trim()) parts.push(query.trim());
+
+    const combined =
+      parts.length > 1
+        ? parts.map((p) => `(${p})`).join(" & ")
+        : (parts[0] ?? "");
+
+    if (sortMode === "random" && !combined.includes("sort:random")) {
+      return combined ? `(sort:random) & (${combined})` : "(sort:random)";
+    }
+    return combined || undefined;
+  }, [typeFilter, query, sortMode]);
+
   const { finalQuery, hasRandomSort } = useFinalGalleryQuery(
-    query,
+    effectiveQuery,
     collectionSearchParam,
     collection,
   );
@@ -101,6 +141,43 @@ export const GalleryPage = () => {
     [addSearchParam, setPage],
   );
 
+  const onTagClick = useCallback(
+    (tag: string) => {
+      const current = tagInput.trim();
+      const newQuery = current ? `${current} & ${tag}` : tag;
+      setTagInput(newQuery);
+      onInputSubmit(newQuery);
+    },
+    [tagInput, onInputSubmit],
+  );
+
+  const onSetSortMode = useCallback(
+    (mode: "newest" | "random") => {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        if (mode === "random") {
+          next.set("sort", "random");
+        } else {
+          next.delete("sort");
+        }
+        next.set("page", "1");
+        return next;
+      });
+      if (mode === "random") {
+        reseedGallery();
+      }
+    },
+    [setSearchParams, reseedGallery],
+  );
+
+  const onSetTypeFilter = useCallback(
+    (type: TypeFilter) => {
+      setTypeFilter(type);
+      setPage(0);
+    },
+    [setPage],
+  );
+
   const entirePageSelected = useMemo(
     () => !!data && data.items.every((item) => editDocuments.has(item.id)),
     [data, editDocuments],
@@ -151,22 +228,59 @@ export const GalleryPage = () => {
   }, []);
 
   return (
-    <div className="h-full relative flex flex-col gap-1 overflow-hidden">
+    <div className="h-full relative flex flex-col gap-2 overflow-hidden">
+      {/* Page header */}
+      <div className="flex flex-col p-2">
+        <div className="flex flex-row items-start justify-between shrink-0">
+          <div>
+            <h1 className="text-3xl font-bold text-text-primary">Gallery</h1>
+          </div>
+          <div className="flex flex-row gap-2 shrink-0 mt-1">
+            {canUpload && (
+              <Button
+                variant="secondary"
+                onClick={() => navigate("/upload")}
+                className="flex flex-row gap-2 items-center"
+              >
+                <AiOutlineUpload className="text-lg" />
+                Upload
+              </Button>
+            )}
+            <Button
+              variant={editMode ? "primary" : "secondary"}
+              onClick={() => setEditMode((prev) => !prev)}
+              className="flex flex-row gap-2 items-center"
+            >
+              <MdEdit className="text-lg" />
+              Edit
+            </Button>
+          </div>
+        </div>
+        <div className="hidden sm:block">
+          <p className="text-text-muted text-sm mt-1">
+            Everything you&apos;ve uploaded — searchable by tag, browsable by
+            type, organized into collections.
+          </p>
+        </div>
+      </div>
+
       <GallerySearchBar
         value={tagInput}
         onChange={setTagInput}
         onSubmit={onInputSubmit}
-        editMode={editMode}
-        onToggleEditMode={() => setEditMode((prev) => !prev)}
+        popularTags={popularTags}
+        onTagClick={onTagClick}
       />
+
       {collectionSearchParam && collection && (
-        <div className="flex flex-row gap-2 px-2">
+        <div className="flex flex-row gap-2 px-3 shrink-0">
           <CollectionBadge
             collection={collection}
             onDelete={() => removeSearchParam("collection")}
           />
         </div>
       )}
+
       {editMode && (
         <EditModePanel
           editDocuments={editDocuments}
@@ -177,6 +291,7 @@ export const GalleryPage = () => {
           onCancel={() => setEditMode(false)}
         />
       )}
+
       <GalleryControls
         hasRandomSort={hasRandomSort}
         onReseed={reseedGallery}
@@ -184,7 +299,14 @@ export const GalleryPage = () => {
         onSaveCollection={() => setCollectionModalOpen(true)}
         layoutType={layoutType}
         onSetLayoutType={setLayoutType}
+        sortMode={sortMode}
+        onSetSortMode={onSetSortMode}
+        typeFilter={typeFilter}
+        onSetTypeFilter={onSetTypeFilter}
+        total={total}
+        pageSize={data?.items.length ?? 0}
       />
+
       <PaginatedThumbnailContainer
         items={data?.items ?? []}
         total={total}
@@ -196,7 +318,9 @@ export const GalleryPage = () => {
         selectedDocuments={editDocuments}
         onThumbnailClick={onThumbnailClick}
         onSelect={editMode ? onSelectDocument : undefined}
+        popularTags={popularTags}
       />
+
       <CollectionFormModal
         isOpen={collectionModalOpen}
         onClose={() => setCollectionModalOpen(false)}
@@ -217,23 +341,25 @@ export const GalleryPage = () => {
         }}
       />
       {previewDocumentSearchParam && (
-        <PreviewContainer
-          totalDocuments={total}
-          previewImageId={previewDocumentSearchParam}
-          onThumbnailClicked={(id) => setPreviewDocument(id)}
-          nextPreviewImage={nextPreviewImage}
-          previousPreviewImage={prevPreviewImage}
-          previewImageIndex={
-            previewDocument?.queryIndex ?? lastKnownPreviewIndexRef.current
-          }
-          queryParams={{
-            limit,
-            offset,
-            query,
-            seed: hasRandomSort ? seed : undefined,
-          }}
-          onClose={() => setPreviewDocument(undefined)}
-        />
+        <div className="fixed top-0 left-0 w-screen h-screen bg-black z-100">
+          <PreviewContainer
+            totalDocuments={total}
+            previewImageId={previewDocumentSearchParam}
+            onThumbnailClicked={(id) => setPreviewDocument(id)}
+            nextPreviewImage={nextPreviewImage}
+            previousPreviewImage={prevPreviewImage}
+            previewImageIndex={
+              previewDocument?.queryIndex ?? lastKnownPreviewIndexRef.current
+            }
+            queryParams={{
+              limit,
+              offset,
+              query: finalQuery,
+              seed: hasRandomSort ? seed : undefined,
+            }}
+            onClose={() => setPreviewDocument(undefined)}
+          />
+        </div>
       )}
     </div>
   );

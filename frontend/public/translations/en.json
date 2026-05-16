@@ -10,10 +10,39 @@
   },
   "pages": {
     "upload": {
-      "title": "Upload Files",
-      "description": "Drop your files here to upload them. Use the input below to automatically assign tags to all uploaded files.",
-      "tagInputPlaceholder": "Enter tags to assign to all uploaded files",
-      "dropFilesHereOrClickToSelect": "Drop files here or click to select"
+      "title": "Upload files",
+      "headerDescriptionPre": "Drop anything: photos, PDFs, videos, archives. Tags and visibility apply to",
+      "everythingInBatch": "everything in this batch",
+      "headerDescriptionPost": "—you can fine-tune per-file below before uploading.",
+      "statQueued": "Queued",
+      "statTotalSize": "Total Size",
+      "batchTagsLabel": "Batch Tags",
+      "batchTagsHint": "Applied to all uploaded files in this batch",
+      "batchTagsInputPlaceholder": "Type a tag and press Enter",
+      "visibilityLabel": "Visibility",
+      "private": "Private",
+      "public": "Public",
+      "privateDescription": "only you can see, search, and link these files. Switch to public anytime per file from the gallery.",
+      "publicDescription": "everyone with access to this server can see these files.",
+      "dropZoneTitle": "Drop files here, or click to browse",
+      "dropZoneSubtitle": "Up to 2 GB per file. Multiple files welcome — they'll line up in the queue below.",
+      "or": "or",
+      "chooseFiles": "Choose files",
+      "queueTitle": "Upload queue",
+      "fileCount_one": "{{count}} file",
+      "fileCount_other": "{{count}} files",
+      "addMore": "Add more",
+      "clearAll": "Clear all",
+      "parallelUploads": "Parallel uploads",
+      "statusQueued": "Queued",
+      "statusUploading": "Uploading…",
+      "statusDone": "Done",
+      "statusRetry": "Retry",
+      "addTag": "tag",
+      "saveAsDraft": "Save as draft",
+      "uploadButton": "Upload {{count}}",
+      "batchTagCount_one": "{{count}} batch tag",
+      "batchTagCount_other": "{{count}} batch tags"
     },
     "gallery": {
       "tagInputPlaceholder": "Search by tag...",
@@ -31,7 +60,13 @@
       "editTags": "Edit Tags",
       "editCollections": "Edit Collections",
       "bulkEditConfirm": "Apply changes to {{count}} documents",
-      "searchTag": "Search tag"
+      "searchTag": "Search tag",
+      "easyModePlaceholder": "Filter by tag, name, or type — try type:image, after:2026-",
+      "easyModeAddPlaceholder": "Add tag...",
+      "easyMode": "Easy",
+      "advancedMode": "Advanced",
+      "switchToEasyMode": "Switch to easy mode",
+      "switchToAdvancedMode": "Switch to advanced mode"
     }
   },
   "pagination": {
@@ -58,7 +93,90 @@
     "settings": "Settings",
     "tags": "Tags",
     "collections": "Collections",
-    "serverState": "Server Status"
+    "serverState": "Server Status",
+    "logout": "Sign out",
+    "login": "Sign in",
+    "notSignedIn": "Not signed in",
+    "signInPrompt": "Sign in to upload and manage your library.",
+    "registrationDisabled": "Registration disabled",
+    "user": "User"
+  },
+  "login": {
+    "title": "Sign in",
+    "description": "Sign in to access the media server.",
+    "signIn": "Sign in",
+    "redirectNotice": "You'll be redirected to your identity provider.",
+    "registrationDisabledNotice": "Registration is currently disabled. Contact your administrator for access.",
+    "register": "Create an account"
+  },
+  "pendingApproval": {
+    "title": "Waiting for approval",
+    "description": "Your account has been created. An administrator needs to enable it before you can access the library."
+  },
+  "account": {
+    "user": "User",
+    "tabs": {
+      "profile": "Profile",
+      "sessions": "Sessions"
+    },
+    "profile": {
+      "name": "Display name",
+      "email": "Email",
+      "userId": "User ID"
+    },
+    "sessions": {
+      "current": "Current session",
+      "started": "Started {{date}}",
+      "unknownDevice": "Unknown device",
+      "delete": "Delete session"
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "create": "Create",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel"
+  },
+  "admin": {
+    "title": "Administration",
+    "tabs": {
+      "roles": "Roles",
+      "users": "Users",
+      "config": "Configuration"
+    },
+    "roles": {
+      "create": "Create Role",
+      "createRole": "Create role",
+      "namePlaceholder": "Role name",
+      "descriptionPlaceholder": "Description (optional)",
+      "system": "system",
+      "systemSection": "System roles",
+      "systemSectionHint": "Built-in. Permissions are fixed.",
+      "customSection": "Custom roles",
+      "permissions": "permissions",
+      "users": "users",
+      "newRole": "New role",
+      "clone": "Clone",
+      "cloneNamed": "Clone \"{{name}}\"",
+      "search": "Search roles...",
+      "clearAll": "Clear all",
+      "grantAll": "Grant all",
+      "grantRemaining": "Grant remaining",
+      "assigned": "assigned",
+      "permissionsGranted": "permissions granted",
+      "selectRole": "Select a role to view its permissions."
+    },
+    "users": {
+      "empty": "No users have logged in yet."
+    },
+    "config": {
+      "anonymousRole": "Anonymous user role",
+      "anonymousRoleHint": "Permissions granted to unauthenticated visitors.",
+      "defaultRole": "Default role for new users",
+      "defaultRoleHint": "Role assigned to users when they log in for the first time.",
+      "noRole": "— none —"
+    }
   },
   "collections": {
     "title": "Collections",
@@ -103,12 +221,46 @@
     }
   },
   "document": {
-    "addTagPlaceholder": "Add a tag..."
+    "addTagPlaceholder": "Add a tag...",
+    "tabs": {
+      "tags": "Tags",
+      "collections": "Collections",
+      "access": "Access"
+    },
+    "access": {
+      "title": "Access",
+      "public": "Public",
+      "publicDescription": "Visible to everyone with document access",
+      "private": "Private",
+      "privateDescription": "Only visible to you and people you share with",
+      "sharedWith": "Shared with",
+      "addUser": "Add user...",
+      "removeUser": "Remove",
+      "noShares": "Not shared with anyone",
+      "saveSuccess": "Access settings saved",
+      "owner": "Owner"
+    }
+  },
+  "collection": {
+    "access": {
+      "title": "Visibility",
+      "public": "Public",
+      "publicDescription": "Visible to everyone with collection access",
+      "private": "Private",
+      "privateDescription": "Only visible to you and people you share with",
+      "sharedWith": "Shared with",
+      "addUser": "Add user...",
+      "removeUser": "Remove",
+      "noShares": "Not shared with anyone",
+      "owner": "Owner"
+    }
   },
   "settings": {
     "title": "Settings",
     "selectLanguage": "Select Language",
     "themes": "Themes",
+    "translations": "Translations",
+    "plugins": "Plugins",
     "loadedTranslations": "Loaded Translations",
     "loadedPlugins": "Loaded Plugins",
     "languageExtension": {

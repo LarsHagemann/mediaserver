@@ -11,9 +11,38 @@
   "pages": {
     "upload": {
       "title": "Dateien hochladen",
-      "description": "Legen Sie Ihre Dateien hier ab, um sie hochzuladen. Verwenden Sie das Eingabefeld unten, um allen hochgeladenen Dateien automatisch Tags zuzuweisen.",
-      "tagInputPlaceholder": "Tags eingeben, um sie allen hochgeladenen Dateien zuzuweisen",
-      "dropFilesHereOrClickToSelect": "Dateien hier ablegen oder zum Auswählen klicken"
+      "headerDescriptionPre": "Fotos, PDFs, Videos, Archive – alles erlaubt. Tags und Sichtbarkeit gelten für",
+      "everythingInBatch": "alles in diesem Batch",
+      "headerDescriptionPost": "—du kannst unten für jede Datei individuell anpassen, bevor du hochlädst.",
+      "statQueued": "Ausstehend",
+      "statTotalSize": "Gesamtgröße",
+      "batchTagsLabel": "Batch-Tags",
+      "batchTagsHint": "Gilt für alle hochgeladenen Dateien in diesem Batch",
+      "batchTagsInputPlaceholder": "Tag eingeben und Enter drücken",
+      "visibilityLabel": "Sichtbarkeit",
+      "private": "Privat",
+      "public": "Öffentlich",
+      "privateDescription": "Nur du kannst diese Dateien sehen, durchsuchen und verlinken. Du kannst sie jederzeit in der Galerie öffentlich schalten.",
+      "publicDescription": "Jeder mit Zugang zu diesem Server kann diese Dateien sehen.",
+      "dropZoneTitle": "Dateien hier ablegen oder zum Durchsuchen klicken",
+      "dropZoneSubtitle": "Bis zu 2 GB pro Datei. Mehrere Dateien willkommen — sie reihen sich unten in die Warteschlange ein.",
+      "or": "oder",
+      "chooseFiles": "Dateien auswählen",
+      "queueTitle": "Upload-Warteschlange",
+      "fileCount_one": "{{count}} Datei",
+      "fileCount_other": "{{count}} Dateien",
+      "addMore": "Weitere hinzufügen",
+      "clearAll": "Alle entfernen",
+      "parallelUploads": "Parallele Uploads",
+      "statusQueued": "Ausstehend",
+      "statusUploading": "Wird hochgeladen…",
+      "statusDone": "Fertig",
+      "statusRetry": "Erneut versuchen",
+      "addTag": "Tag",
+      "saveAsDraft": "Als Entwurf speichern",
+      "uploadButton": "{{count}} hochladen",
+      "batchTagCount_one": "{{count}} Batch-Tag",
+      "batchTagCount_other": "{{count}} Batch-Tags"
     },
     "gallery": {
       "tagInputPlaceholder": "Nach Tag suchen...",
@@ -31,7 +60,13 @@
       "editTags": "Tags bearbeiten",
       "editCollections": "Sammlungen bearbeiten",
       "bulkEditConfirm": "Änderungen auf {{count}} Dokumente anwenden",
-      "searchTag": "Tag suchen"
+      "searchTag": "Tag suchen",
+      "easyModePlaceholder": "Nach Tag, Name oder Typ filtern — z.B. type:image, after:2026-",
+      "easyModeAddPlaceholder": "Tag hinzufügen...",
+      "easyMode": "Einfach",
+      "advancedMode": "Erweitert",
+      "switchToEasyMode": "Zum einfachen Modus wechseln",
+      "switchToAdvancedMode": "Zum erweiterten Modus wechseln"
     }
   },
   "pagination": {
@@ -58,7 +93,90 @@
     "settings": "Einstellungen",
     "tags": "Tags",
     "collections": "Sammlungen",
-    "serverState": "Server Status"
+    "serverState": "Server Status",
+    "logout": "Abmelden",
+    "login": "Anmelden",
+    "notSignedIn": "Nicht angemeldet",
+    "signInPrompt": "Melden Sie sich an, um Ihre Bibliothek zu verwalten.",
+    "registrationDisabled": "Registrierung deaktiviert",
+    "user": "Benutzer"
+  },
+  "login": {
+    "title": "Anmelden",
+    "description": "Melden Sie sich an, um auf den Medienserver zuzugreifen.",
+    "signIn": "Anmelden",
+    "redirectNotice": "Sie werden zu Ihrem Identitätsanbieter weitergeleitet.",
+    "registrationDisabledNotice": "Die Registrierung ist derzeit deaktiviert. Wenden Sie sich an Ihren Administrator.",
+    "register": "Konto erstellen"
+  },
+  "pendingApproval": {
+    "title": "Warten auf Freischaltung",
+    "description": "Ihr Konto wurde erstellt. Ein Administrator muss es freischalten, bevor Sie auf die Bibliothek zugreifen können."
+  },
+  "account": {
+    "user": "Benutzer",
+    "tabs": {
+      "profile": "Profil",
+      "sessions": "Sitzungen"
+    },
+    "profile": {
+      "name": "Anzeigename",
+      "email": "E-Mail",
+      "userId": "Benutzer-ID"
+    },
+    "sessions": {
+      "current": "Aktuelle Sitzung",
+      "started": "Gestartet am {{date}}",
+      "unknownDevice": "Unbekanntes Gerät",
+      "delete": "Sitzung löschen"
+    }
+  },
+  "common": {
+    "loading": "Lädt...",
+    "create": "Erstellen",
+    "delete": "Löschen",
+    "save": "Speichern",
+    "cancel": "Abbrechen"
+  },
+  "admin": {
+    "title": "Administration",
+    "tabs": {
+      "roles": "Rollen",
+      "users": "Benutzer",
+      "config": "Konfiguration"
+    },
+    "roles": {
+      "create": "Rolle erstellen",
+      "createRole": "Rolle erstellen",
+      "namePlaceholder": "Rollenname",
+      "descriptionPlaceholder": "Beschreibung (optional)",
+      "system": "System",
+      "systemSection": "Systemrollen",
+      "systemSectionHint": "Integriert. Berechtigungen sind unveränderlich.",
+      "customSection": "Benutzerdefinierte Rollen",
+      "permissions": "Berechtigungen",
+      "users": "Benutzer",
+      "newRole": "Neue Rolle",
+      "clone": "Klonen",
+      "cloneNamed": "\"{{name}}\" klonen",
+      "search": "Rollen suchen...",
+      "clearAll": "Alle entfernen",
+      "grantAll": "Alle gewähren",
+      "grantRemaining": "Verbleibende gewähren",
+      "assigned": "zugewiesen",
+      "permissionsGranted": "Berechtigungen vergeben",
+      "selectRole": "Wählen Sie eine Rolle aus, um deren Berechtigungen anzuzeigen."
+    },
+    "users": {
+      "empty": "Noch keine Benutzer angemeldet."
+    },
+    "config": {
+      "anonymousRole": "Rolle für anonyme Benutzer",
+      "anonymousRoleHint": "Berechtigungen für nicht angemeldete Besucher.",
+      "defaultRole": "Standardrolle für neue Benutzer",
+      "defaultRoleHint": "Rolle, die neuen Benutzern bei der ersten Anmeldung zugewiesen wird.",
+      "noRole": "— keine —"
+    }
   },
   "collections": {
     "title": "Sammlungen",
@@ -103,12 +221,46 @@
     }
   },
   "document": {
-    "addTagPlaceholder": "Tag hinzufügen..."
+    "addTagPlaceholder": "Tag hinzufügen...",
+    "tabs": {
+      "tags": "Tags",
+      "collections": "Sammlungen",
+      "access": "Zugriff"
+    },
+    "access": {
+      "title": "Zugriff",
+      "public": "Öffentlich",
+      "publicDescription": "Für alle mit Dokumentenzugriff sichtbar",
+      "private": "Privat",
+      "privateDescription": "Nur für Sie und Personen, mit denen Sie teilen, sichtbar",
+      "sharedWith": "Geteilt mit",
+      "addUser": "Benutzer hinzufügen...",
+      "removeUser": "Entfernen",
+      "noShares": "Nicht geteilt",
+      "saveSuccess": "Zugriffseinstellungen gespeichert",
+      "owner": "Eigentümer"
+    }
+  },
+  "collection": {
+    "access": {
+      "title": "Sichtbarkeit",
+      "public": "Öffentlich",
+      "publicDescription": "Für alle mit Sammlungszugriff sichtbar",
+      "private": "Privat",
+      "privateDescription": "Nur für dich und Personen sichtbar, mit denen du teilst",
+      "sharedWith": "Geteilt mit",
+      "addUser": "Benutzer hinzufügen...",
+      "removeUser": "Entfernen",
+      "noShares": "Nicht geteilt",
+      "owner": "Eigentümer"
+    }
   },
   "settings": {
     "title": "Einstellungen",
     "selectLanguage": "Sprache auswählen",
     "themes": "Themes",
+    "translations": "Übersetzungen",
+    "plugins": "Plugins",
     "loadedTranslations": "Geladene Übersetzungen",
     "loadedPlugins": "Geladene Plugins",
     "languageExtension": {

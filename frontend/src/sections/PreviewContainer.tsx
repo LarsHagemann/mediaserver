@@ -1,13 +1,14 @@
 import type { SkipToken } from "@reduxjs/toolkit/query";
 import { enhancedApi } from "../app/enhancedApi";
+import { api } from "../app/api";
 import { ThumbnailContainer } from "../components/ThumbnailContainer";
 import { DocumentPreview } from "./DocumentPreview";
 import { useCallback, useEffect, useState } from "react";
 import { DocumentPreviewControls } from "../components/DocumentPreviewControls";
 import { useDocumentUrl } from "../hooks/useDocumentUrl";
-import { twMerge } from "tailwind-merge";
 import { DocumentDiashow } from "../components/DocumentDiashow";
 import { preventInputHandling } from "../util/preventInputHandling";
+import { DocumentInfoPanel } from "./DocumentInfoPanel";
 
 type Props = {
   previewImageId: string;
@@ -42,124 +43,135 @@ export const PreviewContainer = ({
     ),
   });
 
-  const [diashowMode, setDiashowMode] = useState<boolean>(false);
-  const [wasFullscreen, setWasFullscreen] = useState<boolean>(false);
-  const [addToCollectionModalOpen, setAddToCollectionModalOpen] =
-    useState(false);
-  const [tagListOpen, setTagListOpen] = useState(false);
+  const [diashowMode, setDiashowMode] = useState(false);
+  const [showInfoPanel, setShowInfoPanel] = useState(true);
+  const [wasFullscreen, setWasFullscreen] = useState(false);
+
+  const { data: identity } = api.useGetMeQuery();
+  const currentDocument = data?.items.find((d) => d.id === previewImageId);
+  const SYSTEM_USER_ID = "00000000-0000-0000-0000-000000000000";
+  const canManageAccess =
+    !!identity &&
+    (identity.permissions.includes("admin:users") ||
+      (identity.userId !== null &&
+        identity.userId !== SYSTEM_USER_ID &&
+        identity.userId === currentDocument?.ownerId));
+
+  const mimeType = currentDocument?.mime;
+  const documentDownloadUrl = useDocumentUrl(previewImageId);
+
+  const onCloseImpl = useCallback(() => {
+    if (diashowMode) setDiashowMode(false);
+    else onClose?.();
+  }, [onClose, diashowMode]);
 
   useEffect(() => {
     const keyDownHandler = (event: KeyboardEvent) => {
-      if (preventInputHandling()) {
-        return;
-      }
-
-      if (event.key === "ArrowRight") {
-        nextPreviewImage();
-      } else if (event.key === "ArrowLeft") {
-        previousPreviewImage();
-      } else if (event.key === "Escape") {
-        onClose?.();
-      } else if (event.key === "p") {
-        setDiashowMode((mode) => !mode);
-      } else if (event.key === "c") {
-        setAddToCollectionModalOpen((open) => !open);
-      }
+      if (preventInputHandling()) return;
+      if (event.key === "ArrowRight") nextPreviewImage();
+      else if (event.key === "ArrowLeft") previousPreviewImage();
+      else if (event.key === "Escape") onCloseImpl();
+      else if (event.key === "p") setDiashowMode((m) => !m);
+      else if (event.key === "i") setShowInfoPanel((m) => !m);
     };
-
     window.addEventListener("keydown", keyDownHandler);
-    return () => {
-      window.removeEventListener("keydown", keyDownHandler);
-    };
-  }, [nextPreviewImage, previousPreviewImage, onClose]);
+    return () => window.removeEventListener("keydown", keyDownHandler);
+  }, [nextPreviewImage, previousPreviewImage, onCloseImpl]);
 
   useEffect(() => {
     if (diashowMode) {
       setWasFullscreen(!!document.fullscreenElement);
       document.body.requestFullscreen();
-    } else {
-      if (!wasFullscreen && document.fullscreenElement) {
-        document.exitFullscreen();
-      }
+    } else if (!wasFullscreen && document.fullscreenElement) {
+      document.exitFullscreen();
     }
   }, [diashowMode, wasFullscreen]);
 
-  const documentDownloadUrl = useDocumentUrl(previewImageId);
-  const mimeType = data?.items.find((d) => d.id === previewImageId)?.mime;
-
-  const onCloseImpl = useCallback(() => {
-    if (diashowMode) {
-      setDiashowMode(false);
-    } else {
-      onClose?.();
-    }
-  }, [onClose, diashowMode]);
+  useEffect(() => {
+    const onFullscreenChange = () => {
+      if (!document.fullscreenElement && diashowMode) {
+        setDiashowMode(false);
+      }
+    };
+    document.addEventListener("fullscreenchange", onFullscreenChange);
+    return () =>
+      document.removeEventListener("fullscreenchange", onFullscreenChange);
+  }, [diashowMode]);
 
   return (
-    <>
-      <div
-        className={twMerge(
-          "absolute top-0 w-full h-[calc(100%-60px-2rem)] sm:h-[calc(100%-120px-2rem)] bg-bg-base/75 flex items-center justify-center overflow-visible",
-          diashowMode ? "z-50" : "z-30",
-        )}
-      >
-        <div className="flex flex-col items-center justify-center top-0 left-0 w-full h-full">
-          <div className="flex basis-8 w-full bg-surface-1">
-            <DocumentPreviewControls
-              nextDocument={nextPreviewImage}
-              previousDocument={previousPreviewImage}
-              downloadDocument={() => {
-                const link = document.createElement("a");
-                link.href = documentDownloadUrl;
-                link.download = "";
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-              }}
-              toggleDiashow={() => setDiashowMode(!diashowMode)}
-              onClose={onCloseImpl}
-              bookmarksOpen={addToCollectionModalOpen}
-              setBookmarksOpen={setAddToCollectionModalOpen}
-              tagListOpen={tagListOpen}
-              setTagListOpen={setTagListOpen}
-            />
-          </div>
-          <div className="flex flex-1 w-full">
-            {diashowMode && (
-              <DocumentDiashow
-                documentId={previewImageId}
-                nextDocument={nextPreviewImage}
-                previousDocument={previousPreviewImage}
-                mimeType={mimeType}
-              />
-            )}
-            {!diashowMode && (
-              <DocumentPreview
-                id={previewImageId}
-                mimeType={mimeType}
-                nextPreviewImage={nextPreviewImage}
-                previousPreviewImage={previousPreviewImage}
-                tagListOpen={tagListOpen}
-                setTagListOpen={setTagListOpen}
-                bookmarksOpen={addToCollectionModalOpen}
-                setBookmarksOpen={setAddToCollectionModalOpen}
-              />
-            )}
-          </div>
-        </div>
-      </div>
-      <div className="absolute flex flex-row flex-wrap bottom-0 right-0 w-full h-[calc(60px+2rem)] sm:h-[calc(120px+2rem)] z-30 p-2 bg-surface-1 overflow-y-hidden justify-center">
-        <ThumbnailContainer
-          alignment="center"
-          thumbnails={data?.items || []}
-          onClick={(id) => {
-            onThumbnailClicked(id);
+    <div className="flex flex-col h-full bg-bg-base">
+      {/* Header */}
+      <div className="flex-shrink-0 h-14 bg-surface-1 border-b border-border">
+        <DocumentPreviewControls
+          documentId={previewImageId}
+          friendlyName={currentDocument?.friendlyName}
+          previewImageIndex={previewImageIndex}
+          totalDocuments={totalDocuments}
+          mimeType={mimeType}
+          nextDocument={nextPreviewImage}
+          previousDocument={previousPreviewImage}
+          downloadDocument={() => {
+            const link = document.createElement("a");
+            link.href = documentDownloadUrl;
+            link.download = "";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
           }}
-          wrap="nowrap"
-          highlighted={new Set([previewImageId])}
-          size="small"
+          toggleDiashow={() => setDiashowMode((m) => !m)}
+          onClose={onCloseImpl}
         />
       </div>
-    </>
+
+      {/* Main area */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Preview */}
+        <div className="flex-1 relative overflow-hidden bg-bg-base">
+          {diashowMode ? (
+            <DocumentDiashow
+              documentId={previewImageId}
+              nextDocument={nextPreviewImage}
+              previousDocument={previousPreviewImage}
+              mimeType={mimeType}
+            />
+          ) : (
+            <DocumentPreview
+              id={previewImageId}
+              mimeType={mimeType}
+              nextPreviewImage={nextPreviewImage}
+              previousPreviewImage={previousPreviewImage}
+            />
+          )}
+        </div>
+
+        {/* Info panel — toggled with "i" key; animates width in both modes */}
+        <div
+          className={
+            "flex-shrink-0 h-full overflow-hidden transition-[width] duration-300 ease-in-out " +
+            (showInfoPanel ? "w-80 xl:w-96" : "w-0")
+          }
+        >
+          <DocumentInfoPanel
+            documentId={previewImageId}
+            currentDocument={currentDocument}
+            canManageAccess={canManageAccess}
+          />
+        </div>
+      </div>
+
+      {/* Thumbnail strip */}
+      {!diashowMode && (
+        <div className="flex-shrink-0 h-28 border-t border-border bg-surface-1 p-2 overflow-hidden flex items-center justify-center">
+          <ThumbnailContainer
+            alignment="center"
+            thumbnails={data?.items || []}
+            onClick={onThumbnailClicked}
+            wrap="nowrap"
+            highlighted={new Set([previewImageId])}
+            size="small"
+          />
+        </div>
+      )}
+    </div>
   );
 };

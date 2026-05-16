@@ -5,7 +5,18 @@ import type {
   CollectionRepository,
 } from "../../collections/CollectionRepository.js";
 import type { TagService } from "../../tags/TagService.js";
+import type { Identity } from "../../auth/Identity.js";
 import { ApiError } from "../../common/ApiError.js";
+
+const SYSTEM_USER_ID = "00000000-0000-0000-0000-000000000000";
+const OWNER_USER_ID = "00000000-0000-0000-0000-000000000001";
+const OTHER_USER_ID = "00000000-0000-0000-0000-000000000002";
+
+const makeIdentity = (userId: string | null, permissions: string[] = []): Identity =>
+  ({
+    userId,
+    hasPermission: (p: string) => permissions.includes(p),
+  }) as unknown as Identity;
 
 const makeCollection = (overrides: Partial<Collection> = {}): Collection => ({
   id: "col-1",
@@ -14,9 +25,17 @@ const makeCollection = (overrides: Partial<Collection> = {}): Collection => ({
   filterExpression: "nature",
   isFavorite: false,
   type: "dynamic",
+  ownerId: OWNER_USER_ID,
+  isPublic: true,
   createdAt: new Date("2025-01-01"),
   updatedAt: new Date("2025-01-01"),
   ...overrides,
+});
+
+const makeCollectionAccess = (ownerId: string) => ({
+  ownerId,
+  isPublic: true,
+  shares: [],
 });
 
 const makeCollectionRepository = (): CollectionRepository =>
@@ -26,6 +45,8 @@ const makeCollectionRepository = (): CollectionRepository =>
     createCollection: vi.fn(),
     updateCollection: vi.fn(),
     deleteCollection: vi.fn(),
+    getCollectionAccess: vi.fn(),
+    updateCollectionAccess: vi.fn(),
   }) as unknown as CollectionRepository;
 
 const makeTagService = (): TagService =>
@@ -249,6 +270,139 @@ describe("CollectionService", () => {
           "Cannot remove members from a dynamic collection",
         ),
       );
+    });
+  });
+
+  describe("getCollectionAccess", () => {
+    beforeEach(() => {
+      vi.mocked(collectionRepository.getCollectionAccess).mockResolvedValue(
+        makeCollectionAccess(OWNER_USER_ID),
+      );
+    });
+
+    it("allows owner to get access info", async () => {
+      const identity = makeIdentity(OWNER_USER_ID);
+
+      const result = await collectionService.getCollectionAccess("col-1", identity);
+
+      expect(result.ownerId).toBe(OWNER_USER_ID);
+    });
+
+    it("allows admin to get access info", async () => {
+      const identity = makeIdentity(OTHER_USER_ID, ["admin:users"]);
+
+      const result = await collectionService.getCollectionAccess("col-1", identity);
+
+      expect(result.ownerId).toBe(OWNER_USER_ID);
+    });
+
+    it("rejects non-owner without admin permission", async () => {
+      const identity = makeIdentity(OTHER_USER_ID);
+
+      await expect(
+        collectionService.getCollectionAccess("col-1", identity),
+      ).rejects.toMatchObject({ name: "Forbidden", status: 403 });
+    });
+
+    it("rejects system identity (not an owner) for user-owned collection", async () => {
+      const identity = makeIdentity("system");
+
+      await expect(
+        collectionService.getCollectionAccess("col-1", identity),
+      ).rejects.toMatchObject({ name: "Forbidden", status: 403 });
+    });
+
+    it("rejects regular user from system-owned collection", async () => {
+      vi.mocked(collectionRepository.getCollectionAccess).mockResolvedValue(
+        makeCollectionAccess(SYSTEM_USER_ID),
+      );
+      const identity = makeIdentity(OTHER_USER_ID);
+
+      await expect(
+        collectionService.getCollectionAccess("col-1", identity),
+      ).rejects.toMatchObject({ name: "Forbidden", status: 403 });
+    });
+
+    it("allows admin to get access info for system-owned collection", async () => {
+      vi.mocked(collectionRepository.getCollectionAccess).mockResolvedValue(
+        makeCollectionAccess(SYSTEM_USER_ID),
+      );
+      const identity = makeIdentity(OTHER_USER_ID, ["admin:users"]);
+
+      const result = await collectionService.getCollectionAccess("col-1", identity);
+
+      expect(result.ownerId).toBe(SYSTEM_USER_ID);
+    });
+  });
+
+  describe("updateCollectionAccess", () => {
+    const update = { isPublic: false, sharedWith: [] };
+
+    beforeEach(() => {
+      vi.mocked(collectionRepository.getCollectionAccess).mockResolvedValue(
+        makeCollectionAccess(OWNER_USER_ID),
+      );
+      vi.mocked(collectionRepository.updateCollectionAccess).mockResolvedValue(undefined);
+    });
+
+    it("allows owner to update access", async () => {
+      const identity = makeIdentity(OWNER_USER_ID);
+
+      await collectionService.updateCollectionAccess("col-1", identity, update);
+
+      expect(collectionRepository.updateCollectionAccess).toHaveBeenCalledWith("col-1", update);
+    });
+
+    it("allows admin to update access", async () => {
+      const identity = makeIdentity(OTHER_USER_ID, ["admin:users"]);
+
+      await collectionService.updateCollectionAccess("col-1", identity, update);
+
+      expect(collectionRepository.updateCollectionAccess).toHaveBeenCalledWith("col-1", update);
+    });
+
+    it("rejects non-owner without admin permission", async () => {
+      const identity = makeIdentity(OTHER_USER_ID);
+
+      await expect(
+        collectionService.updateCollectionAccess("col-1", identity, update),
+      ).rejects.toMatchObject({ name: "Forbidden", status: 403 });
+
+      expect(collectionRepository.updateCollectionAccess).not.toHaveBeenCalled();
+    });
+
+    it("rejects null userId (anonymous) from updating access", async () => {
+      const identity = makeIdentity(null);
+
+      await expect(
+        collectionService.updateCollectionAccess("col-1", identity, update),
+      ).rejects.toMatchObject({ name: "Forbidden", status: 403 });
+
+      expect(collectionRepository.updateCollectionAccess).not.toHaveBeenCalled();
+    });
+
+    it("rejects regular user from updating system-owned collection access", async () => {
+      vi.mocked(collectionRepository.getCollectionAccess).mockResolvedValue(
+        makeCollectionAccess(SYSTEM_USER_ID),
+      );
+      const identity = makeIdentity(OTHER_USER_ID);
+
+      await expect(
+        collectionService.updateCollectionAccess("col-1", identity, update),
+      ).rejects.toMatchObject({ name: "Forbidden", status: 403 });
+
+      expect(collectionRepository.updateCollectionAccess).not.toHaveBeenCalled();
+    });
+
+    it("allows admin to update system-owned collection access", async () => {
+      vi.mocked(collectionRepository.getCollectionAccess).mockResolvedValue(
+        makeCollectionAccess(SYSTEM_USER_ID),
+      );
+      const identity = makeIdentity(OTHER_USER_ID, ["admin:users"]);
+
+      await collectionService.updateCollectionAccess("col-1", identity, update);
+
+      expect(collectionRepository.updateCollectionAccess).toHaveBeenCalledWith("col-1", update);
     });
   });
 });

@@ -70,6 +70,7 @@ export const CollectionsPage = () => {
     filterExpression: string;
     isFavorite: boolean;
     type: "dynamic" | "static";
+    isPublic: boolean;
   }) => {
     if (editingCollection) {
       await updateCollection({ ...saveData, id: editingCollection.id });

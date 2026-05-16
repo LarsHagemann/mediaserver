@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router";
-import { FaStar, FaRegStar, FaRegCheckCircle } from "react-icons/fa";
+import { FaStar, FaRegStar, FaRegCheckCircle, FaLock } from "react-icons/fa";
 import { MdEdit, MdDelete } from "react-icons/md";
 import { enhancedApi } from "../app/enhancedApi";
 import type { Collection } from "../app/api";
@@ -72,6 +72,13 @@ export const CollectionCard = ({
                 : "collections.typeDynamic",
             )}
           </span>
+          {!collection.isPublic && (
+            <FaLock
+              size={11}
+              className="flex-shrink-0 text-text-secondary"
+              title={t("collection.access.private")}
+            />
+          )}
         </div>
         {onToggleFavorite && (
           <IconButton
