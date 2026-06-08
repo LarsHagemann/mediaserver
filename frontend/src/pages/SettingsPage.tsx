@@ -84,16 +84,31 @@ export const SettingsPage = () => {
       label: t("settings.nav.workspace", "Workspace"),
       items: [
         { id: "appearance", label: t("settings.nav.appearance", "Appearance") },
-        { id: "language", label: t("settings.nav.language", "Language & translations") },
+        {
+          id: "language",
+          label: t("settings.nav.language", "Language & translations"),
+        },
       ],
     },
     {
       label: t("settings.nav.administration", "Administration"),
       items: [
         { id: "plugins", label: t("settings.nav.plugins", "Plugins") },
-        { id: "roles", label: t("settings.nav.roles", "Roles"), adminOnly: true },
-        { id: "users", label: t("settings.nav.users", "Users"), adminOnly: true },
-        { id: "configuration", label: t("settings.nav.configuration", "Configuration"), adminOnly: true },
+        {
+          id: "roles",
+          label: t("settings.nav.roles", "Roles"),
+          adminOnly: true,
+        },
+        {
+          id: "users",
+          label: t("settings.nav.users", "Users"),
+          adminOnly: true,
+        },
+        {
+          id: "configuration",
+          label: t("settings.nav.configuration", "Configuration"),
+          adminOnly: true,
+        },
       ],
     },
   ];
@@ -140,7 +155,11 @@ export const SettingsPage = () => {
               {t("settings.nav.profile", "Profile")}
             </h2>
             <div className="flex items-center gap-4 mb-2">
-              <UserAvatar name={identity?.name} email={identity?.email} size="lg" />
+              <UserAvatar
+                name={identity?.name}
+                email={identity?.email}
+                size="lg"
+              />
               <div>
                 <p className="text-text-primary font-semibold">
                   {identity?.name ?? identity?.email ?? t("account.user")}
@@ -185,7 +204,9 @@ export const SettingsPage = () => {
               {t("settings.nav.sessions", "Sessions")}
             </h2>
             {sessionsLoading && (
-              <p className="text-text-secondary text-sm">{t("common.loading")}</p>
+              <p className="text-text-secondary text-sm">
+                {t("common.loading")}
+              </p>
             )}
             {sessionsData?.sessions.map((session) => (
               <div
@@ -244,17 +265,20 @@ export const SettingsPage = () => {
                   <button
                     key={plugin.name}
                     onClick={() => handleThemeSelect(plugin)}
-                    className={`flex flex-col gap-2 p-3 rounded-lg border-2 cursor-pointer transition-all ${isActive
-                      ? "border-accent"
-                      : "border-border hover:border-border-strong"
-                      }`}
+                    className={`flex flex-col gap-2 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                      isActive
+                        ? "border-accent"
+                        : "border-border hover:border-border-strong"
+                    }`}
                   >
                     <div className="flex flex-row gap-1">
                       {plugin.preview && (
                         <>
                           <div
                             className="w-6 h-6 rounded-full border border-border-strong"
-                            style={{ backgroundColor: plugin.preview.background }}
+                            style={{
+                              backgroundColor: plugin.preview.background,
+                            }}
                           />
                           <div
                             className="w-6 h-6 rounded-full border border-border-strong"
@@ -263,7 +287,9 @@ export const SettingsPage = () => {
                         </>
                       )}
                     </div>
-                    <span className="text-sm font-medium">{plugin.description}</span>
+                    <span className="text-sm font-medium">
+                      {plugin.description}
+                    </span>
                     {!isThemeTrusted(plugin) && (
                       <span className="text-xs text-warning">
                         {t("settings.plugin.untrusted")}
@@ -285,14 +311,20 @@ export const SettingsPage = () => {
               <LanguageSelector />
             </div>
             {languages.map((lng) => (
-              <div key={lng} className="mb-4 p-4 border border-border rounded-lg">
-                <span className="font-semibold">{t(`languages.${lng}.name`)}</span>{" "}
-                ({t(`languages.${lng}.localName`)}) - {t(`languages.${lng}.flag`)}
+              <div
+                key={lng}
+                className="mb-4 p-4 border border-border rounded-lg"
+              >
+                <span className="font-semibold">
+                  {t(`languages.${lng}.name`)}
+                </span>{" "}
+                ({t(`languages.${lng}.localName`)}) -{" "}
+                {t(`languages.${lng}.flag`)}
                 <div className="text-sm text-text-secondary mt-1">
                   {t(`settings.languageExtension.trusted`)}:{" "}
                   {t(
                     "settings.languageExtension." +
-                    (lng in standardTranslations ? "yes" : "no"),
+                      (lng in standardTranslations ? "yes" : "no"),
                   )}
                 </div>
               </div>
@@ -311,14 +343,32 @@ export const SettingsPage = () => {
                 {t("settings.nav.frontendPlugins", "Frontend Plugins")}
               </h3>
               {fileTypes.map((plugin, index) => (
-                <div key={index} className="p-4 border border-border rounded-lg flex items-start gap-3">
-                  <Icon Icon={plugin.icon(reactIcons)} size="medium" className="flex-shrink-0 mt-0.5" />
+                <div
+                  key={index}
+                  className="p-4 border border-border rounded-lg flex items-start gap-3"
+                >
+                  <Icon
+                    Icon={plugin.icon(reactIcons)}
+                    size="medium"
+                    className="flex-shrink-0 mt-0.5"
+                  />
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-text-primary">{plugin.description}</p>
+                    <p className="font-semibold text-text-primary">
+                      {plugin.description}
+                    </p>
                     <p className="text-sm text-text-secondary mt-0.5">
                       {t(`settings.plugin.trusted`)}:{" "}
-                      <span className={isPluginTrusted(plugin) ? "text-success" : "text-warning"}>
-                        {t("settings.plugin." + (isPluginTrusted(plugin) ? "yes" : "no"))}
+                      <span
+                        className={
+                          isPluginTrusted(plugin)
+                            ? "text-success"
+                            : "text-warning"
+                        }
+                      >
+                        {t(
+                          "settings.plugin." +
+                            (isPluginTrusted(plugin) ? "yes" : "no"),
+                        )}
                       </span>
                     </p>
                   </div>
@@ -331,19 +381,32 @@ export const SettingsPage = () => {
                 {t("state.backendPlugins", "Backend Plugins")}
               </h3>
               {backendState?.plugins.map((plugin, index) => (
-                <div key={index} className="p-4 border border-border rounded-lg flex items-start gap-3">
+                <div
+                  key={index}
+                  className="p-4 border border-border rounded-lg flex items-start gap-3"
+                >
                   <div className="w-8 h-8 rounded-md bg-surface-3 flex items-center justify-center flex-shrink-0 mt-0.5">
                     <span className="text-xs font-bold text-text-secondary uppercase">
                       {plugin.name.slice(0, 2)}
                     </span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-text-primary">{plugin.name}</p>
-                    <p className="text-sm text-text-secondary">{plugin.description}</p>
+                    <p className="font-semibold text-text-primary">
+                      {plugin.name}
+                    </p>
+                    <p className="text-sm text-text-secondary">
+                      {plugin.description}
+                    </p>
                     <p className="text-sm text-text-secondary mt-0.5">
                       {t(`settings.plugin.trusted`)}:{" "}
-                      <span className={plugin.trusted ? "text-success" : "text-warning"}>
-                        {t("settings.plugin." + (plugin.trusted ? "yes" : "no"))}
+                      <span
+                        className={
+                          plugin.trusted ? "text-success" : "text-warning"
+                        }
+                      >
+                        {t(
+                          "settings.plugin." + (plugin.trusted ? "yes" : "no"),
+                        )}
                       </span>
                     </p>
                   </div>

@@ -13,11 +13,19 @@ export const Layout = () => {
 
   const permissions = identity.permissions ?? [];
 
-  if (config.idpEnabled && !identity.isAuthenticated && permissions.length === 0) {
+  if (
+    config.idpEnabled &&
+    !identity.isAuthenticated &&
+    permissions.length === 0
+  ) {
     return <LoginPage />;
   }
 
-  if (config.idpEnabled && identity.isAuthenticated && permissions.length === 0) {
+  if (
+    config.idpEnabled &&
+    identity.isAuthenticated &&
+    permissions.length === 0
+  ) {
     return <PendingApprovalPage />;
   }
 

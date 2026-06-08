@@ -34,14 +34,17 @@ export const PreviewContainer = ({
   previousPreviewImage,
   onClose,
 }: Props) => {
-  const { data } = enhancedApi.useListDocumentsQuery({
-    ...queryParams,
-    limit: 5,
-    offset: Math.min(
-      Math.max(previewImageIndex - 2, 0),
-      Math.max(totalDocuments - 5, 0),
-    ),
-  });
+  const { data } = enhancedApi.useListDocumentsQuery(
+    {
+      ...queryParams,
+      limit: 5,
+      offset: Math.min(
+        Math.max(previewImageIndex - 2, 0),
+        Math.max(totalDocuments - 5, 0),
+      ),
+    },
+    { refetchOnFocus: true, refetchOnReconnect: true },
+  );
 
   const [diashowMode, setDiashowMode] = useState(false);
   const [showInfoPanel, setShowInfoPanel] = useState(true);

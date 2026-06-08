@@ -89,12 +89,15 @@ export const GalleryPage = () => {
     collection,
   );
 
-  const { currentData: data } = enhancedApi.useListDocumentsQuery({
-    limit,
-    offset,
-    query: finalQuery,
-    seed: hasRandomSort ? seed : undefined,
-  });
+  const { currentData: data } = enhancedApi.useListDocumentsQuery(
+    {
+      limit,
+      offset,
+      query: finalQuery,
+      seed: hasRandomSort ? seed : undefined,
+    },
+    { refetchOnFocus: true, refetchOnReconnect: true },
+  );
 
   useEffect(() => {
     if (data && data.items.length === 0 && page > 0) {

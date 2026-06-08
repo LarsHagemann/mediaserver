@@ -34,7 +34,11 @@ export const Dropdown = <T,>({
         event.stopPropagation();
 
         setHighlightedIndex((prev) => Math.max(prev - 1, -1));
-      } else if (event.key === "Enter" && !event.ctrlKey && highlightedIndex >= 0) {
+      } else if (
+        event.key === "Enter" &&
+        !event.ctrlKey &&
+        highlightedIndex >= 0
+      ) {
         event.preventDefault();
         event.stopPropagation();
 
