@@ -15,6 +15,21 @@ import { parseUserAgent } from "../auth/parseUserAgent.js";
 export const authRouter = Router();
 
 authRouter.get(
+  "/config",
+  apiHandler(async ({ diContainer }) => {
+    const envService = diContainer.get<EnvironmentService>(
+      services.environment,
+    );
+    return {
+      status: 200,
+      body: {
+        idpEnabled: envService.idpEnabled,
+      },
+    };
+  }),
+);
+
+authRouter.get(
   "/me",
   apiHandler(async ({ identity, diContainer }) => {
     let name: string | null = null;

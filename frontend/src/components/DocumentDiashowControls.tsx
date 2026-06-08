@@ -7,6 +7,7 @@ import {
 import { IconButton } from "./IconButton";
 import { useEffect, useState } from "react";
 import { twMerge } from "tailwind-merge";
+import { MdInfoOutline } from "react-icons/md";
 
 type Props = {
   nextDocument: () => void;
@@ -15,6 +16,8 @@ type Props = {
   setTimeoutValue: (timeout: number) => void;
   timeout: number;
   paused: boolean;
+  toggleInfoPanel: () => void;
+  showInfoPanel: boolean;
 };
 
 const MOUSE_MOVE_HIDE_DELAY = 250;
@@ -26,6 +29,8 @@ export const DocumentDiashowControls = ({
   setTimeoutValue,
   timeout,
   paused,
+  toggleInfoPanel,
+  showInfoPanel,
 }: Props) => {
   const [lastMouseMoveTimestamp, setLastMouseMoveTimestamp] = useState(
     Date.now(),
@@ -89,6 +94,15 @@ export const DocumentDiashowControls = ({
         />
         <span className="ml-1 text-sm text-text-secondary">ms</span>
       </div>
+      <IconButton
+        onClick={toggleInfoPanel}
+        className={twMerge(
+          "md:hidden bg-surface-1 rounded-full p-2 hover:bg-surface-3",
+          showInfoPanel && "text-accent-subtle",
+        )}
+      >
+        <MdInfoOutline size={16} />
+      </IconButton>
     </div>
   );
 };

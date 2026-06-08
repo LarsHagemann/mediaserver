@@ -8,7 +8,7 @@ import { FaCaretRight } from "react-icons/fa6";
 import { useState } from "react";
 import { twMerge } from "tailwind-merge";
 import { useTranslation } from "react-i18next";
-import { MdSettings, MdCollections, MdLogout } from "react-icons/md";
+import { MdCollections, MdLogout } from "react-icons/md";
 import { useIdentity, usePermission } from "../hooks/usePermission";
 import { UserAvatar } from "../components/UserAvatar";
 import { AppIcon } from "../components/AppIcon";
@@ -106,14 +106,6 @@ export const SideBar = () => {
           text={t("sidebar.serverState")}
         />
       )}
-      <SideBarButton
-        Icon={MdSettings}
-        pathPrefix="/settings"
-        onClick={() => navigate("/settings")}
-        collapsed={collapsed}
-        text={t("sidebar.settings")}
-      />
-
       {/* Collapse toggle */}
       {collapsed ? (
         <FaCaretRight
@@ -135,7 +127,7 @@ export const SideBar = () => {
           {collapsed ? (
             <div
               className="flex justify-center cursor-pointer"
-              onClick={() => navigate("/account")}
+              onClick={() => navigate("/settings")}
             >
               <UserAvatar
                 name={identity.name}
@@ -147,7 +139,7 @@ export const SideBar = () => {
             <>
               <div
                 className="flex items-center gap-3 px-2 py-2 rounded-md cursor-pointer hover:bg-surface-2 transition-colors mb-1"
-                onClick={() => navigate("/account")}
+                onClick={() => navigate("/settings")}
               >
                 <UserAvatar
                   name={identity.name}

@@ -45,15 +45,15 @@ export const GalleryControls = ({
   const { t } = useTranslation();
 
   return (
-    <div className="flex flex-row items-center justify-between gap-2 px-3 py-1">
-      {/* Type filter tabs */}
-      <div className="flex flex-row items-center gap-0.5">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2 px-3 py-1">
+      {/* Type filter tabs — scrollable row on mobile */}
+      <div className="flex flex-row items-center gap-0.5 overflow-x-auto scrollbar-hide">
         {TYPE_TABS.map(({ key, label }) => (
           <button
             key={key}
             onClick={() => onSetTypeFilter(key)}
             className={twMerge(
-              "px-3 py-1.5 rounded-full text-sm transition-colors",
+              "px-3 py-1.5 rounded-full text-sm transition-colors whitespace-nowrap",
               typeFilter === key
                 ? "bg-surface-3 text-text-primary font-medium"
                 : "text-text-muted hover:text-text-secondary hover:bg-surface-2",

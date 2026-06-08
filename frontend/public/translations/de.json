@@ -67,6 +67,11 @@
       "advancedMode": "Erweitert",
       "switchToEasyMode": "Zum einfachen Modus wechseln",
       "switchToAdvancedMode": "Zum erweiterten Modus wechseln"
+    },
+    "tags": {
+      "title": "Tags",
+      "searchPlaceholder": "Tags suchen…",
+      "empty": "Keine Tags gefunden."
     }
   },
   "pagination": {

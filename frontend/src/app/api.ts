@@ -404,6 +404,10 @@ export const api = baseApi.injectEndpoints({
 
     // --- Auth ---
 
+    getAppConfig: build.query<AppConfig, void>({
+      query: () => ({ url: "/auth/config", method: "GET" }),
+    }),
+
     getMe: build.query<Identity, void>({
       query: () => ({ url: "/auth/me", method: "GET" }),
       providesTags: ["identity"],
@@ -502,6 +506,10 @@ export const api = baseApi.injectEndpoints({
     }),
   }),
 });
+
+export type AppConfig = {
+  idpEnabled: boolean;
+};
 
 export type Identity = {
   userId: string | null;
