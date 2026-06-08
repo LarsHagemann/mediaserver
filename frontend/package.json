@@ -11,8 +11,8 @@
     "preview": "vite preview --host 0.0.0.0",
     "lint:check": "eslint .",
     "lint:fix": "eslint . --fix",
-    "style:check": "prettier --check src/**/*.ts",
-    "style:fix": "prettier --write src/**/*.ts"
+    "style:check": "prettier --check src/**/*.{ts,tsx}",
+    "style:fix": "prettier --write src/**/*.{ts,tsx}"
   },
   "dependencies": {
     "@lars_hagemann/tags": "^1.0.6",
@@ -26,6 +26,7 @@
     "react-paginate": "^8.3.0",
     "react-redux": "^9.2.0",
     "react-router": "^7.8.2",
+    "react-swipeable": "^7.0.2",
     "react-use-websocket": "^4.13.0",
     "redux-persist": "^6.0.0",
     "tailwind-merge": "^3.3.1",

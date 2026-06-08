@@ -8,7 +8,7 @@ import { CollectionFormModal } from "../sections/CollectionFormModal";
 import { usePageOffsetAndLimitParams } from "../hooks/usePageOffsetAndLimitParams";
 import { Pagination } from "../components/Pagination";
 import { Button } from "../components/Button";
-import { Modal } from "../components/Modal";
+import { DeleteCollectionModal } from "../sections/DeleteCollectionModal";
 
 export const CollectionsPage = () => {
   const { t } = useTranslation();
@@ -70,6 +70,7 @@ export const CollectionsPage = () => {
     filterExpression: string;
     isFavorite: boolean;
     type: "dynamic" | "static";
+    isPublic: boolean;
   }) => {
     if (editingCollection) {
       await updateCollection({ ...saveData, id: editingCollection.id });
@@ -152,42 +153,12 @@ export const CollectionsPage = () => {
         initialCollection={editingCollection}
       />
 
-      <Modal
-        isOpen={!!deletingCollection}
+      <DeleteCollectionModal
+        isOpen={deletingCollection !== undefined}
         onClose={() => setDeletingCollection(undefined)}
-        title={t("collections.deleteModal.title")}
-      >
-        <div className="flex flex-col gap-4">
-          <p className="text-text-secondary">
-            {deletingCollection?.type === "static"
-              ? t("collections.deleteModal.bodyStatic", {
-                name: deletingCollection.name,
-              })
-              : t("collections.deleteModal.body", {
-                name: deletingCollection?.name,
-              })}
-          </p>
-          {deletingCollection?.type === "static" && (
-            <p className="text-warning text-sm">
-              {t("collections.deleteModal.staticWarning")}
-            </p>
-          )}
-          <div className="flex justify-end gap-3">
-            <Button
-              variant="ghost"
-              onClick={() => setDeletingCollection(undefined)}
-            >
-              {t("collections.form.cancel")}
-            </Button>
-            <Button
-              className="bg-danger hover:bg-danger-hover"
-              onClick={handleDeleteConfirm}
-            >
-              {t("collections.deleteModal.confirm")}
-            </Button>
-          </div>
-        </div>
-      </Modal>
+        onDelete={handleDeleteConfirm}
+        deletingCollection={deletingCollection}
+      />
     </div>
   );
 };

@@ -14,6 +14,11 @@ import { TagService } from "./tags/TagService.js";
 import { RedisClient } from "./redis/RedisClient.js";
 import { stateRouter } from "./routers/StateRouter.js";
 import { collectionRouter } from "./routers/CollectionRouter.js";
+import { authRouter } from "./routers/AuthRouter.js";
+import { adminRouter } from "./routers/AdminRouter.js";
+import { createSessionMiddleware } from "./auth/SessionMiddleware.js";
+import type { SessionService } from "./auth/SessionService.js";
+import cookieParser from "cookie-parser";
 import type { LoggingService } from "./common/LoggingService.js";
 import { loadPlugins } from "./plugins/pluginLoader.js";
 import { addFileTypePlugin } from "./plugins/fileTypes.js";
@@ -38,7 +43,11 @@ async function run(envService: EnvironmentService) {
   }
 
   app.use(express.json());
-  app.use(cors.default());
+  app.use(cors.default({
+    credentials: true,
+    origin: envService.corsOrigin,
+  }));
+  app.use(cookieParser());
 
   app.use(
     express.urlencoded({
@@ -54,6 +63,9 @@ async function run(envService: EnvironmentService) {
     }),
   );
 
+  const sessionService = DI_CONTAINER.get<SessionService>(services.sessionService);
+  app.use(createSessionMiddleware(envService, sessionService));
+
   app.get(
     "/health",
     apiHandler(async () => {
@@ -66,6 +78,8 @@ async function run(envService: EnvironmentService) {
     }),
   );
 
+  app.use("/auth", authRouter);
+  app.use("/admin", adminRouter);
   app.use("/documents", documentRouter);
   app.use("/tags", tagRouter);
   app.use("/state", stateRouter);

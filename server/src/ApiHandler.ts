@@ -8,6 +8,7 @@ import { LoggingService } from "./common/LoggingService.js";
 import { services } from "./DefaultDiContainer.js";
 import * as fs from "fs";
 import type { IncomingHttpHeaders } from "http";
+import type { Identity } from "./auth/Identity.js";
 
 export class FileDownload {
   constructor(
@@ -49,6 +50,7 @@ type ApiFunction<
   params: Params;
   files: fileUpload.FileArray | null | undefined;
   headers: IncomingHttpHeaders;
+  identity: Identity;
 }) => Promise<ApiResult<Response>>;
 
 export const apiHandler = <
@@ -79,6 +81,7 @@ export const apiHandler = <
         params: req.params,
         files: req.files,
         headers: req.headers,
+        identity: req.identity,
       });
       if (result.body instanceof FileDownload) {
         res

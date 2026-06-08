@@ -3,12 +3,15 @@ import { TagParser } from "@lars_hagemann/tags";
 import { ApiError } from "../common/ApiError.js";
 import type {
   Collection,
+  CollectionAccess,
   CollectionRepository,
   CollectionType,
   UpdateCollectionRequest,
 } from "./CollectionRepository.js";
 import type { PaginatedResponse } from "../util/PaginatedResponse.js";
 import type { TagService } from "../tags/TagService.js";
+import type { CollectionAccessScope } from "../auth/AccessScope.js";
+import type { Identity } from "../auth/Identity.js";
 
 export interface CreateCollectionRequest {
   name: string;
@@ -16,6 +19,8 @@ export interface CreateCollectionRequest {
   filterExpression: string;
   isFavorite: boolean;
   type: CollectionType;
+  ownerId: string;
+  isPublic: boolean;
 }
 
 export class CollectionService {
@@ -40,12 +45,16 @@ export class CollectionService {
     limit: number;
     offset: number;
     type: CollectionType | undefined;
+    scope: CollectionAccessScope;
   }): Promise<PaginatedResponse<Collection>> {
     return this.collectionRepository.listCollections(request);
   }
 
-  public async getCollection(id: string): Promise<Collection> {
-    const collection = await this.collectionRepository.getCollection(id);
+  public async getCollection(
+    id: string,
+    scope: CollectionAccessScope = { type: "all" },
+  ): Promise<Collection> {
+    const collection = await this.collectionRepository.getCollection(id, scope);
     if (!collection) {
       throw new ApiError(
         "CollectionNotFound",
@@ -73,8 +82,9 @@ export class CollectionService {
 
   public async updateCollection(
     request: UpdateCollectionRequest,
+    scope: CollectionAccessScope = { type: "all" },
   ): Promise<Collection> {
-    const existing = await this.getCollection(request.id);
+    const existing = await this.getCollection(request.id, scope);
     const effectiveRequest =
       existing.type === "static"
         ? { ...request, filterExpression: `collection:${request.id}` }
@@ -96,8 +106,11 @@ export class CollectionService {
     return collection;
   }
 
-  public async deleteCollection(id: string): Promise<void> {
-    const collection = await this.getCollection(id);
+  public async deleteCollection(
+    id: string,
+    scope: CollectionAccessScope = { type: "all" },
+  ): Promise<void> {
+    const collection = await this.getCollection(id, scope);
     if (collection.type === "static") {
       await this.tagService.deleteTag("collection", id);
     }
@@ -107,8 +120,9 @@ export class CollectionService {
   public async addMember(
     collectionId: string,
     documentId: string,
+    scope: CollectionAccessScope = { type: "all" },
   ): Promise<void> {
-    const collection = await this.getCollection(collectionId);
+    const collection = await this.getCollection(collectionId, scope);
     if (collection.type !== "static") {
       throw new ApiError(
         "InvalidOperation",
@@ -119,14 +133,16 @@ export class CollectionService {
     await this.tagService.addTagToDocument(
       documentId,
       `collection:${collectionId}`,
+      "collection",
     );
   }
 
   public async removeMember(
     collectionId: string,
     documentId: string,
+    scope: CollectionAccessScope = { type: "all" },
   ): Promise<void> {
-    const collection = await this.getCollection(collectionId);
+    const collection = await this.getCollection(collectionId, scope);
     if (collection.type !== "static") {
       throw new ApiError(
         "InvalidOperation",
@@ -139,4 +155,55 @@ export class CollectionService {
       `collection:${collectionId}`,
     );
   }
+
+  public async getCollectionAccess(
+    collectionId: string,
+    identity: Identity,
+  ): Promise<CollectionAccess> {
+    const access =
+      await this.collectionRepository.getCollectionAccess(collectionId);
+    if (!canManageAccess(identity, access.ownerId)) {
+      throw new ApiError(
+        "Forbidden",
+        403,
+        "Only the collection owner or an admin can manage access",
+      );
+    }
+    return access;
+  }
+
+  public async updateCollectionAccess(
+    collectionId: string,
+    identity: Identity,
+    update: { isPublic: boolean; sharedWith: string[] },
+  ): Promise<void> {
+    const access =
+      await this.collectionRepository.getCollectionAccess(collectionId);
+    if (!canManageAccess(identity, access.ownerId)) {
+      throw new ApiError(
+        "Forbidden",
+        403,
+        "Only the collection owner or an admin can manage access",
+      );
+    }
+    await this.collectionRepository.updateCollectionAccess(
+      collectionId,
+      update,
+    );
+  }
+}
+
+function isCollectionOwner(identity: Identity, ownerId: string): boolean {
+  return (
+    identity.userId !== null &&
+    identity.userId !== "system" &&
+    identity.userId === ownerId
+  );
+}
+
+function canManageAccess(identity: Identity, ownerId: string): boolean {
+  return (
+    isCollectionOwner(identity, ownerId) ||
+    identity.hasPermission("admin:users")
+  );
 }

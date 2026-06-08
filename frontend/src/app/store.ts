@@ -11,11 +11,12 @@ const persistConfig = {
   storage,
 };
 
-const persistedReducer = persistReducer(persistConfig, enhancedApi.reducer);
-
 const rootReducer = combineReducers({
-  [enhancedApi.reducerPath]: persistedReducer,
-  [persistentSlice.reducerPath]: persistentSlice.reducer,
+  [enhancedApi.reducerPath]: enhancedApi.reducer,
+  [persistentSlice.reducerPath]: persistReducer(
+    persistConfig,
+    persistentSlice.reducer,
+  ),
 });
 
 export const store = configureStore({

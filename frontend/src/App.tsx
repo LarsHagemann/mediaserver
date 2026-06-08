@@ -1,5 +1,4 @@
 import { RouterProvider } from "react-router";
-import { FileUploadView } from "./sections/FileUploadView";
 import { router } from "./app/router";
 import { useEffect } from "react";
 import i18n from "i18next";
@@ -13,10 +12,5 @@ export function App() {
     i18n.changeLanguage(language as string);
   }, [language]);
 
-  return (
-    <>
-      <RouterProvider router={router} />
-      <FileUploadView className="hidden sm:block w-1/5 overflow-y-hidden fixed right-12 bottom-0" />
-    </>
-  );
+  return <RouterProvider router={router} />;
 }

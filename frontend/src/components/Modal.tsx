@@ -10,7 +10,13 @@ type Props = {
   className?: string;
 };
 
-export const Modal = ({ isOpen, onClose, title, children, className }: Props) => {
+export const Modal = ({
+  isOpen,
+  onClose,
+  title,
+  children,
+  className,
+}: Props) => {
   if (!isOpen) return null;
 
   return (

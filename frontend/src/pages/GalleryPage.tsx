@@ -1,205 +1,140 @@
 import { enhancedApi } from "../app/enhancedApi";
-import { ThumbnailContainer } from "../components/ThumbnailContainer";
-import { Pagination } from "../components/Pagination";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { PreviewContainer } from "../sections/PreviewContainer";
 import { useEasySearchParams } from "../hooks/useEasySearchParams";
 import { usePageOffsetAndLimitParams } from "../hooks/usePageOffsetAndLimitParams";
-import { TagInput } from "../sections/TagInput";
-import { FiGrid, FiList, FiShuffle } from "react-icons/fi";
-import { MdBookmarkAdd } from "react-icons/md";
-import { twMerge } from "tailwind-merge";
-import { useIsMobileScreen } from "../hooks/useIsMobileScreen";
 import { CollectionFormModal } from "../sections/CollectionFormModal";
 import { useGallerySeed } from "../hooks/useGallerySeed";
-
-const remToPixel = (rem: number) => {
-  return rem * parseFloat(getComputedStyle(document.documentElement).fontSize);
-};
-
-/*
-
-x = container width
-m = thumbnail margin
-t = thumbnail width
-n = number of thumbnails per row
-
-x < n * t + (n + 1) * m
-x - m < n * (t + m)
-n > (x - m) / (t + m)
-n = floor((x - m) / (t + m))
-
-*/
+import { BulkEditDocumentsModal } from "../sections/BulkEditDocumentsModal";
+import { skipToken } from "@reduxjs/toolkit/query";
+import { CollectionBadge } from "../components/CollectionBadge";
+import { useFinalGalleryQuery } from "../hooks/useFinalGalleryQuery";
+import { usePreviewNavigation } from "../hooks/usePreviewNavigation";
+import { EditModePanel } from "../sections/EditModePanel";
+import { GallerySearchBar } from "../sections/GallerySearchBar";
+import { GalleryControls, type TypeFilter } from "../sections/GalleryControls";
+import { PaginatedThumbnailContainer } from "../sections/PaginatedThumbnailContainer";
+import { useNavigate } from "react-router";
+import { usePermission } from "../hooks/usePermission";
+import { AiOutlineUpload } from "react-icons/ai";
+import { MdEdit } from "react-icons/md";
+import { Button } from "../components/Button";
 
 export const GalleryPage = () => {
-  const { t } = useTranslation();
-
+  const navigate = useNavigate();
+  const canUpload = usePermission("document:upload");
   const [layoutType, setLayoutType] = useState<"grid" | "list">("grid");
   const [collectionModalOpen, setCollectionModalOpen] = useState(false);
   const [createCollection] = enhancedApi.useCreateCollectionMutation();
+  const [editMode, setEditMode] = useState(false);
+  const [editDocuments, setEditDocuments] = useState<Set<string>>(new Set());
+  const [editDocumentsModalOpen, setEditDocumentsModalOpen] = useState(false);
+  const [tagInput, setTagInput] = useState("");
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
 
-  const { limit, offset, page, setPage, setLimit } =
-    usePageOffsetAndLimitParams();
-
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [documentsPerRow, setDocumentsPerRow] = useState<number>(0);
-  const [documentsPerColumn, setDocumentsPerColumn] = useState<number>(5);
-  const [thumbnailContainerWidth, setThumbnailContainerWidth] =
-    useState<number>(0);
-
-  const isMobile = useIsMobileScreen();
-
-  useEffect(() => {
-    const observer = new ResizeObserver((entries) => {
-      const containerEntry = entries[0];
-      if (containerEntry.contentBoxSize) {
-        const thumbnailMargin = remToPixel(0.5);
-        const containerPadding = remToPixel(0.5 * 2);
-        const containerWidth = containerEntry.contentBoxSize[0].inlineSize;
-        const thumbnailsPerRow = Math.floor(
-          (containerWidth - thumbnailMargin - containerPadding) /
-          (120 + thumbnailMargin * 2),
-        );
-        setDocumentsPerRow(thumbnailsPerRow);
-
-        const containerHeight =
-          containerEntry.contentBoxSize[0].blockSize * (isMobile ? 3 : 1);
-        const thumbnailsPerColumn = Math.floor(
-          (containerHeight - 250) / (120 + thumbnailMargin * 2),
-        );
-        setDocumentsPerColumn(thumbnailsPerColumn);
-
-        setThumbnailContainerWidth(
-          thumbnailsPerRow * (120 + thumbnailMargin * 2) +
-          thumbnailMargin +
-          containerPadding,
-        );
-      }
-    });
-    observer.observe(containerRef.current!);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [isMobile]);
+  const { limit, offset, page, setPage } = usePageOffsetAndLimitParams();
 
   const {
-    params: { preview: previewDocumentSearchParam, q: query },
+    params: {
+      preview: previewDocumentSearchParam,
+      q: query,
+      collection: collectionSearchParam,
+      sort: sortParam,
+    },
     setSearchParams,
     addSearchParam,
     removeSearchParam,
-  } = useEasySearchParams(["preview", "q"]);
+  } = useEasySearchParams(["preview", "q", "collection", "sort"]);
+
+  const sortMode: "newest" | "random" =
+    sortParam === "random" ? "random" : "newest";
+
+  const { data: collection } = enhancedApi.useGetCollectionByIdQuery(
+    collectionSearchParam ?? skipToken,
+  );
 
   const { seed, reseedGallery } = useGallerySeed();
-  const hasRandomSort = (query ?? "").includes("sort:random");
+
+  const { data: allTagsData } = enhancedApi.useListTagsQuery({
+    limit: 20,
+    offset: 0,
+    query: "",
+  });
+  const popularTags = useMemo(() => {
+    if (!allTagsData) return [];
+    return allTagsData.items
+      .filter((tag) => tag.type !== "meta" && tag.type !== "collection")
+      .slice(0, 5);
+  }, [allTagsData]);
+
+  const effectiveQuery = useMemo(() => {
+    const parts: string[] = [];
+    if (typeFilter !== "all") parts.push(typeFilter);
+    if (query?.trim()) parts.push(query.trim());
+
+    const combined =
+      parts.length > 1
+        ? parts.map((p) => `(${p})`).join(" & ")
+        : (parts[0] ?? "");
+
+    if (sortMode === "random" && !combined.includes("sort:random")) {
+      return combined ? `(sort:random) & (${combined})` : "(sort:random)";
+    }
+    return combined || undefined;
+  }, [typeFilter, query, sortMode]);
+
+  const { finalQuery, hasRandomSort } = useFinalGalleryQuery(
+    effectiveQuery,
+    collectionSearchParam,
+    collection,
+  );
+
+  const { currentData: data } = enhancedApi.useListDocumentsQuery(
+    {
+      limit,
+      offset,
+      query: finalQuery,
+      seed: hasRandomSort ? seed : undefined,
+    },
+    { refetchOnFocus: true, refetchOnReconnect: true },
+  );
 
   useEffect(() => {
-    if (!previewDocumentSearchParam) {
-      setLimit(documentsPerRow * documentsPerColumn - 1);
+    if (data && data.items.length === 0 && page > 0) {
+      setPage(page - 1);
     }
-  }, [documentsPerRow, setLimit, documentsPerColumn, previewDocumentSearchParam]);
+  }, [data, page, setPage]);
 
-  const [tagInput, setTagInput] = useState("");
+  useEffect(() => {
+    setEditDocuments(new Set());
+  }, [editMode]);
 
   useEffect(() => {
     setTagInput((prev) => query || prev);
   }, [query]);
-
-  const { currentData: data } = enhancedApi.useListDocumentsQuery({
-    limit: limit,
-    offset: offset,
-    query: query,
-    seed: hasRandomSort ? seed : undefined,
-  });
-
-  useEffect(() => {
-    if (data && data.items.length === 0) {
-      if (page > 0) {
-        setPage(page - 1);
-      }
-    }
-  }, [data, page, setPage]);
 
   const idToDocument = useMemo(
     () => Object.fromEntries((data?.items ?? []).map((d) => [d.id, d])),
     [data],
   );
 
-  const total = useMemo(() => data?.total || 0, [data?.total]);
+  const total = data?.total ?? 0;
 
-  const previewDocument = useMemo(
-    () =>
-      previewDocumentSearchParam
-        ? idToDocument[previewDocumentSearchParam]
-        : undefined,
-    [idToDocument, previewDocumentSearchParam],
-  );
-
-  const lastKnownPreviewIndexRef = useRef<number>(0);
-  if (previewDocument) {
-    lastKnownPreviewIndexRef.current = previewDocument.queryIndex;
-  }
-
-  const setPreviewDocument = useCallback(
-    (previewDocumentId: string | undefined) => {
-      if (previewDocumentId) {
-        addSearchParam("preview", previewDocumentId);
-      } else {
-        removeSearchParam("preview");
-      }
-    },
-    [addSearchParam, removeSearchParam],
-  );
-
-  const nextPreviewImage = useCallback(() => {
-    if (previewDocument?.nextId) {
-      const nextId = previewDocument.nextId;
-      const indexOnPage = previewDocument.queryIndex % limit;
-      console.log({ indexOnPage, queryIndex: previewDocument.queryIndex, limit });
-      if (indexOnPage === limit - 1) {
-        const newPage = page + 1;
-        setSearchParams((prev) => {
-          const newParams = new URLSearchParams(prev);
-          newParams.set("page", String(newPage + 1));
-          newParams.set("preview", nextId);
-          return newParams;
-        });
-      } else {
-        setPreviewDocument(nextId);
-      }
-    }
-  }, [setPreviewDocument, previewDocument, setSearchParams, page, limit]);
-
-  const prevPreviewImage = useCallback(() => {
-    if (previewDocument?.previousId) {
-      const previousId = previewDocument.previousId;
-      const indexOnPage = previewDocument.queryIndex % limit;
-      if (indexOnPage === 0) {
-        const newPage = Math.max(page - 1, 0);
-        setSearchParams((prev) => {
-          const newParams = new URLSearchParams(prev);
-          newParams.set("page", String(newPage + 1));
-          newParams.set("preview", previousId);
-          return newParams;
-        });
-      } else {
-        setPreviewDocument(previewDocument.previousId);
-      }
-    }
-  }, [setPreviewDocument, previewDocument, setSearchParams, page, limit]);
-
-  useEffect(() => {
-    console.log({
-      previewDocument,
-      previewDocumentSearchParam,
-      idToDocument,
-      limit,
-      offset,
-      query,
-      data,
-    });
-  }, [previewDocument, previewDocumentSearchParam, idToDocument, limit, offset, query, data]);
+  const {
+    previewDocument,
+    setPreviewDocument,
+    nextPreviewImage,
+    prevPreviewImage,
+    lastKnownPreviewIndexRef,
+  } = usePreviewNavigation({
+    previewDocumentSearchParam,
+    idToDocument,
+    limit,
+    page,
+    addSearchParam,
+    removeSearchParam,
+    setSearchParams,
+  });
 
   const onInputSubmit = useCallback(
     (value: string) => {
@@ -209,97 +144,186 @@ export const GalleryPage = () => {
     [addSearchParam, setPage],
   );
 
+  const onTagClick = useCallback(
+    (tag: string) => {
+      const current = tagInput.trim();
+      const newQuery = current ? `${current} & ${tag}` : tag;
+      setTagInput(newQuery);
+      onInputSubmit(newQuery);
+    },
+    [tagInput, onInputSubmit],
+  );
+
+  const onSetSortMode = useCallback(
+    (mode: "newest" | "random") => {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        if (mode === "random") {
+          next.set("sort", "random");
+        } else {
+          next.delete("sort");
+        }
+        next.set("page", "1");
+        return next;
+      });
+      if (mode === "random") {
+        reseedGallery();
+      }
+    },
+    [setSearchParams, reseedGallery],
+  );
+
+  const onSetTypeFilter = useCallback(
+    (type: TypeFilter) => {
+      setTypeFilter(type);
+      setPage(0);
+    },
+    [setPage],
+  );
+
+  const entirePageSelected = useMemo(
+    () => !!data && data.items.every((item) => editDocuments.has(item.id)),
+    [data, editDocuments],
+  );
+
+  const onTogglePage = useCallback(() => {
+    setEditDocuments((old) => {
+      const newSet = new Set(old);
+      const ids = data?.items.map((d) => d.id) ?? [];
+      if (entirePageSelected) {
+        ids.forEach((id) => newSet.delete(id));
+      } else {
+        ids.forEach((id) => newSet.add(id));
+      }
+      return newSet;
+    });
+  }, [data, entirePageSelected]);
+
+  const onThumbnailClick = useCallback(
+    (id: string) => {
+      if (!editMode) {
+        setPreviewDocument(id);
+      } else {
+        setEditDocuments((documents) => {
+          const newSet = new Set(documents);
+          if (newSet.has(id)) {
+            newSet.delete(id);
+          } else {
+            newSet.add(id);
+          }
+          return newSet;
+        });
+      }
+    },
+    [editMode, setPreviewDocument],
+  );
+
+  const onSelectDocument = useCallback((id: string, selected: boolean) => {
+    setEditDocuments((documents) => {
+      const newSet = new Set(documents);
+      if (selected) {
+        newSet.add(id);
+      } else {
+        newSet.delete(id);
+      }
+      return newSet;
+    });
+  }, []);
+
   return (
-    <div
-      ref={containerRef}
-      className="h-full relative flex flex-col gap-1 overflow-hidden"
-    >
-      <TagInput
+    <div className="h-full relative flex flex-col gap-2 overflow-hidden">
+      {/* Page header */}
+      <div className="flex flex-col p-2">
+        <div className="flex flex-row items-start justify-between shrink-0">
+          <div>
+            <h1 className="text-3xl font-bold text-text-primary">Gallery</h1>
+          </div>
+          <div className="flex flex-row gap-2 shrink-0 mt-1">
+            {canUpload && (
+              <Button
+                variant="secondary"
+                onClick={() => navigate("/upload")}
+                className="flex flex-row gap-2 items-center"
+              >
+                <AiOutlineUpload className="text-lg" />
+                Upload
+              </Button>
+            )}
+            <Button
+              variant={editMode ? "primary" : "secondary"}
+              onClick={() => setEditMode((prev) => !prev)}
+              className="flex flex-row gap-2 items-center"
+            >
+              <MdEdit className="text-lg" />
+              Edit
+            </Button>
+          </div>
+        </div>
+        <div className="hidden sm:block">
+          <p className="text-text-muted text-sm mt-1">
+            Everything you&apos;ve uploaded — searchable by tag, browsable by
+            type, organized into collections.
+          </p>
+        </div>
+      </div>
+
+      <GallerySearchBar
         value={tagInput}
         onChange={setTagInput}
-        onValidChange={() => { }}
         onSubmit={onInputSubmit}
-        className="flex flex-row mb-2 p-2 w-full"
-        placeholder={t("pages.gallery.tagInputPlaceholder")}
-        blurOnSubmit
+        popularTags={popularTags}
+        onTagClick={onTagClick}
       />
-      <div className="flex flex-row justify-end gap-2 pr-2">
-        {hasRandomSort && (
-          <FiShuffle
-            className="inline text-xl cursor-pointer hover:text-accent-subtle"
-            title={t("pages.gallery.reseed")}
-            onClick={reseedGallery}
+
+      {collectionSearchParam && collection && (
+        <div className="flex flex-row gap-2 px-3 shrink-0">
+          <CollectionBadge
+            collection={collection}
+            onDelete={() => removeSearchParam("collection")}
           />
-        )}
-        {query && (
-          <MdBookmarkAdd
-            className="inline text-xl cursor-pointer hover:text-accent-subtle"
-            title={t("collections.saveAsCollection")}
-            onClick={() => setCollectionModalOpen(true)}
-          />
-        )}
-        <FiGrid
-          className={twMerge(
-            "inline text-xl",
-            layoutType === "grid" && "text-accent-subtle",
-            layoutType === "list" && "cursor-pointer",
-          )}
-          onClick={() => {
-            setLayoutType("grid");
-          }}
+        </div>
+      )}
+
+      {editMode && (
+        <EditModePanel
+          editDocuments={editDocuments}
+          entirePageSelected={entirePageSelected}
+          onTogglePage={onTogglePage}
+          onClearSelection={() => setEditDocuments(new Set())}
+          onOpenBulkEdit={() => setEditDocumentsModalOpen(true)}
+          onCancel={() => setEditMode(false)}
         />
-        <FiList
-          className={twMerge(
-            "inline text-xl",
-            layoutType === "list" && "text-accent-subtle",
-            layoutType === "grid" && "cursor-pointer",
-          )}
-          onClick={() => {
-            setLayoutType("list");
-          }}
-        />
-      </div>
-      <div className="flex flex-row justify-center">
-        <Pagination
-          total={total}
-          limit={limit}
-          currentPage={page}
-          onPageChange={setPage}
-        />
-      </div>
-      <div
-        className="p-2 max-w-full max-h-[calc(100%-210px)] mt-8 flex-grow overflow-auto"
-        style={{
-          width:
-            layoutType === "grid" && !isMobile
-              ? `${thumbnailContainerWidth}px`
-              : "auto",
-        }}
-      >
-        <ThumbnailContainer
-          alignment="start"
-          thumbnails={data?.items || []}
-          onClick={(id) => {
-            setPreviewDocument(id);
-          }}
-          layout={layoutType}
-          size="small"
-        />
-      </div>
-      <span className="p-2 w-full text-left">
-        {t("pagination.range", {
-          start: offset + 1,
-          end: Math.min(offset + limit, total),
-          total: total,
-        })}
-      </span>
-      <Pagination
+      )}
+
+      <GalleryControls
+        hasRandomSort={hasRandomSort}
+        onReseed={reseedGallery}
+        hasQuery={!!query}
+        onSaveCollection={() => setCollectionModalOpen(true)}
+        layoutType={layoutType}
+        onSetLayoutType={setLayoutType}
+        sortMode={sortMode}
+        onSetSortMode={onSetSortMode}
+        typeFilter={typeFilter}
+        onSetTypeFilter={onSetTypeFilter}
+        total={total}
+        pageSize={data?.items.length ?? 0}
+      />
+
+      <PaginatedThumbnailContainer
+        items={data?.items ?? []}
         total={total}
         limit={limit}
-        currentPage={page}
+        offset={offset}
+        page={page}
         onPageChange={setPage}
-        className="mb-4"
+        layoutType={layoutType}
+        selectedDocuments={editDocuments}
+        onThumbnailClick={onThumbnailClick}
+        onSelect={editMode ? onSelectDocument : undefined}
+        popularTags={popularTags}
       />
+
       <CollectionFormModal
         isOpen={collectionModalOpen}
         onClose={() => setCollectionModalOpen(false)}
@@ -309,19 +333,36 @@ export const GalleryPage = () => {
         }}
         initialFilterExpression={query}
       />
+      <BulkEditDocumentsModal
+        documentIds={Array.from(editDocuments)}
+        isOpen={editDocumentsModalOpen}
+        onAbort={() => setEditDocumentsModalOpen(false)}
+        onConfirm={() => {
+          setEditDocumentsModalOpen(false);
+          setEditDocuments(new Set());
+          setEditMode(false);
+        }}
+      />
       {previewDocumentSearchParam && (
-        <PreviewContainer
-          totalDocuments={total}
-          previewImageId={previewDocumentSearchParam}
-          onThumbnailClicked={(id) => {
-            setPreviewDocument(id);
-          }}
-          nextPreviewImage={nextPreviewImage}
-          previousPreviewImage={prevPreviewImage}
-          previewImageIndex={previewDocument?.queryIndex ?? lastKnownPreviewIndexRef.current}
-          queryParams={{ limit, offset, query, seed: hasRandomSort ? seed : undefined }}
-          onClose={() => setPreviewDocument(undefined)}
-        />
+        <div className="fixed top-0 left-0 w-screen h-screen bg-black z-100">
+          <PreviewContainer
+            totalDocuments={total}
+            previewImageId={previewDocumentSearchParam}
+            onThumbnailClicked={(id) => setPreviewDocument(id)}
+            nextPreviewImage={nextPreviewImage}
+            previousPreviewImage={prevPreviewImage}
+            previewImageIndex={
+              previewDocument?.queryIndex ?? lastKnownPreviewIndexRef.current
+            }
+            queryParams={{
+              limit,
+              offset,
+              query: finalQuery,
+              seed: hasRandomSort ? seed : undefined,
+            }}
+            onClose={() => setPreviewDocument(undefined)}
+          />
+        </div>
       )}
     </div>
   );

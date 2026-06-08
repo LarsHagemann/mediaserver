@@ -6,19 +6,6 @@ import { twMerge } from "tailwind-merge";
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { Duration } from "luxon";
 
-const Key = ({ translationKey }: { translationKey: string }) => {
-  const { t } = useTranslation();
-  return (
-    <div className="col-span-2 sm:col-span-1 font-bold">
-      {t(translationKey)}
-    </div>
-  );
-};
-
-const Value = ({ children }: { children: React.ReactNode }) => {
-  return <div className="col-span-2 sm:col-span-3">{children}</div>;
-};
-
 const percentageToColor = (percentage: number) => {
   if (percentage < 0.7) return "bg-success-subtle";
   if (percentage < 0.9) return "bg-warning";
@@ -43,13 +30,13 @@ const StorageProgressBar = ({
         value={used}
         color={percentageToColor(used / total)}
       />
-      <div className="flex flex-col sm:flex-row justify-between mt-1">
-        <div>
+      <div className="flex flex-col sm:flex-row justify-between mt-1 text-sm text-text-secondary">
+        <span>
           {bytesToHumanReadable(used)} / {bytesToHumanReadable(total)}
-        </div>
-        <div>
+        </span>
+        <span>
           {t("state.free")}: {bytesToHumanReadable(free)}
-        </div>
+        </span>
       </div>
     </>
   );
@@ -104,65 +91,105 @@ export const StatePage = () => {
     [uptimeSeconds],
   );
 
+  const isHealthy = health?.status === "healthy";
+
   return (
-    <div className="grid p-8 gap-4 grid-cols-4">
-      <Key translationKey="state.serviceState" />
-      <Value>
-        {t("state." + (health?.status ?? "unhealthy"))}
-        <div
-          className={twMerge(
-            "inline-block w-4 rounded-full ml-2 h-4 translate-y-0.5",
-            health?.status === "healthy" ? "bg-success" : "bg-danger-strong",
-          )}
-        />
-      </Value>
-      <Key translationKey="state.version" />
-      <Value>{backendState?.version ?? "N/A"} ({backendState?.commit ?? "N/A"})</Value>
-      <Key translationKey="state.uptime" />
-      <Value>{uptime.toFormat("hhhh:mm:ss")}</Value>
-      <Key translationKey="state.totalDocuments" />
-      <Value>{numberOfDocuments}</Value>
-      <Key translationKey="state.storage" />
-      <Value>
-        {backendState ? (
-          <StorageProgressBar
-            used={totalStorageUsed}
-            total={totalStorage}
-            free={freeStorage}
-          />
-        ) : (
-          "N/A"
-        )}
-      </Value>
-      <hr className="col-span-4 mt-4 mb-4" />
-      {backendState?.stores.map((store, index) => (
-        <Fragment key={index}>
-          <Key translationKey={store.basePath} />
-          <Value>
-            <StorageProgressBar
-              used={store.used}
-              total={store.total}
-              free={store.free}
+    <div className="p-6 max-w-4xl mx-auto flex flex-col gap-6">
+      {/* Stat cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="p-4 border border-border rounded-lg bg-surface-2 flex flex-col gap-1">
+          <p className="text-xs text-text-secondary uppercase tracking-wide">
+            {t("state.serviceState")}
+          </p>
+          <div className="flex items-center gap-2 mt-1">
+            <div
+              className={twMerge(
+                "w-2.5 h-2.5 rounded-full flex-shrink-0",
+                isHealthy ? "bg-success" : "bg-danger-strong",
+              )}
             />
-          </Value>
-        </Fragment>
-      ))}
-      <hr className="col-span-4 mt-4 mb-4" />
-      <h3 className="col-span-4 text-lg font-bold">
-        {t("state.backendPlugins")}
-      </h3>
-      {backendState?.plugins.map((plugin, index) => (
-        <Fragment key={index}>
-          <Key translationKey={plugin.name} />
-          <Value>
-            <span className="font-semibold">{plugin.description}</span>
-            <div>
-              {t(`settings.plugin.trusted`)}:{" "}
-              {t("settings.plugin." + (plugin.trusted ? "yes" : "no"))}
-            </div>
-          </Value>
-        </Fragment>
-      ))}
+            <span className="text-text-primary font-semibold text-sm">
+              {t("state." + (health?.status ?? "unhealthy"))}
+            </span>
+          </div>
+        </div>
+
+        <div className="p-4 border border-border rounded-lg bg-surface-2 flex flex-col gap-1">
+          <p className="text-xs text-text-secondary uppercase tracking-wide">
+            {t("state.version")}
+          </p>
+          <p className="text-text-primary font-mono text-sm mt-1">
+            {backendState?.version ?? "N/A"}
+          </p>
+          <p className="text-text-faint font-mono text-xs truncate">
+            {backendState?.commit ?? ""}
+          </p>
+        </div>
+
+        <div className="p-4 border border-border rounded-lg bg-surface-2 flex flex-col gap-1">
+          <p className="text-xs text-text-secondary uppercase tracking-wide">
+            {t("state.uptime")}
+          </p>
+          <p className="text-text-primary font-mono text-sm mt-1">
+            {uptime.toFormat("hhhh:mm:ss")}
+          </p>
+        </div>
+
+        <div className="p-4 border border-border rounded-lg bg-surface-2 flex flex-col gap-1">
+          <p className="text-xs text-text-secondary uppercase tracking-wide">
+            {t("state.totalDocuments")}
+          </p>
+          <p className="text-text-primary font-semibold text-xl mt-1">
+            {numberOfDocuments.toLocaleString()}
+          </p>
+        </div>
+      </div>
+
+      {/* Storage */}
+      <div className="border border-border rounded-lg overflow-hidden">
+        <div className="px-4 py-3 border-b border-border bg-surface-2">
+          <h3 className="font-semibold text-text-primary text-sm">
+            {t("state.storage")}
+          </h3>
+        </div>
+        <div className="p-4 flex flex-col gap-5">
+          {backendState ? (
+            <>
+              {backendState.stores.map((store, index) => (
+                <Fragment key={index}>
+                  <div>
+                    <p className="text-xs font-mono text-text-secondary mb-2">
+                      {store.basePath}
+                    </p>
+                    <StorageProgressBar
+                      used={store.used}
+                      total={store.total}
+                      free={store.free}
+                    />
+                  </div>
+                </Fragment>
+              ))}
+              {backendState.stores.length > 1 && (
+                <>
+                  <hr className="border-border" />
+                  <div>
+                    <p className="text-xs text-text-secondary mb-2 uppercase tracking-wide">
+                      {t("state.totalStorage", "Total")}
+                    </p>
+                    <StorageProgressBar
+                      used={totalStorageUsed}
+                      total={totalStorage}
+                      free={freeStorage}
+                    />
+                  </div>
+                </>
+              )}
+            </>
+          ) : (
+            <p className="text-text-secondary text-sm">N/A</p>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
