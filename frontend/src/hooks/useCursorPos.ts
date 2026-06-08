@@ -16,20 +16,16 @@ export const useCursorPos = (
   );
 
   useEffect(() => {
-    if (ref.current) {
-      const input = ref.current;
-      const onSelectionChange = () => {
-        if (document.activeElement === input) {
-          setCursorPos(input.selectionStart ?? 0);
-        }
-      };
+    const onSelectionChange = () => {
+      if (ref.current && document.activeElement === ref.current) {
+        setCursorPos(ref.current.selectionStart ?? 0);
+      }
+    };
 
-      input.addEventListener("selectionchange", onSelectionChange);
-
-      return () => {
-        input.removeEventListener("selectionchange", onSelectionChange);
-      };
-    }
+    document.addEventListener("selectionchange", onSelectionChange);
+    return () => {
+      document.removeEventListener("selectionchange", onSelectionChange);
+    };
   }, [ref]);
 
   return { cursorPos, setCursorPos: setCursorPosSafe };

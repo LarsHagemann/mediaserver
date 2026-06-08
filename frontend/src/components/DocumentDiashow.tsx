@@ -12,6 +12,8 @@ type Props = {
   previousDocument: () => void;
   defaultTimeout?: number;
   mimeType?: string;
+  toggleInfoPanel: () => void;
+  showInfoPanel: boolean;
 };
 
 export const DocumentDiashow = ({
@@ -20,6 +22,8 @@ export const DocumentDiashow = ({
   previousDocument,
   defaultTimeout = 3000,
   mimeType,
+  toggleInfoPanel,
+  showInfoPanel,
 }: Props) => {
   const pluginFromProp = useDocumentPlugin(mimeType);
   const isStream = pluginFromProp.fetchMode === "stream";
@@ -71,6 +75,8 @@ export const DocumentDiashow = ({
         setTimeoutValue={setTimeoutValue}
         timeout={timeout}
         paused={paused}
+        toggleInfoPanel={toggleInfoPanel}
+        showInfoPanel={showInfoPanel}
       />
       <plugin.Diashow
         objectUrl={objectUrl}

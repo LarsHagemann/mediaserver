@@ -31,11 +31,14 @@ export const CollectionCard = ({
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const { data } = enhancedApi.useListDocumentsQuery({
-    limit: 1,
-    offset: 0,
-    query: collection.filterExpression,
-  });
+  const { data } = enhancedApi.useListDocumentsQuery(
+    {
+      limit: 1,
+      offset: 0,
+      query: collection.filterExpression,
+    },
+    { refetchOnFocus: true, refetchOnReconnect: true },
+  );
 
   const docCount = data?.total ?? 0;
 

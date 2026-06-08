@@ -34,14 +34,17 @@ export const PreviewContainer = ({
   previousPreviewImage,
   onClose,
 }: Props) => {
-  const { data } = enhancedApi.useListDocumentsQuery({
-    ...queryParams,
-    limit: 5,
-    offset: Math.min(
-      Math.max(previewImageIndex - 2, 0),
-      Math.max(totalDocuments - 5, 0),
-    ),
-  });
+  const { data } = enhancedApi.useListDocumentsQuery(
+    {
+      ...queryParams,
+      limit: 5,
+      offset: Math.min(
+        Math.max(previewImageIndex - 2, 0),
+        Math.max(totalDocuments - 5, 0),
+      ),
+    },
+    { refetchOnFocus: true, refetchOnReconnect: true },
+  );
 
   const [diashowMode, setDiashowMode] = useState(false);
   const [showInfoPanel, setShowInfoPanel] = useState(true);
@@ -119,12 +122,14 @@ export const PreviewContainer = ({
             document.body.removeChild(link);
           }}
           toggleDiashow={() => setDiashowMode((m) => !m)}
+          toggleInfoPanel={() => setShowInfoPanel((m) => !m)}
+          showInfoPanel={showInfoPanel}
           onClose={onCloseImpl}
         />
       </div>
 
       {/* Main area */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden relative">
         {/* Preview */}
         <div className="flex-1 relative overflow-hidden bg-bg-base">
           {diashowMode ? (
@@ -133,6 +138,8 @@ export const PreviewContainer = ({
               nextDocument={nextPreviewImage}
               previousDocument={previousPreviewImage}
               mimeType={mimeType}
+              toggleInfoPanel={() => setShowInfoPanel((m) => !m)}
+              showInfoPanel={showInfoPanel}
             />
           ) : (
             <DocumentPreview
@@ -144,10 +151,20 @@ export const PreviewContainer = ({
           )}
         </div>
 
-        {/* Info panel — toggled with "i" key; animates width in both modes */}
+        {/* Mobile backdrop — tapping the image area closes the info panel */}
+        {showInfoPanel && (
+          <div
+            className="md:hidden absolute inset-0 z-[9]"
+            onClick={() => setShowInfoPanel(false)}
+          />
+        )}
+
+        {/* Info panel — on mobile: absolute overlay; on desktop: flex sibling with width animation */}
         <div
           className={
-            "flex-shrink-0 h-full overflow-hidden transition-[width] duration-300 ease-in-out " +
+            "overflow-hidden transition-[width] duration-300 ease-in-out " +
+            "absolute top-0 right-0 h-full z-10 " +
+            "md:relative md:flex-shrink-0 md:z-auto " +
             (showInfoPanel ? "w-80 xl:w-96" : "w-0")
           }
         >

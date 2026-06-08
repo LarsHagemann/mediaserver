@@ -1,21 +1,31 @@
 import { Outlet } from "react-router";
 import { SideBar } from "../sections/SideBar";
 import { useIdentity } from "../hooks/usePermission";
+import { api } from "../app/api";
 import { LoginPage } from "./LoginPage";
 import { PendingApprovalPage } from "./PendingApprovalPage";
 
 export const Layout = () => {
-  const { data: identity, isLoading } = useIdentity();
+  const { data: identity, isLoading: identityLoading } = useIdentity();
+  const { data: config, isLoading: configLoading } = api.useGetAppConfigQuery();
 
-  if (isLoading) return null;
+  if (identityLoading || configLoading || !identity || !config) return null;
 
-  const permissions = identity?.permissions ?? [];
+  const permissions = identity.permissions ?? [];
 
-  if (!identity?.isAuthenticated && permissions.length === 0) {
+  if (
+    config.idpEnabled &&
+    !identity.isAuthenticated &&
+    permissions.length === 0
+  ) {
     return <LoginPage />;
   }
 
-  if (identity?.isAuthenticated && permissions.length === 0) {
+  if (
+    config.idpEnabled &&
+    identity.isAuthenticated &&
+    permissions.length === 0
+  ) {
     return <PendingApprovalPage />;
   }
 

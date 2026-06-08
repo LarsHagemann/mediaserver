@@ -33,8 +33,12 @@ export const Dropdown = <T,>({
         event.preventDefault();
         event.stopPropagation();
 
-        setHighlightedIndex((prev) => Math.max(prev - 1, 0));
-      } else if (event.key === "Enter" && highlightedIndex >= 0) {
+        setHighlightedIndex((prev) => Math.max(prev - 1, -1));
+      } else if (
+        event.key === "Enter" &&
+        !event.ctrlKey &&
+        highlightedIndex >= 0
+      ) {
         event.preventDefault();
         event.stopPropagation();
 
@@ -48,10 +52,10 @@ export const Dropdown = <T,>({
   );
 
   useEffect(() => {
-    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown, true);
 
     return () => {
-      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keydown", handleKeyDown, true);
     };
   }, [handleKeyDown]);
 

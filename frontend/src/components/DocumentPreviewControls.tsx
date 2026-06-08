@@ -2,7 +2,7 @@ import type React from "react";
 import { useState } from "react";
 import { FaCaretLeft, FaCaretRight, FaDownload, FaFile } from "react-icons/fa";
 import { LuPresentation } from "react-icons/lu";
-import { MdClose, MdEdit } from "react-icons/md";
+import { MdClose, MdEdit, MdInfoOutline } from "react-icons/md";
 import { updateDocumentFriendlyName } from "../app/api";
 import { enhancedApi } from "../app/enhancedApi";
 import { useAppDispatch } from "../app/store";
@@ -17,6 +17,8 @@ type Props = {
   previousDocument: () => void;
   downloadDocument: () => void;
   toggleDiashow: () => void;
+  toggleInfoPanel: () => void;
+  showInfoPanel: boolean;
   onClose: () => void;
 };
 
@@ -30,6 +32,8 @@ export const DocumentPreviewControls: React.FC<Props> = ({
   previousDocument,
   downloadDocument,
   toggleDiashow,
+  toggleInfoPanel,
+  showInfoPanel,
   onClose,
 }) => {
   const ext = mimeType?.split("/")[1];
@@ -129,6 +133,13 @@ export const DocumentPreviewControls: React.FC<Props> = ({
           className="p-2 rounded-md hover:bg-surface-2 text-text-muted hover:text-text-primary transition-colors"
         >
           <LuPresentation size="1rem" />
+        </button>
+        <button
+          onClick={toggleInfoPanel}
+          title="Info"
+          className={`md:hidden p-2 rounded-md hover:bg-surface-2 transition-colors ${showInfoPanel ? "text-accent-subtle" : "text-text-muted hover:text-text-primary"}`}
+        >
+          <MdInfoOutline size="1.25rem" />
         </button>
         <button
           onClick={onClose}

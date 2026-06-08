@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter, Navigate } from "react-router";
 import { Layout } from "../pages/Layout";
 import { GalleryPage } from "../pages/GalleryPage";
 import { UploadPage } from "../pages/UploadPage";
@@ -8,7 +8,6 @@ import { StatePage } from "../pages/StatePage";
 import { SettingsPage } from "../pages/SettingsPage";
 import { CollectionsPage } from "../pages/CollectionsPage";
 import { LoginPage } from "../pages/LoginPage";
-import { AccountPage } from "../pages/AccountPage";
 import { PermissionGuard } from "../components/PermissionGuard";
 
 export const router = createBrowserRouter([
@@ -26,7 +25,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "account",
-        Component: AccountPage,
+        element: <Navigate to="/settings" replace />,
       },
       {
         path: "gallery",

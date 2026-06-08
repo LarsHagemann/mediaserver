@@ -4,7 +4,7 @@ import { api, type AdminUser } from "../app/api";
 import { Tabs } from "../components/Tabs";
 import { RolesEditor2 } from "./RolesEditor2";
 
-const UsersTab = () => {
+export const UsersTab = () => {
   const { t } = useTranslation();
   const { data: usersData, isLoading: usersLoading } = api.useListUsersQuery();
   const { data: rolesData, isLoading: rolesLoading } = api.useListRolesQuery();
@@ -58,7 +58,7 @@ const UsersTab = () => {
   );
 };
 
-const ConfigTab = () => {
+export const ConfigTab = () => {
   const { t } = useTranslation();
   const { data: config, isLoading: configLoading } =
     api.useGetAuthConfigQuery();
