@@ -67,14 +67,18 @@ export const videoPlugin: FileTypePlugin = {
   thumbnailCreator: async ({ path, uuidv4 }) => {
     const process = await new ffmpeg(path);
     const filename = uuidv4();
-    await process.fnExtractFrameToJPG("/tmp", {
-      number: 1,
-      every_n_percentage: 50,
-      file_name: filename + ".jpg",
-      size: "400x400",
-    });
+    // Grab a single frame, scale into a 400x400 box with black padding, and
+    // convert to full-range YUV (yuvj420p). The mjpeg encoder in ffmpeg 8.0
+    // refuses limited-range ("tv") YUV input, which is what most videos use.
+    process.addFilterComplex(
+      "scale=400:400:force_original_aspect_ratio=decrease," +
+        "pad=400:400:(ow-iw)/2:(oh-ih)/2:black," +
+        "format=yuvj420p",
+    );
+    process.addCommand("-frames:v", "1");
+    await process.save("/tmp/" + filename + ".jpg");
 
-    return { path: "/tmp/" + filename + "_1.jpg" };
+    return { path: "/tmp/" + filename + ".jpg" };
   },
   initialTags: async () => {
     return [];
