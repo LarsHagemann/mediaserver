@@ -47,7 +47,7 @@ export const PreviewContainer = ({
   );
 
   const [diashowMode, setDiashowMode] = useState(false);
-  const [showInfoPanel, setShowInfoPanel] = useState(true);
+  const [showInfoPanel, setShowInfoPanel] = useState(false);
   const [wasFullscreen, setWasFullscreen] = useState(false);
 
   const { data: identity } = api.useGetMeQuery();

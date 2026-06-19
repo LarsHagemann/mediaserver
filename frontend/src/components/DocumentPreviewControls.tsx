@@ -137,7 +137,7 @@ export const DocumentPreviewControls: React.FC<Props> = ({
         <button
           onClick={toggleInfoPanel}
           title="Info"
-          className={`md:hidden p-2 rounded-md hover:bg-surface-2 transition-colors ${showInfoPanel ? "text-accent-subtle" : "text-text-muted hover:text-text-primary"}`}
+          className={`p-2 rounded-md hover:bg-surface-2 transition-colors ${showInfoPanel ? "text-accent-subtle" : "text-text-muted hover:text-text-primary"}`}
         >
           <MdInfoOutline size="1.25rem" />
         </button>
