@@ -1,5 +1,4 @@
 import { createBrowserRouter, Navigate } from "react-router";
-import React from "react";
 import { Layout } from "../pages/Layout";
 import { GalleryPage } from "../pages/GalleryPage";
 import { UploadPage } from "../pages/UploadPage";
@@ -11,12 +10,7 @@ import { CollectionsPage } from "../pages/CollectionsPage";
 import { LoginPage } from "../pages/LoginPage";
 import { PermissionGuard } from "../components/PermissionGuard";
 import type { PluginRoute } from "../plugins/plugin";
-import { pluginApi } from "../plugins/pluginApi";
-
-function PluginRouteWrapper({ route }: { route: PluginRoute }) {
-  const Component = route.Component;
-  return <Component React={React} api={pluginApi} />;
-}
+import { PluginRouteWrapper } from "../plugins/PluginRouteWrapper";
 
 export function createAppRouter(pluginRoutes: PluginRoute[] = []) {
   return createBrowserRouter([

@@ -11,6 +11,7 @@ const plugin: FileTypePlugin = {
 
     return { path: tmpPath };
   },
+  initialTags: async () => [],
   description: "Plain text file support",
 };
 

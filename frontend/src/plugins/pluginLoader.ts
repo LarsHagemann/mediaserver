@@ -75,7 +75,8 @@ function isFrontendPlugin(obj: unknown): obj is FrontendPlugin {
 
 async function importPluginModule(url: string): Promise<{ default: unknown }> {
   const response = await fetch(url);
-  if (!response.ok) throw new Error(`Failed to fetch plugin: ${response.status}`);
+  if (!response.ok)
+    throw new Error(`Failed to fetch plugin: ${response.status}`);
   const code = await response.text();
   const blob = new Blob([code], { type: "application/javascript" });
   const blobUrl = URL.createObjectURL(blob);

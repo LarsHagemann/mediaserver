@@ -18,6 +18,7 @@ const frontendTsConfig = {
     moduleDetection: "force",
     noEmit: false,
     outDir: "dist",
+    rootDir: "src",
 
     /* Linting */
     strict: true,
@@ -38,6 +39,7 @@ const backendTsConfig = {
     module: "nodenext",
     skipLibCheck: true,
     outDir: "dist",
+    rootDir: "src",
     moduleResolution: "nodenext",
 
     /* Linting */
@@ -80,6 +82,7 @@ const themeTsConfig = {
     moduleDetection: "force",
     noEmit: false,
     outDir: "dist",
+    rootDir: "src",
     strict: true,
     noUnusedLocals: true,
     noUnusedParameters: true,
@@ -133,11 +136,11 @@ const backendSkeleton = `
 import { FileTypePlugin } from "@lars_hagemann/mediaserver-backend-plugin-types";
 
 export const plugin: FileTypePlugin = {
-  matcher: (file) => /* Your implementation here */ false,
-  thumbnailCreator: async (context) => {
+  matcher: (_file) => /* Your implementation here */ false,
+  thumbnailCreator: async (_context) => {
     throw new Error("Not implemented");
   },
-  initialTags: async (path) => {
+  initialTags: async (_path) => {
     return [];
   },
   description: "Your plugin description here",
@@ -250,6 +253,18 @@ const questionOrDefault = async (
   return answer.trim() === "" ? defaultValue : answer.trim();
 };
 
+// Allow the prompts to be answered non-interactively via environment
+// variables (used by CI to scaffold a plugin without a TTY). When the
+// variable is unset, fall back to the interactive prompt.
+const envOrPrompt = async (
+  envVar: string,
+  ask: () => Promise<string | undefined>
+): Promise<string | undefined> => {
+  const value = process.env[envVar];
+  if (value !== undefined && value.trim() !== "") return value.trim();
+  return ask();
+};
+
 const validateYesNo = (input: string | undefined, defaultValue?: boolean): boolean => {
   if (!input) return defaultValue || false;
   const trimmed = input.trim().toLowerCase();
@@ -278,19 +293,18 @@ const doExec = (command: string): Promise<string> => {
 }
 
 async function main() {
-  const folderPath = await questionOrDefault(
-    "Enter the plugin folder path",
-    path.resolve(".")
+  const folderPath = await envOrPrompt("CREATE_PLUGIN_DIR", () =>
+    questionOrDefault("Enter the plugin folder path", path.resolve("."))
   );
-  const pluginName = await questionOrDefault(
-    "Enter the plugin name",
-    "my-plugin"
+  const pluginName = await envOrPrompt("CREATE_PLUGIN_NAME", () =>
+    questionOrDefault("Enter the plugin name", "my-plugin")
   );
-  const authorName = await questionOrDefault(
-    "Enter the author name",
-    "Your Name"
+  const authorName = await envOrPrompt("CREATE_PLUGIN_AUTHOR", () =>
+    questionOrDefault("Enter the author name", "Your Name")
   );
-  const initGitString = await questionOrDefault("Initialize git? (Yes/no)");
+  const initGitString = await envOrPrompt("CREATE_PLUGIN_INIT_GIT", () =>
+    questionOrDefault("Initialize git? (Yes/no)")
+  );
   const initGit = validateYesNo(initGitString, true);
 
   console.log("\nPlugin Configuration:");
@@ -299,7 +313,9 @@ async function main() {
   console.log(`Author Name: ${authorName}`);
   console.log(`Initialize Git: ${initGit ? "Yes" : "No"}`);
 
-  const validateString = await questionOrDefault("Create plugin? (Yes/no)");
+  const validateString = await envOrPrompt("CREATE_PLUGIN_CONFIRM", () =>
+    questionOrDefault("Create plugin? (Yes/no)")
+  );
   const validate = validateYesNo(validateString, true);
 
   rl.close();

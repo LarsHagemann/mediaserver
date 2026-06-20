@@ -118,12 +118,10 @@ export const SideBar = () => {
   const username = getUsername(identity?.email, identity?.name);
   const showAuth = identity?.userId !== "system";
 
-  const pluginNavItems = pluginRegistry
-    .getNavItems()
-    .filter((item) => {
-      if (!item.permission) return true;
-      return identity?.permissions?.includes(item.permission);
-    });
+  const pluginNavItems = pluginRegistry.getNavItems().filter((item) => {
+    if (!item.permission) return true;
+    return identity?.permissions?.includes(item.permission);
+  });
 
   const allMobileItems = pluginNavItems;
   const visibleMobileItems = allMobileItems.slice(0, MAX_MOBILE_NAV);
