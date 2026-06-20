@@ -14,6 +14,7 @@ import type { TagService } from "../tags/TagService.js";
 import type { AccessScopeResolver } from "../auth/AccessScopeResolver.js";
 import z from "zod";
 import type { UploadService } from "../files/UploadService.js";
+import { isValidExtension } from "../files/FileService.js";
 import type { ApiTag } from "../tags/TagRepository.js";
 import { requirePermission } from "../auth/requirePermission.js";
 import { SYSTEM_USER_ID } from "../auth/Identity.js";
@@ -67,6 +68,10 @@ documentRouter.post(
 
       if (!extension) {
         throw new ApiError("BadRequest", 400, "Missing extension");
+      }
+
+      if (!isValidExtension(extension)) {
+        throw new ApiError("BadRequest", 400, "Invalid extension");
       }
 
       const ownerId =
@@ -162,12 +167,17 @@ documentRouter.post(
   "/bulk-edit",
   requirePermission("tag:manage"),
   apiHandler<EmptyObject, EmptyObject, BulkEditDocumentsRequest>(
-    async ({ diContainer, body }) => {
+    async ({ diContainer, body, identity }) => {
+      const scopeResolver = diContainer.get<AccessScopeResolver>(
+        services.accessScopeResolver,
+      );
+      const scope = scopeResolver.documentScope(identity);
       const tagService = diContainer.get<TagService>(services.tag);
       await tagService.bulkEditDocuments(
         body.documentIds,
         body.tagsToAdd,
         body.tagsToRemove,
+        scope,
       );
       return {
         status: 204,
@@ -259,6 +269,10 @@ documentRouter.patch(
   }),
 );
 
+// No `requirePermission` middleware here on purpose: deletion is allowed for
+// the document owner OR a holder of `document:delete`, which a single static
+// permission guard cannot express. The authorization check lives in
+// DocumentService.deleteDocument.
 documentRouter.delete(
   "/:id",
   apiHandler<EmptyObject, EmptyObject, EmptyObject, { id: string }>(

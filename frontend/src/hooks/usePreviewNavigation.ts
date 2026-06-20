@@ -46,6 +46,24 @@ export const usePreviewNavigation = ({
     [addSearchParam, removeSearchParam],
   );
 
+  // Navigates the preview to a specific document, also switching to the page
+  // that contains it. This keeps the document present in `idToDocument` so the
+  // next/prev handlers resolve correctly even when the document lives outside
+  // the currently loaded gallery page (e.g. when clicking a thumbnail near a
+  // page boundary in the preview strip).
+  const goToPreviewDocument = useCallback(
+    (document: Document) => {
+      const targetPage = Math.floor(document.queryIndex / limit);
+      setSearchParams((prev) => {
+        const newParams = new URLSearchParams(prev);
+        newParams.set("page", String(targetPage + 1));
+        newParams.set("preview", document.id);
+        return newParams;
+      });
+    },
+    [setSearchParams, limit],
+  );
+
   const nextPreviewImage = useCallback(() => {
     if (previewDocument?.nextId) {
       const nextId = previewDocument.nextId;
@@ -85,6 +103,7 @@ export const usePreviewNavigation = ({
   return {
     previewDocument,
     setPreviewDocument,
+    goToPreviewDocument,
     nextPreviewImage,
     prevPreviewImage,
     lastKnownPreviewIndexRef,

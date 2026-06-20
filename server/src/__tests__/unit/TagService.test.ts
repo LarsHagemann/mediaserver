@@ -86,6 +86,17 @@ describe("TagService", () => {
         "uploaded:01.01.2025",
       );
     });
+
+    it("serializes a value-less tag with an explicit undefined value (normalizeTag shape)", () => {
+      // normalizeTag always includes a `value` key (undefined when absent), so a
+      // plain ApiTag must serialize the same as a Tag instance, not as `key:undefined`.
+      expect(TagService.toString(TagService.normalizeTag("image/png", "meta"))).toBe(
+        "image/png",
+      );
+      expect(TagService.toString({ key: "nature", value: undefined } as ApiTag)).toBe(
+        "nature",
+      );
+    });
   });
 
   describe("addTagToDocument", () => {

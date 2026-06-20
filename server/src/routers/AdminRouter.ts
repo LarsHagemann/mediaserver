@@ -54,9 +54,9 @@ adminRouter.post(
   "/roles/:id/policies",
   requirePermission("admin:roles"),
   apiHandler<EmptyObject, EmptyObject, { action: Action }, { id: string }>(
-    async ({ diContainer, params: { id }, body }) => {
+    async ({ diContainer, params: { id }, body, identity }) => {
       const roleService = diContainer.get<RoleService>(services.roleService);
-      await roleService.addPolicy(id, body.action);
+      await roleService.addPolicy(id, body.action, identity);
       return { status: 204, body: {} };
     },
   ),

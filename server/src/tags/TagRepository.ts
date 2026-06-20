@@ -19,7 +19,10 @@ import type {
   Document,
   DocumentWithTags,
 } from "../documents/DocumentRepository.js";
-import { buildScopeHaving } from "../documents/DocumentRepository.js";
+import {
+  buildScopeClause,
+  buildScopeHaving,
+} from "../documents/DocumentRepository.js";
 import type { TagCache } from "./TagCache.js";
 import type { DocumentAccessScope } from "../auth/AccessScope.js";
 
@@ -118,10 +121,15 @@ export class TagRepository {
       const baseParams = isRandom
         ? { limit, offset, seed: seed ?? null }
         : { limit, offset };
-      const params =
-        scope.type === "accessible-by"
-          ? { ...baseParams, userId: scope.userId }
-          : baseParams;
+      const scopeParams =
+        scope.type === "accessible-by" ? { userId: scope.userId } : {};
+      const params = {
+        ...baseParams,
+        ...scopeParams,
+        // Bind parameters for the dynamic tag-filter values (tag ids and
+        // user-supplied tag keys) collected by the SQL builder.
+        ...(sql.params ?? {}),
+      };
 
       const items = await this.dbService.any(
         paginated(documentRowSchema),
@@ -282,6 +290,7 @@ export class TagRepository {
     if (a.success) {
       await this.dbService.none(buildQueryFromInsertStatement(a.stmt), {
         entityId: documentId,
+        ...(a.params ?? {}),
       });
     } else {
       throw new TagParseError(a.message);
@@ -296,6 +305,7 @@ export class TagRepository {
     if (a.success) {
       await this.dbService.none(buildQueryFromDeleteStatement(a.stmt), {
         entityId: documentId,
+        ...(a.params ?? {}),
       });
     } else {
       throw new TagParseError(a.message);
@@ -341,11 +351,42 @@ export class TagRepository {
     documentIds: string[],
     tagsToAdd: ApiTag[],
     tagsToRemove: ApiTag[],
+    scope: DocumentAccessScope = { type: "all" },
   ): Promise<void> {
-    console.log({ documentIds, tagsToAdd, tagsToRemove });
+    // Restrict the operation to documents the caller is actually allowed to see.
+    // Without this, any holder of `tag:manage` could edit tags on arbitrary
+    // documents (including other users' private documents) by id.
+    const editableIds = await this.filterAccessibleDocumentIds(
+      documentIds,
+      scope,
+    );
+    if (editableIds.length === 0) {
+      return;
+    }
+
     await this.dbService.none(
       `CALL bulk_edit_documents($1::uuid[], $2::jsonb, $3::jsonb)`,
-      [documentIds, JSON.stringify(tagsToAdd), JSON.stringify(tagsToRemove)],
+      [editableIds, JSON.stringify(tagsToAdd), JSON.stringify(tagsToRemove)],
     );
+  }
+
+  private async filterAccessibleDocumentIds(
+    documentIds: string[],
+    scope: DocumentAccessScope,
+  ): Promise<string[]> {
+    if (scope.type === "none") return [];
+    if (scope.type === "all") return documentIds;
+    if (documentIds.length === 0) return [];
+
+    const scopeClause = buildScopeClause(scope);
+    const params: Record<string, unknown> = { ids: documentIds };
+    if (scope.type === "accessible-by") params.userId = scope.userId;
+
+    const rows = await this.dbService.any(
+      z.object({ id: z.string() }),
+      `SELECT id FROM documents WHERE id = ANY($ids)${scopeClause}`,
+      params,
+    );
+    return rows.map((r) => r.id);
   }
 }

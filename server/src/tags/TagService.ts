@@ -34,7 +34,12 @@ export class TagService {
   }
 
   public static toString(tag: Tag | MetaTag) {
-    return `${tag.key}${"value" in tag ? `:${tag.value}` : ""}`;
+    // Note: this is also called with plain ApiTag objects (from normalizeTag),
+    // which always carry a `value` key — `undefined` for value-less tags. Check
+    // the value itself rather than `"value" in tag` so a value-less tag does not
+    // serialize to `key:undefined` and miss the cache.
+    const value = "value" in tag ? tag.value : undefined;
+    return `${tag.key}${value ? `:${value}` : ""}`;
   }
 
   public async listTags(request: ListTagsRequest) {
@@ -97,11 +102,13 @@ export class TagService {
     documentIds: string[],
     tagsToAdd: ApiTag[],
     tagsToRemove: ApiTag[],
+    scope: DocumentAccessScope = { type: "all" },
   ): Promise<void> {
     await this.tagRepository.bulkEditDocuments(
       documentIds,
       tagsToAdd,
       tagsToRemove,
+      scope,
     );
   }
 }

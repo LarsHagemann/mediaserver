@@ -48,7 +48,7 @@
     "vitest": "^4.1.5"
   },
   "dependencies": {
-    "@lars_hagemann/tags": "^1.0.6",
+    "@lars_hagemann/tags": "^1.0.9",
     "bowser": "^2.14.1",
     "check-disk-space": "^3.4.0",
     "cookie-parser": "^1.4.7",

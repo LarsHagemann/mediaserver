@@ -82,9 +82,17 @@ export class CollectionService {
 
   public async updateCollection(
     request: UpdateCollectionRequest,
+    identity: Identity,
     scope: CollectionAccessScope = { type: "all" },
   ): Promise<Collection> {
     const existing = await this.getCollection(request.id, scope);
+    if (!canManageAccess(identity, existing.ownerId)) {
+      throw new ApiError(
+        "Forbidden",
+        403,
+        "Only the collection owner or an admin can modify this collection",
+      );
+    }
     const effectiveRequest =
       existing.type === "static"
         ? { ...request, filterExpression: `collection:${request.id}` }
@@ -108,9 +116,17 @@ export class CollectionService {
 
   public async deleteCollection(
     id: string,
+    identity: Identity,
     scope: CollectionAccessScope = { type: "all" },
   ): Promise<void> {
     const collection = await this.getCollection(id, scope);
+    if (!canManageAccess(identity, collection.ownerId)) {
+      throw new ApiError(
+        "Forbidden",
+        403,
+        "Only the collection owner or an admin can delete this collection",
+      );
+    }
     if (collection.type === "static") {
       await this.tagService.deleteTag("collection", id);
     }
@@ -120,9 +136,17 @@ export class CollectionService {
   public async addMember(
     collectionId: string,
     documentId: string,
+    identity: Identity,
     scope: CollectionAccessScope = { type: "all" },
   ): Promise<void> {
     const collection = await this.getCollection(collectionId, scope);
+    if (!canManageAccess(identity, collection.ownerId)) {
+      throw new ApiError(
+        "Forbidden",
+        403,
+        "Only the collection owner or an admin can modify this collection",
+      );
+    }
     if (collection.type !== "static") {
       throw new ApiError(
         "InvalidOperation",
@@ -140,9 +164,17 @@ export class CollectionService {
   public async removeMember(
     collectionId: string,
     documentId: string,
+    identity: Identity,
     scope: CollectionAccessScope = { type: "all" },
   ): Promise<void> {
     const collection = await this.getCollection(collectionId, scope);
+    if (!canManageAccess(identity, collection.ownerId)) {
+      throw new ApiError(
+        "Forbidden",
+        403,
+        "Only the collection owner or an admin can modify this collection",
+      );
+    }
     if (collection.type !== "static") {
       throw new ApiError(
         "InvalidOperation",

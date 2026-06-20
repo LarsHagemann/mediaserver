@@ -12,7 +12,10 @@ const SYSTEM_USER_ID = "00000000-0000-0000-0000-000000000000";
 const OWNER_USER_ID = "00000000-0000-0000-0000-000000000001";
 const OTHER_USER_ID = "00000000-0000-0000-0000-000000000002";
 
-const makeIdentity = (userId: string | null, permissions: string[] = []): Identity =>
+const makeIdentity = (
+  userId: string | null,
+  permissions: string[] = [],
+): Identity =>
   ({
     userId,
     hasPermission: (p: string) => permissions.includes(p),
@@ -70,7 +73,9 @@ describe("CollectionService", () => {
   describe("getCollection", () => {
     it("returns collection when found", async () => {
       const collection = makeCollection();
-      vi.mocked(collectionRepository.getCollection).mockResolvedValue(collection);
+      vi.mocked(collectionRepository.getCollection).mockResolvedValue(
+        collection,
+      );
 
       const result = await collectionService.getCollection("col-1");
 
@@ -89,7 +94,9 @@ describe("CollectionService", () => {
   describe("createCollection", () => {
     it("creates a dynamic collection with given filter expression", async () => {
       const collection = makeCollection({ type: "dynamic" });
-      vi.mocked(collectionRepository.createCollection).mockResolvedValue(collection);
+      vi.mocked(collectionRepository.createCollection).mockResolvedValue(
+        collection,
+      );
 
       const result = await collectionService.createCollection({
         name: "My Collection",
@@ -110,7 +117,9 @@ describe("CollectionService", () => {
 
     it("overrides filter expression for static collections", async () => {
       const collection = makeCollection({ type: "static" });
-      vi.mocked(collectionRepository.createCollection).mockResolvedValue(collection);
+      vi.mocked(collectionRepository.createCollection).mockResolvedValue(
+        collection,
+      );
 
       await collectionService.createCollection({
         name: "Static",
@@ -139,20 +148,29 @@ describe("CollectionService", () => {
     });
   });
 
+  const ownerIdentity = makeIdentity(OWNER_USER_ID);
+  const adminIdentity = makeIdentity(OTHER_USER_ID, ["admin:users"]);
+  const otherIdentity = makeIdentity(OTHER_USER_ID);
+
   describe("updateCollection", () => {
     it("updates a dynamic collection", async () => {
       const existing = makeCollection({ type: "dynamic" });
       const updated = makeCollection({ name: "Updated" });
       vi.mocked(collectionRepository.getCollection).mockResolvedValue(existing);
-      vi.mocked(collectionRepository.updateCollection).mockResolvedValue(updated);
+      vi.mocked(collectionRepository.updateCollection).mockResolvedValue(
+        updated,
+      );
 
-      const result = await collectionService.updateCollection({
-        id: "col-1",
-        name: "Updated",
-        description: null,
-        filterExpression: "nature",
-        isFavorite: false,
-      });
+      const result = await collectionService.updateCollection(
+        {
+          id: "col-1",
+          name: "Updated",
+          description: null,
+          filterExpression: "nature",
+          isFavorite: false,
+        },
+        ownerIdentity,
+      );
 
       expect(result).toBe(updated);
     });
@@ -160,15 +178,20 @@ describe("CollectionService", () => {
     it("overrides filter expression for static collections on update", async () => {
       const existing = makeCollection({ type: "static" });
       vi.mocked(collectionRepository.getCollection).mockResolvedValue(existing);
-      vi.mocked(collectionRepository.updateCollection).mockResolvedValue(existing);
+      vi.mocked(collectionRepository.updateCollection).mockResolvedValue(
+        existing,
+      );
 
-      await collectionService.updateCollection({
-        id: "col-1",
-        name: "Static",
-        description: null,
-        filterExpression: "should-be-overridden",
-        isFavorite: false,
-      });
+      await collectionService.updateCollection(
+        {
+          id: "col-1",
+          name: "Static",
+          description: null,
+          filterExpression: "should-be-overridden",
+          isFavorite: false,
+        },
+        ownerIdentity,
+      );
 
       expect(collectionRepository.updateCollection).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -183,14 +206,60 @@ describe("CollectionService", () => {
       vi.mocked(collectionRepository.updateCollection).mockResolvedValue(null);
 
       await expect(
-        collectionService.updateCollection({
+        collectionService.updateCollection(
+          {
+            id: "col-1",
+            name: "Updated",
+            description: null,
+            filterExpression: "nature",
+            isFavorite: false,
+          },
+          ownerIdentity,
+        ),
+      ).rejects.toThrow(
+        new ApiError("CollectionNotFound", 404, "Collection col-1 not found"),
+      );
+    });
+
+    it("allows an admin to update a collection they do not own", async () => {
+      const existing = makeCollection({ type: "dynamic" });
+      vi.mocked(collectionRepository.getCollection).mockResolvedValue(existing);
+      vi.mocked(collectionRepository.updateCollection).mockResolvedValue(
+        existing,
+      );
+
+      await collectionService.updateCollection(
+        {
           id: "col-1",
           name: "Updated",
           description: null,
           filterExpression: "nature",
           isFavorite: false,
-        }),
-      ).rejects.toThrow(new ApiError("CollectionNotFound", 404, "Collection col-1 not found"));
+        },
+        adminIdentity,
+      );
+
+      expect(collectionRepository.updateCollection).toHaveBeenCalled();
+    });
+
+    it("rejects a non-owner without admin from updating a collection", async () => {
+      const existing = makeCollection({ type: "dynamic" });
+      vi.mocked(collectionRepository.getCollection).mockResolvedValue(existing);
+
+      await expect(
+        collectionService.updateCollection(
+          {
+            id: "col-1",
+            name: "Hijacked",
+            description: null,
+            filterExpression: "nature",
+            isFavorite: false,
+          },
+          otherIdentity,
+        ),
+      ).rejects.toMatchObject({ name: "Forbidden", status: 403 });
+
+      expect(collectionRepository.updateCollection).not.toHaveBeenCalled();
     });
   });
 
@@ -200,10 +269,12 @@ describe("CollectionService", () => {
         makeCollection({ type: "dynamic" }),
       );
 
-      await collectionService.deleteCollection("col-1");
+      await collectionService.deleteCollection("col-1", ownerIdentity);
 
       expect(tagService.deleteTag).not.toHaveBeenCalled();
-      expect(collectionRepository.deleteCollection).toHaveBeenCalledWith("col-1");
+      expect(collectionRepository.deleteCollection).toHaveBeenCalledWith(
+        "col-1",
+      );
     });
 
     it("deletes tags when deleting a static collection", async () => {
@@ -211,10 +282,24 @@ describe("CollectionService", () => {
         makeCollection({ id: "col-1", type: "static" }),
       );
 
-      await collectionService.deleteCollection("col-1");
+      await collectionService.deleteCollection("col-1", ownerIdentity);
 
       expect(tagService.deleteTag).toHaveBeenCalledWith("collection", "col-1");
-      expect(collectionRepository.deleteCollection).toHaveBeenCalledWith("col-1");
+      expect(collectionRepository.deleteCollection).toHaveBeenCalledWith(
+        "col-1",
+      );
+    });
+
+    it("rejects a non-owner without admin from deleting a collection", async () => {
+      vi.mocked(collectionRepository.getCollection).mockResolvedValue(
+        makeCollection({ type: "dynamic" }),
+      );
+
+      await expect(
+        collectionService.deleteCollection("col-1", otherIdentity),
+      ).rejects.toMatchObject({ name: "Forbidden", status: 403 });
+
+      expect(collectionRepository.deleteCollection).not.toHaveBeenCalled();
     });
   });
 
@@ -224,7 +309,7 @@ describe("CollectionService", () => {
         makeCollection({ id: "col-1", type: "static" }),
       );
 
-      await collectionService.addMember("col-1", "doc-1");
+      await collectionService.addMember("col-1", "doc-1", ownerIdentity);
 
       expect(tagService.addTagToDocument).toHaveBeenCalledWith(
         "doc-1",
@@ -238,9 +323,27 @@ describe("CollectionService", () => {
         makeCollection({ type: "dynamic" }),
       );
 
-      await expect(collectionService.addMember("col-1", "doc-1")).rejects.toThrow(
-        new ApiError("InvalidOperation", 400, "Cannot add members to a dynamic collection"),
+      await expect(
+        collectionService.addMember("col-1", "doc-1", ownerIdentity),
+      ).rejects.toThrow(
+        new ApiError(
+          "InvalidOperation",
+          400,
+          "Cannot add members to a dynamic collection",
+        ),
       );
+    });
+
+    it("rejects a non-owner without admin from adding a member", async () => {
+      vi.mocked(collectionRepository.getCollection).mockResolvedValue(
+        makeCollection({ id: "col-1", type: "static" }),
+      );
+
+      await expect(
+        collectionService.addMember("col-1", "doc-1", otherIdentity),
+      ).rejects.toMatchObject({ name: "Forbidden", status: 403 });
+
+      expect(tagService.addTagToDocument).not.toHaveBeenCalled();
     });
   });
 
@@ -250,7 +353,7 @@ describe("CollectionService", () => {
         makeCollection({ id: "col-1", type: "static" }),
       );
 
-      await collectionService.removeMember("col-1", "doc-1");
+      await collectionService.removeMember("col-1", "doc-1", ownerIdentity);
 
       expect(tagService.removeTagFromDocument).toHaveBeenCalledWith(
         "doc-1",
@@ -263,13 +366,27 @@ describe("CollectionService", () => {
         makeCollection({ type: "dynamic" }),
       );
 
-      await expect(collectionService.removeMember("col-1", "doc-1")).rejects.toThrow(
+      await expect(
+        collectionService.removeMember("col-1", "doc-1", ownerIdentity),
+      ).rejects.toThrow(
         new ApiError(
           "InvalidOperation",
           400,
           "Cannot remove members from a dynamic collection",
         ),
       );
+    });
+
+    it("rejects a non-owner without admin from removing a member", async () => {
+      vi.mocked(collectionRepository.getCollection).mockResolvedValue(
+        makeCollection({ id: "col-1", type: "static" }),
+      );
+
+      await expect(
+        collectionService.removeMember("col-1", "doc-1", otherIdentity),
+      ).rejects.toMatchObject({ name: "Forbidden", status: 403 });
+
+      expect(tagService.removeTagFromDocument).not.toHaveBeenCalled();
     });
   });
 
@@ -283,7 +400,10 @@ describe("CollectionService", () => {
     it("allows owner to get access info", async () => {
       const identity = makeIdentity(OWNER_USER_ID);
 
-      const result = await collectionService.getCollectionAccess("col-1", identity);
+      const result = await collectionService.getCollectionAccess(
+        "col-1",
+        identity,
+      );
 
       expect(result.ownerId).toBe(OWNER_USER_ID);
     });
@@ -291,7 +411,10 @@ describe("CollectionService", () => {
     it("allows admin to get access info", async () => {
       const identity = makeIdentity(OTHER_USER_ID, ["admin:users"]);
 
-      const result = await collectionService.getCollectionAccess("col-1", identity);
+      const result = await collectionService.getCollectionAccess(
+        "col-1",
+        identity,
+      );
 
       expect(result.ownerId).toBe(OWNER_USER_ID);
     });
@@ -329,7 +452,10 @@ describe("CollectionService", () => {
       );
       const identity = makeIdentity(OTHER_USER_ID, ["admin:users"]);
 
-      const result = await collectionService.getCollectionAccess("col-1", identity);
+      const result = await collectionService.getCollectionAccess(
+        "col-1",
+        identity,
+      );
 
       expect(result.ownerId).toBe(SYSTEM_USER_ID);
     });
@@ -342,7 +468,9 @@ describe("CollectionService", () => {
       vi.mocked(collectionRepository.getCollectionAccess).mockResolvedValue(
         makeCollectionAccess(OWNER_USER_ID),
       );
-      vi.mocked(collectionRepository.updateCollectionAccess).mockResolvedValue(undefined);
+      vi.mocked(collectionRepository.updateCollectionAccess).mockResolvedValue(
+        undefined,
+      );
     });
 
     it("allows owner to update access", async () => {
@@ -350,7 +478,10 @@ describe("CollectionService", () => {
 
       await collectionService.updateCollectionAccess("col-1", identity, update);
 
-      expect(collectionRepository.updateCollectionAccess).toHaveBeenCalledWith("col-1", update);
+      expect(collectionRepository.updateCollectionAccess).toHaveBeenCalledWith(
+        "col-1",
+        update,
+      );
     });
 
     it("allows admin to update access", async () => {
@@ -358,7 +489,10 @@ describe("CollectionService", () => {
 
       await collectionService.updateCollectionAccess("col-1", identity, update);
 
-      expect(collectionRepository.updateCollectionAccess).toHaveBeenCalledWith("col-1", update);
+      expect(collectionRepository.updateCollectionAccess).toHaveBeenCalledWith(
+        "col-1",
+        update,
+      );
     });
 
     it("rejects non-owner without admin permission", async () => {
@@ -368,7 +502,9 @@ describe("CollectionService", () => {
         collectionService.updateCollectionAccess("col-1", identity, update),
       ).rejects.toMatchObject({ name: "Forbidden", status: 403 });
 
-      expect(collectionRepository.updateCollectionAccess).not.toHaveBeenCalled();
+      expect(
+        collectionRepository.updateCollectionAccess,
+      ).not.toHaveBeenCalled();
     });
 
     it("rejects null userId (anonymous) from updating access", async () => {
@@ -378,7 +514,9 @@ describe("CollectionService", () => {
         collectionService.updateCollectionAccess("col-1", identity, update),
       ).rejects.toMatchObject({ name: "Forbidden", status: 403 });
 
-      expect(collectionRepository.updateCollectionAccess).not.toHaveBeenCalled();
+      expect(
+        collectionRepository.updateCollectionAccess,
+      ).not.toHaveBeenCalled();
     });
 
     it("rejects regular user from updating system-owned collection access", async () => {
@@ -391,7 +529,9 @@ describe("CollectionService", () => {
         collectionService.updateCollectionAccess("col-1", identity, update),
       ).rejects.toMatchObject({ name: "Forbidden", status: 403 });
 
-      expect(collectionRepository.updateCollectionAccess).not.toHaveBeenCalled();
+      expect(
+        collectionRepository.updateCollectionAccess,
+      ).not.toHaveBeenCalled();
     });
 
     it("allows admin to update system-owned collection access", async () => {
@@ -402,7 +542,10 @@ describe("CollectionService", () => {
 
       await collectionService.updateCollectionAccess("col-1", identity, update);
 
-      expect(collectionRepository.updateCollectionAccess).toHaveBeenCalledWith("col-1", update);
+      expect(collectionRepository.updateCollectionAccess).toHaveBeenCalledWith(
+        "col-1",
+        update,
+      );
     });
   });
 });

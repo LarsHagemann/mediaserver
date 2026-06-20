@@ -31,6 +31,14 @@ const documentStoreConfigSchema = z.object({
 });
 type DocumentStoreConfig = z.infer<typeof documentStoreConfigSchema>;
 
+// File extensions are concatenated directly into on-disk paths
+// (`<uuid>.<extension>`), so they must be a strict alphanumeric token to
+// prevent path traversal and other filesystem surprises.
+const SAFE_EXTENSION = /^[a-zA-Z0-9]{1,12}$/;
+
+export const isValidExtension = (extension: string): boolean =>
+  SAFE_EXTENSION.test(extension);
+
 export class FileService {
   private readonly config: FileServiceConfig;
   private storeConfig?: DocumentStoreConfig;
@@ -100,6 +108,10 @@ export class FileService {
     extension: string,
     size: number,
   ): Promise<MoveDocumentResult> {
+    if (!isValidExtension(extension)) {
+      throw new ApiError("BadRequest", 400, "Invalid file extension");
+    }
+
     const basePath = await this.findBasePathForDocument(source, size);
     const id = uuidv4();
 

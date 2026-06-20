@@ -6,6 +6,7 @@ import type { LoggingService } from "../common/LoggingService.js";
 export class WebSocketService {
   private wss?: WebSocketServer;
   private readonly port: number;
+  private readonly allowedOrigin: string;
 
   private readonly clients: Map<string, WebSocket> = new Map();
 
@@ -14,6 +15,7 @@ export class WebSocketService {
     private readonly logger: LoggingService,
   ) {
     this.port = envService.websocketPort;
+    this.allowedOrigin = envService.corsOrigin;
   }
 
   private generateClientId(): string {
@@ -22,10 +24,19 @@ export class WebSocketService {
 
   public async start(): Promise<void> {
     await new Promise<void>((resolve) => {
-      this.wss = new WebSocketServer({ port: this.port }, () => {
-        this.logger.info(`WebSocket server started on port ${this.port}`);
-        resolve();
-      });
+      this.wss = new WebSocketServer(
+        {
+          port: this.port,
+          // Reject cross-origin browser connections. Non-browser clients (no
+          // Origin header) are allowed since they are not subject to CSRF.
+          verifyClient: (info: { origin?: string }) =>
+            info.origin === undefined || info.origin === this.allowedOrigin,
+        },
+        () => {
+          this.logger.info(`WebSocket server started on port ${this.port}`);
+          resolve();
+        },
+      );
     });
 
     this.wss?.on("connection", (ws) => {

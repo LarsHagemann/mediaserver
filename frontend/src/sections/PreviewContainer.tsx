@@ -1,6 +1,6 @@
 import type { SkipToken } from "@reduxjs/toolkit/query";
 import { enhancedApi } from "../app/enhancedApi";
-import { api } from "../app/api";
+import { api, type Document } from "../app/api";
 import { ThumbnailContainer } from "../components/ThumbnailContainer";
 import { DocumentPreview } from "./DocumentPreview";
 import { useCallback, useEffect, useState } from "react";
@@ -18,7 +18,7 @@ type Props = {
     SkipToken
   >;
   totalDocuments: number;
-  onThumbnailClicked: (id: string) => void;
+  onThumbnailClicked: (document: Document) => void;
   nextPreviewImage: () => void;
   previousPreviewImage: () => void;
   onClose?: () => void;
@@ -47,7 +47,7 @@ export const PreviewContainer = ({
   );
 
   const [diashowMode, setDiashowMode] = useState(false);
-  const [showInfoPanel, setShowInfoPanel] = useState(true);
+  const [showInfoPanel, setShowInfoPanel] = useState(false);
   const [wasFullscreen, setWasFullscreen] = useState(false);
 
   const { data: identity } = api.useGetMeQuery();
@@ -67,6 +67,14 @@ export const PreviewContainer = ({
     if (diashowMode) setDiashowMode(false);
     else onClose?.();
   }, [onClose, diashowMode]);
+
+  const onThumbnailClick = useCallback(
+    (id: string) => {
+      const clicked = data?.items.find((d) => d.id === id);
+      if (clicked) onThumbnailClicked(clicked);
+    },
+    [data, onThumbnailClicked],
+  );
 
   useEffect(() => {
     const keyDownHandler = (event: KeyboardEvent) => {
@@ -182,7 +190,7 @@ export const PreviewContainer = ({
           <ThumbnailContainer
             alignment="center"
             thumbnails={data?.items || []}
-            onClick={onThumbnailClicked}
+            onClick={onThumbnailClick}
             wrap="nowrap"
             highlighted={new Set([previewImageId])}
             size="small"

@@ -97,7 +97,7 @@ export const DocumentDiashowControls = ({
       <IconButton
         onClick={toggleInfoPanel}
         className={twMerge(
-          "md:hidden bg-surface-1 rounded-full p-2 hover:bg-surface-3",
+          "bg-surface-1 rounded-full p-2 hover:bg-surface-3",
           showInfoPanel && "text-accent-subtle",
         )}
       >
