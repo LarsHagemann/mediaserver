@@ -54,6 +54,35 @@ export type RouteContext = {
   api: PluginApi;
 };
 
+/**
+ * The subset of a document that is exposed to plugins rendering into the
+ * document info panel. Plugins use `id` to read/write per-document tags via
+ * `api.fetch` (e.g. `GET /tags/:id`, `POST /tags/:id/add`).
+ */
+export type DocumentInfo = {
+  id: string;
+  mime: string;
+  friendlyName: string;
+  ownerId: string;
+  isPublic: boolean;
+};
+
+export type DocumentInfoContext = {
+  React: typeof React;
+  api: PluginApi;
+  document: DocumentInfo;
+};
+
+/**
+ * Contributes a section to the document info panel. `matcher` decides which
+ * documents the section applies to (by MIME type); `Render` draws the section
+ * and may persist editable values as tags through `context.api`.
+ */
+export type DocumentInfoPlugin = {
+  matcher: (fileType: string) => boolean;
+  Render: React.FC<DocumentInfoContext>;
+};
+
 export type NavItem = {
   id: string;
   path: string;
@@ -76,4 +105,5 @@ export type FrontendPlugin = {
   theme?: ThemePlugin;
   navItems?: NavItem[];
   routes?: PluginRoute[];
+  documentInfo?: DocumentInfoPlugin;
 };
