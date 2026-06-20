@@ -73,9 +73,22 @@ function isFrontendPlugin(obj: unknown): obj is FrontendPlugin {
   );
 }
 
+async function importPluginModule(url: string): Promise<{ default: unknown }> {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`Failed to fetch plugin: ${response.status}`);
+  const code = await response.text();
+  const blob = new Blob([code], { type: "application/javascript" });
+  const blobUrl = URL.createObjectURL(blob);
+  try {
+    return await import(/* @vite-ignore */ blobUrl);
+  } finally {
+    URL.revokeObjectURL(blobUrl);
+  }
+}
+
 async function loadPlugin(plugin: PluginEntry) {
   try {
-    const module = await import(/* @vite-ignore */ plugin.url);
+    const module = await importPluginModule(plugin.url);
     const exported = module.default;
 
     if (isFrontendPlugin(exported)) {

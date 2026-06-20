@@ -10023,3 +10023,32 @@ export type ThemePlugin = {
         background: string;
     };
 };
+export type PluginApi = {
+    baseUrl: string;
+    fetch: (path: string, init?: RequestInit) => Promise<Response>;
+};
+export type RouteContext = {
+    React: typeof React;
+    api: PluginApi;
+};
+export type NavItem = {
+    id: string;
+    path: string;
+    label: string;
+    icon: (icons: ReactIcons) => IconType;
+    permission?: string;
+    priority?: number;
+};
+export type PluginRoute = {
+    path: string;
+    Component: React.FC<RouteContext>;
+};
+export type FrontendPlugin = {
+    id: string;
+    name: string;
+    description?: string;
+    fileType?: FileTypePlugin;
+    theme?: ThemePlugin;
+    navItems?: NavItem[];
+    routes?: PluginRoute[];
+};

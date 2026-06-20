@@ -1,5 +1,10 @@
 {
-  "plugins": [],
+  "plugins": [
+    {
+      "name": "sample-plugin",
+      "url": "/plugins/sample/index.js"
+    }
+  ],
   "themePlugins": [],
   "translations": []
 }

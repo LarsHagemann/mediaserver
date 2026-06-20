@@ -147,23 +147,64 @@ export default plugin;
 `;
 
 const frontendSkeleton = `
-import type { FileTypePlugin } from "@lars_hagemann/mediaserver-frontend-plugin-types";
+import type { FrontendPlugin } from "@lars_hagemann/mediaserver-frontend-plugin-types";
 
-const plugin: FileTypePlugin = {
-  matcher: (fileType) => /* Your implementation here */ false,
-  icon: (ReactIcons) => /* Your implementation here */ ReactIcons.FaFile,
-  Render: (context) => {
-    context.React.useEffect(() => {
-      console.log("This worked!");
-    }, []);
-
-    return context.React.createElement("iframe", {
-      className: "w-full h-full",
-      src: context.objectUrl,
-    });
-  },
-  Diashow: () => null,
+const plugin: FrontendPlugin = {
+  id: "my-plugin",
+  name: "My Plugin",
   description: "Your plugin description here",
+
+  // Optional: Add navigation items to the sidebar
+  // navItems: [
+  //   {
+  //     id: "my-page",
+  //     path: "/my-plugin",
+  //     label: "My Plugin",
+  //     icon: (icons) => icons.FaPlug,
+  //     priority: 10,
+  //   },
+  // ],
+
+  // // Optional: Add custom routes
+  // routes: [
+  //   {
+  //     path: "/my-plugin",
+  //     Component: (context) => {
+  //       const { React, api } = context;
+  //
+  //       return React.createElement(
+  //         "div",
+  //         { className: "p-6" },
+  //         React.createElement(
+  //           "h1",
+  //           { className: "text-2xl font-bold text-text-primary mb-4" },
+  //           "My Plugin Page",
+  //         ),
+  //         React.createElement(
+  //           "p",
+  //           { className: "text-text-secondary" },
+  //           "This page is rendered by your plugin.",
+  //         ),
+  //       );
+  //     },
+  //   },
+  // ],
+
+  // Optional: Add a file type renderer
+  // fileType: {
+  //   matcher: (fileType) => false,
+  //   icon: (icons) => icons.FaFile,
+  //   Render: (context) => context.React.createElement("div", null, "Preview"),
+  //   Diashow: () => null,
+  //   description: "File type renderer",
+  // },
+
+  // Optional: Add a theme
+  // theme: {
+  //   name: "my-theme",
+  //   description: "My custom theme",
+  //   tokens: { "--color-accent": "#ff0000" },
+  // },
 };
 
 export default plugin;
