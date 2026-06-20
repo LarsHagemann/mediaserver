@@ -123,6 +123,7 @@ export const GalleryPage = () => {
   const {
     previewDocument,
     setPreviewDocument,
+    goToPreviewDocument,
     nextPreviewImage,
     prevPreviewImage,
     lastKnownPreviewIndexRef,
@@ -348,7 +349,7 @@ export const GalleryPage = () => {
           <PreviewContainer
             totalDocuments={total}
             previewImageId={previewDocumentSearchParam}
-            onThumbnailClicked={(id) => setPreviewDocument(id)}
+            onThumbnailClicked={goToPreviewDocument}
             nextPreviewImage={nextPreviewImage}
             previousPreviewImage={prevPreviewImage}
             previewImageIndex={
