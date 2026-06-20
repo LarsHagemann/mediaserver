@@ -9,6 +9,8 @@ import type { UserRepository } from "./UserRepository.js";
 import type { RoleRepository } from "./RoleRepository.js";
 import type { RedisClient } from "../redis/RedisClient.js";
 import type { EnvironmentService } from "../common/EnvironmentService.js";
+import type { PermissionVersionService } from "./PermissionVersionService.js";
+import type { Action } from "./Identity.js";
 
 const SESSION_KEY_PREFIX = "session:";
 const ANON_PERMISSIONS_KEY = "auth:anonymous_permissions";
@@ -16,6 +18,14 @@ const ANON_PERMISSIONS_KEY = "auth:anonymous_permissions";
 type CachedSession = {
   userId: string;
   permissions: string[];
+  // The permissions version at which `permissions` was computed. Used to detect
+  // stale caches after a privilege change (see PermissionVersionService).
+  permVersion: number;
+};
+
+type CachedAnonymous = {
+  permissions: Action[];
+  permVersion: number;
 };
 
 export class SessionService {
@@ -25,6 +35,7 @@ export class SessionService {
     private readonly roleRepository: RoleRepository,
     private readonly redis: RedisClient,
     private readonly envService: EnvironmentService,
+    private readonly permissionVersion: PermissionVersionService,
   ) {}
 
   async createSession(
@@ -44,8 +55,9 @@ export class SessionService {
 
     const roleIds = await this.userRepository.getRoleIds(userId);
     const permissions = await this.roleRepository.getPoliciesForRoles(roleIds);
+    const permVersion = await this.permissionVersion.getVersion();
 
-    const cached: CachedSession = { userId, permissions };
+    const cached: CachedSession = { userId, permissions, permVersion };
     await this.redis.setWithTtl(
       `${SESSION_KEY_PREFIX}${sessionId}`,
       JSON.stringify(cached),
@@ -56,10 +68,17 @@ export class SessionService {
   }
 
   async resolveIdentity(sessionId: string): Promise<Identity> {
+    const currentVersion = await this.permissionVersion.getVersion();
+
     const cached = await this.redis.get(`${SESSION_KEY_PREFIX}${sessionId}`);
     if (cached) {
-      const { userId, permissions } = JSON.parse(cached) as CachedSession;
-      return new SessionIdentity(userId, permissions as never);
+      const parsed = JSON.parse(cached) as CachedSession;
+      // Only trust the cache if its permissions are still current. A version
+      // mismatch means a privilege change happened since it was cached, so we
+      // fall through and recompute from the database.
+      if (parsed.permVersion === currentVersion) {
+        return new SessionIdentity(parsed.userId, parsed.permissions as never);
+      }
     }
 
     const session = await this.sessionRepository.findById(sessionId);
@@ -73,7 +92,11 @@ export class SessionService {
       Math.floor((session.expiresAt.getTime() - Date.now()) / 1000),
     );
     if (ttlSeconds > 0) {
-      const toCache: CachedSession = { userId: session.userId, permissions };
+      const toCache: CachedSession = {
+        userId: session.userId,
+        permissions,
+        permVersion: currentVersion,
+      };
       await this.redis.setWithTtl(
         `${SESSION_KEY_PREFIX}${sessionId}`,
         JSON.stringify(toCache),
@@ -85,9 +108,14 @@ export class SessionService {
   }
 
   async resolveAnonymousIdentity(): Promise<Identity> {
+    const currentVersion = await this.permissionVersion.getVersion();
+
     const cachedPerms = await this.redis.get(ANON_PERMISSIONS_KEY);
     if (cachedPerms) {
-      return new AnonymousIdentity(JSON.parse(cachedPerms) as never);
+      const parsed = JSON.parse(cachedPerms) as CachedAnonymous;
+      if (parsed.permVersion === currentVersion) {
+        return new AnonymousIdentity(parsed.permissions);
+      }
     }
 
     const anonymousRoleId =
@@ -96,9 +124,13 @@ export class SessionService {
       ? await this.roleRepository.getPolicies(anonymousRoleId)
       : [];
 
+    const toCache: CachedAnonymous = {
+      permissions,
+      permVersion: currentVersion,
+    };
     await this.redis.setWithTtl(
       ANON_PERMISSIONS_KEY,
-      JSON.stringify(permissions),
+      JSON.stringify(toCache),
       300,
     );
     return new AnonymousIdentity(permissions);
@@ -109,13 +141,5 @@ export class SessionService {
       this.sessionRepository.delete(sessionId),
       this.redis.del(`${SESSION_KEY_PREFIX}${sessionId}`),
     ]);
-  }
-
-  async invalidateUserSessionCache(userId: string): Promise<void> {
-    // Sessions for this user in Redis will naturally expire; no active
-    // invalidation needed unless we maintain a user→sessions index.
-    // For now the DB record is removed, so stale Redis entries are harmless
-    // as long as the DB row is the authoritative check.
-    void userId;
   }
 }

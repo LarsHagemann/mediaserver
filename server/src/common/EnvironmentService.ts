@@ -168,6 +168,26 @@ export class EnvironmentService {
     return this.getNumberEnvVar("SESSION_TTL_SECONDS") ?? 86400;
   }
 
+  /**
+   * Fails fast at startup if the deployment is configured in an insecure way,
+   * e.g. running in production with the placeholder IdP client secret that ships
+   * in the dev compose files.
+   */
+  public assertSecureConfig(): void {
+    if (this.stage !== "production" || !this.idpEnabled) {
+      return;
+    }
+
+    const insecureSecrets = new Set(["", "dein-sicheres-secret-hier"]);
+    if (insecureSecrets.has(this.idpClientSecret)) {
+      throw new InvalidEnvironmentVariableError(
+        "IDP_CLIENT_SECRET",
+        "<placeholder>",
+        "a real, non-default client secret in production",
+      );
+    }
+  }
+
   public get logLevel(): string {
     const level = this.getStringEnvVar("LOG_LEVEL") || "info";
     if (

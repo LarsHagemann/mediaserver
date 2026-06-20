@@ -103,7 +103,6 @@ export class MigrationService {
       }
     });
 
-    console.log(allMigrations);
     return allMigrations;
   }
 

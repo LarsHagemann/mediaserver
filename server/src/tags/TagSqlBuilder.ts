@@ -155,100 +155,122 @@ export type TagSqlBuilderResult<
   | {
       success: true;
       stmt: T;
+      // Named bind parameters collected while building the statement. These MUST
+      // be merged into the values object passed to DbService so that all dynamic
+      // values (tag ids, user-supplied tag keys, ...) are sent as bind
+      // parameters rather than interpolated into the SQL string.
+      params?: Record<string, string | number>;
     };
 
-type CurrentParse = {
+// Per-build state. Kept local to each build() call (rather than on the instance)
+// so that concurrent/interleaved async builds cannot clobber each other's sort
+// settings or bind parameters.
+type BuildContext = {
+  params: Record<string, string | number>;
+  next: number;
   sortBy: "created_at" | "random";
   sortDirection: "asc" | "desc";
 };
 
 export class TagSqlBuilder {
-  private readonly currentParse: CurrentParse;
-
   constructor(
     private readonly builderConfig: TagSqlBuilderConfig,
     private readonly tagCache: TagCache,
-  ) {
-    this.currentParse = {
+  ) {}
+
+  private newContext(): BuildContext {
+    return {
+      params: {},
+      next: 0,
       sortBy: "created_at",
-      sortDirection: "asc",
+      sortDirection: "desc",
     };
   }
 
-  private async parseMetaTag(tag: MetaTag): Promise<string> {
+  /**
+   * Registers a dynamic value as a bind parameter and returns its `$name`
+   * placeholder. The `p`-prefix avoids collisions with the caller-supplied
+   * placeholders ($limit, $offset, $seed, $userId, $entityId).
+   */
+  private addParam(ctx: BuildContext, value: string | number): string {
+    const name = `p${ctx.next++}`;
+    ctx.params[name] = value;
+    return `$${name}`;
+  }
+
+  private async parseMetaTag(tag: MetaTag, ctx: BuildContext): Promise<string> {
     if (tag.key === "sort") {
       switch (tag.value) {
         case "random":
-          this.currentParse.sortBy = "random";
+          ctx.sortBy = "random";
           break;
         case "oldest":
-          this.currentParse.sortBy = "created_at";
-          this.currentParse.sortDirection = "asc";
+          ctx.sortBy = "created_at";
+          ctx.sortDirection = "asc";
           break;
         case "newest":
-          this.currentParse.sortBy = "created_at";
-          this.currentParse.sortDirection = "desc";
+          ctx.sortBy = "created_at";
+          ctx.sortDirection = "desc";
           break;
       }
       return `1=1`;
     }
 
-    return `SUM(CASE WHEN ut.tag_id = '${await this.tagCache.tagToTagId(
-      tag,
-    )}' THEN 1 ELSE 0 END) > 0`;
+    const tagId = await this.tagCache.tagToTagId(tag);
+    return `SUM(CASE WHEN ut.tag_id = ${this.addParam(ctx, tagId)} THEN 1 ELSE 0 END) > 0`;
   }
 
-  private async sqlFilterConditions(filter: Filter): Promise<string> {
+  private async sqlFilterConditions(
+    filter: Filter,
+    ctx: BuildContext,
+  ): Promise<string> {
     if (filter instanceof Tag) {
       try {
-        return `SUM(CASE WHEN ut.tag_id = '${await this.tagCache.tagToTagId(
-          filter,
-        )}' THEN 1 ELSE 0 END) > 0`;
+        const tagId = await this.tagCache.tagToTagId(filter);
+        return `SUM(CASE WHEN ut.tag_id = ${this.addParam(ctx, tagId)} THEN 1 ELSE 0 END) > 0`;
       } catch (err) {
         if (err instanceof Error && err.message.includes("Tag not found")) {
           // This could be the key of a meta tag that is not listed in the tag id cache
-          // For meta tags person:a, person:b etc. and filter 'person' we want to match any key=person and value=<any>
-          return `EXISTS (SELECT * FROM userdata_tags sut INNER JOIN tags ON tags.id = sut.tag_id WHERE tags.key = '${filter.key}' AND sut.userdata_id = u.id)`;
+          // For meta tags person:a, person:b etc. and filter 'person' we want to match any key=person and value=<any>.
+          // filter.key is user-supplied, so it MUST be bound as a parameter.
+          return `EXISTS (SELECT * FROM userdata_tags sut INNER JOIN tags ON tags.id = sut.tag_id WHERE tags.key = ${this.addParam(ctx, filter.key)} AND sut.userdata_id = u.id)`;
         }
         throw err;
       }
     } else if (filter instanceof MetaTag) {
-      return await this.parseMetaTag(filter);
+      return await this.parseMetaTag(filter, ctx);
     } else if (filter instanceof TrueTag) {
       return `1=1`;
     } else if (filter instanceof OrTag) {
       return `(${await this.sqlFilterConditions(
         filter.left,
-      )} OR ${await this.sqlFilterConditions(filter.right)})`;
+        ctx,
+      )} OR ${await this.sqlFilterConditions(filter.right, ctx)})`;
     } else if (filter instanceof AndTag) {
       return `(${await this.sqlFilterConditions(
         filter.left,
-      )} AND ${await this.sqlFilterConditions(filter.right)})`;
+        ctx,
+      )} AND ${await this.sqlFilterConditions(filter.right, ctx)})`;
     } else if (filter instanceof NotTag) {
-      return `NOT (${await this.sqlFilterConditions(filter.inner)})`;
+      return `NOT (${await this.sqlFilterConditions(filter.inner, ctx)})`;
     }
 
     return "1=1";
   }
 
-  private setupParse() {
-    this.currentParse.sortBy = "created_at";
-    this.currentParse.sortDirection = "desc";
-  }
-
   public async buildListFilteredEntitiesQuery(
     filter: Filter,
   ): Promise<TagSqlBuilderResult<SelectStatement, ["$limit", "$offset"]>> {
-    this.setupParse();
+    const ctx = this.newContext();
 
     const idCol = this.builderConfig.userdataTableIdColumn;
     const tableName = this.builderConfig.userdataTableName;
     const staticCols = this.builderConfig.userdataTableColumns;
 
     try {
-      const havingCondition = await this.sqlFilterConditions(filter);
+      const havingCondition = await this.sqlFilterConditions(filter, ctx);
 
-      if (this.currentParse.sortBy === "random") {
+      if (ctx.sortBy === "random") {
         // Use a CTE with a deterministic hash per (row, seed) so that the ORDER BY
         // and all window functions (LAG, LEAD, ROW_NUMBER) share the same ordering
         // across all queries with the same seed (pagination, thumbnail strip, etc.).
@@ -262,6 +284,7 @@ export class TagSqlBuilder {
 
         return {
           success: true,
+          params: ctx.params,
           stmt: {
             with: [{ name: "filtered_rand", body: innerBody }],
             select: [
@@ -278,11 +301,12 @@ export class TagSqlBuilder {
           },
         };
       } else {
-        const sortDir = this.currentParse.sortDirection.toUpperCase();
-        const windowOrderBy = `${this.currentParse.sortBy} ${sortDir}`;
+        const sortDir = ctx.sortDirection.toUpperCase();
+        const windowOrderBy = `${ctx.sortBy} ${sortDir}`;
 
         return {
           success: true,
+          params: ctx.params,
           stmt: {
             select: [
               "COUNT(*) OVER()::int AS __total",
@@ -303,8 +327,8 @@ export class TagSqlBuilder {
             having: havingCondition,
             sort: [
               {
-                field: this.currentParse.sortBy,
-                direction: this.currentParse.sortDirection,
+                field: ctx.sortBy,
+                direction: ctx.sortDirection,
               },
             ],
             limit: "$limit",
@@ -366,10 +390,11 @@ export class TagSqlBuilder {
       const id = await this.tagCache.tagToTagId(tag);
       return {
         success: true,
+        params: { tagId: id },
         stmt: {
           table: "userdata_tags",
           columns: ["userdata_id", "tag_id"],
-          values: ["$entityId", id],
+          values: ["$entityId", "$tagId"],
           onConflict: {
             action: "DO NOTHING",
           },
@@ -390,9 +415,10 @@ export class TagSqlBuilder {
       const id = await this.tagCache.tagToTagId(tag);
       return {
         success: true,
+        params: { tagId: id },
         stmt: {
           table: "userdata_tags",
-          where: `userdata_id = $entityId AND tag_id = '${id}'`,
+          where: `userdata_id = $entityId AND tag_id = $tagId`,
         },
       };
     } catch (error) {
@@ -407,8 +433,6 @@ export class TagSqlBuilder {
     SelectStatement,
     ["$limit", "$offset", "$tagKey", "$tagValue"]
   > {
-    this.setupParse();
-
     try {
       return {
         success: true,

@@ -14,7 +14,7 @@ export class FileDownload {
   constructor(
     public readonly filepath: string,
     public readonly mimeType: string,
-  ) { }
+  ) {}
 }
 
 export class FileStream {
@@ -25,12 +25,37 @@ export class FileStream {
     public readonly startByte: number,
     public readonly endByte: number,
     public readonly totalSize: number,
-  ) { }
+  ) {}
 }
 
 type RangeHeader = {
   start: number;
   end: number;
+};
+
+/**
+ * Whether a (client-supplied) MIME type is safe to serve with
+ * `Content-Disposition: inline`. Anything that a browser might execute/script
+ * (HTML, SVG, ...) is excluded so it is sent as an attachment instead, which —
+ * together with `X-Content-Type-Options: nosniff` — prevents stored-XSS via
+ * uploaded documents.
+ */
+/**
+ * Strips characters that could break out of the quoted `filename="..."` value
+ * of a Content-Disposition header (quotes, backslashes, CR/LF).
+ */
+const sanitizeFilename = (filename: string): string =>
+  filename.replace(/["\\\r\n]/g, "_");
+
+const isInlineSafeMime = (mime: string): boolean => {
+  const m = mime.toLowerCase().split(";")[0]!.trim();
+  if (m === "image/svg+xml") return false;
+  return (
+    m.startsWith("image/") ||
+    m.startsWith("video/") ||
+    m.startsWith("audio/") ||
+    m === "application/pdf"
+  );
 };
 
 type ApiResult<Response extends object> = {
@@ -86,19 +111,33 @@ export const apiHandler = <
       if (result.body instanceof FileDownload) {
         res
           .header("Content-Type", result.body.mimeType)
+          .header("X-Content-Type-Options", "nosniff")
           .download(result.body.filepath);
       } else if (result.body instanceof FileStream) {
+        const disposition = isInlineSafeMime(result.body.mimeType)
+          ? "inline"
+          : "attachment";
         res
           .header("Content-Type", result.body.mimeType)
-          .header("Content-Disposition", `inline; filename="${result.body.filename}"`)
-          .header("Content-Range", `bytes ${result.body.startByte}-${result.body.endByte}/${result.body.totalSize}`)
-          .header("Content-Length", (result.body.endByte - result.body.startByte + 1).toString())
+          .header("X-Content-Type-Options", "nosniff")
+          .header(
+            "Content-Disposition",
+            `${disposition}; filename="${sanitizeFilename(result.body.filename)}"`,
+          )
+          .header(
+            "Content-Range",
+            `bytes ${result.body.startByte}-${result.body.endByte}/${result.body.totalSize}`,
+          )
+          .header(
+            "Content-Length",
+            (result.body.endByte - result.body.startByte + 1).toString(),
+          )
           .header("Accept-Ranges", "bytes");
 
-        const videoStream = fs.createReadStream(
-          result.body.filepath,
-          { start: result.body.startByte, end: result.body.endByte }
-        );
+        const videoStream = fs.createReadStream(result.body.filepath, {
+          start: result.body.startByte,
+          end: result.body.endByte,
+        });
 
         res.status(206);
 
@@ -125,7 +164,10 @@ export const apiHandler = <
 };
 
 const CHUNK_SIZE = 10 * 1024 * 1024;
-export const parseRangeHeader = (rangeHeader: string, fileSize: number): RangeHeader | undefined => {
+export const parseRangeHeader = (
+  rangeHeader: string,
+  fileSize: number,
+): RangeHeader | undefined => {
   const rangeMatch = rangeHeader.match(/bytes=(\d*)-(\d*)/);
   if (!rangeMatch) {
     return undefined;

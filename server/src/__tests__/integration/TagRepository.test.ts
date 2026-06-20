@@ -149,14 +149,18 @@ describe("TagRepository (integration)", () => {
 
     it("is idempotent (ON CONFLICT DO NOTHING)", async () => {
       await expect(
-        tagRepository.addTags([{ key: "nature", value: undefined, type: "default" }]),
+        tagRepository.addTags([
+          { key: "nature", value: undefined, type: "default" },
+        ]),
       ).resolves.toBeUndefined();
     });
   });
 
   describe("addTagToDocument / getTagsForDocument", () => {
     it("adds a tag and retrieves it for a document", async () => {
-      await tagRepository.addTags([{ key: "landscape", value: undefined, type: "default" }]);
+      await tagRepository.addTags([
+        { key: "landscape", value: undefined, type: "default" },
+      ]);
       await tagRepository.addTagToDocument(DOC_ID_1, {
         key: "landscape",
         value: undefined,
@@ -170,7 +174,9 @@ describe("TagRepository (integration)", () => {
 
   describe("removeTagFromDocument", () => {
     it("removes a tag from a document", async () => {
-      await tagRepository.addTags([{ key: "removable", value: undefined, type: "default" }]);
+      await tagRepository.addTags([
+        { key: "removable", value: undefined, type: "default" },
+      ]);
       await tagRepository.addTagToDocument(DOC_ID_2, {
         key: "removable",
         value: undefined,
@@ -195,7 +201,9 @@ describe("TagRepository (integration)", () => {
       });
 
       expect(result.total).toBeGreaterThan(0);
-      expect(result.items.every((t) => typeof t.usageCount === "number")).toBe(true);
+      expect(result.items.every((t) => typeof t.usageCount === "number")).toBe(
+        true,
+      );
     });
 
     it("respects limit and offset", async () => {
@@ -239,11 +247,59 @@ describe("TagRepository (integration)", () => {
 
       expect(result.items.length).toBeGreaterThanOrEqual(2);
     });
+
+    it("treats a SQL-injection payload as a literal tag key (no injection)", async () => {
+      // The query language permits quotes and `/**/` in identifiers. Before the
+      // fix this interpolated into `tags.key = '...'` and the `OR '1'='1'` would
+      // have matched every tagged document. With bound parameters it is just a
+      // literal key that matches nothing.
+      const result = await tagRepository.listDocuments({
+        limit: 100,
+        offset: 0,
+        query: "x'/**/OR/**/'1'='1",
+      });
+
+      expect(result.items).toHaveLength(0);
+      expect(result.total).toBe(0);
+    });
+  });
+
+  describe("bulkEditDocuments — access scope", () => {
+    const viewerScope = {
+      type: "accessible-by" as const,
+      userId: VIEWER_USER_ID,
+    };
+
+    it("does not edit tags on documents outside the caller's scope", async () => {
+      await tagRepository.bulkEditDocuments(
+        [DOC_FOREIGN_PRIVATE],
+        [{ key: "hacked", value: undefined, type: "default" }],
+        [],
+        viewerScope,
+      );
+
+      const tags = await tagRepository.getTagsForDocument(DOC_FOREIGN_PRIVATE);
+      expect(tags.some((t) => t.key === "hacked")).toBe(false);
+    });
+
+    it("edits tags on documents within the caller's scope", async () => {
+      await tagRepository.bulkEditDocuments(
+        [DOC_VIEWER_PRIVATE],
+        [{ key: "mine", value: undefined, type: "default" }],
+        [],
+        viewerScope,
+      );
+
+      const tags = await tagRepository.getTagsForDocument(DOC_VIEWER_PRIVATE);
+      expect(tags.some((t) => t.key === "mine")).toBe(true);
+    });
   });
 
   describe("deleteTag", () => {
     it("removes tag and its document associations", async () => {
-      await tagRepository.addTags([{ key: "to-delete", value: "yes", type: "default" }]);
+      await tagRepository.addTags([
+        { key: "to-delete", value: "yes", type: "default" },
+      ]);
       await tagRepository.addTagToDocument(DOC_ID_1, {
         key: "to-delete",
         value: "yes",
@@ -263,12 +319,18 @@ describe("TagRepository (integration)", () => {
 
       expect(Array.isArray(tags)).toBe(true);
       expect(tags.length).toBeGreaterThan(0);
-      expect(tags[0]).toMatchObject({ id: expect.any(Number), key: expect.any(String) });
+      expect(tags[0]).toMatchObject({
+        id: expect.any(Number),
+        key: expect.any(String),
+      });
     });
   });
 
   describe("listDocuments — document access scope", () => {
-    const scope = (userId: string) => ({ type: "accessible-by" as const, userId });
+    const scope = (userId: string) => ({
+      type: "accessible-by" as const,
+      userId,
+    });
 
     it("viewer can see public documents", async () => {
       const result = await tagRepository.listDocuments({

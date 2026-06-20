@@ -19,6 +19,7 @@ import { adminRouter } from "./routers/AdminRouter.js";
 import { createSessionMiddleware } from "./auth/SessionMiddleware.js";
 import type { SessionService } from "./auth/SessionService.js";
 import cookieParser from "cookie-parser";
+import { rateLimit, securityHeaders } from "./common/securityMiddleware.js";
 import type { LoggingService } from "./common/LoggingService.js";
 import { loadPlugins } from "./plugins/pluginLoader.js";
 import { addFileTypePlugin } from "./plugins/fileTypes.js";
@@ -42,11 +43,14 @@ async function run(envService: EnvironmentService) {
     process.env.COMMITHASH = "unknown";
   }
 
+  app.use(securityHeaders());
   app.use(express.json());
-  app.use(cors.default({
-    credentials: true,
-    origin: envService.corsOrigin,
-  }));
+  app.use(
+    cors.default({
+      credentials: true,
+      origin: envService.corsOrigin,
+    }),
+  );
   app.use(cookieParser());
 
   app.use(
@@ -63,7 +67,9 @@ async function run(envService: EnvironmentService) {
     }),
   );
 
-  const sessionService = DI_CONTAINER.get<SessionService>(services.sessionService);
+  const sessionService = DI_CONTAINER.get<SessionService>(
+    services.sessionService,
+  );
   app.use(createSessionMiddleware(envService, sessionService));
 
   app.get(
@@ -76,6 +82,13 @@ async function run(envService: EnvironmentService) {
         },
       };
     }),
+  );
+
+  // Throttle the abuse-prone auth-flow endpoints. Read endpoints under /auth
+  // (e.g. /auth/me) are intentionally excluded so normal polling is unaffected.
+  app.use(
+    ["/auth/login", "/auth/register", "/auth/callback", "/auth/logout"],
+    rateLimit({ windowMs: 60_000, max: 20 }),
   );
 
   app.use("/auth", authRouter);
@@ -94,6 +107,11 @@ async function run(envService: EnvironmentService) {
 
 async function main() {
   const diContainer = await setupDiContainer();
+
+  diContainer
+    .get<EnvironmentService>(services.environment)
+    .assertSecureConfig();
+
   const dbService = diContainer.get<DbService>(services.db);
   const migrationService = diContainer.get<MigrationService>(
     services.migration,

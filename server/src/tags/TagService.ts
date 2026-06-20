@@ -97,11 +97,13 @@ export class TagService {
     documentIds: string[],
     tagsToAdd: ApiTag[],
     tagsToRemove: ApiTag[],
+    scope: DocumentAccessScope = { type: "all" },
   ): Promise<void> {
     await this.tagRepository.bulkEditDocuments(
       documentIds,
       tagsToAdd,
       tagsToRemove,
+      scope,
     );
   }
 }

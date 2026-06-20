@@ -37,6 +37,10 @@ export class RedisClient {
     await this.client.set(key, value);
   }
 
+  public async incr(key: string): Promise<number> {
+    return this.client.incr(key);
+  }
+
   public async setWithTtl(
     key: string,
     value: string,

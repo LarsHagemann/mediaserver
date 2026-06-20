@@ -24,6 +24,7 @@ import { RoleService } from "./auth/RoleService.js";
 import { UserService } from "./auth/UserService.js";
 import { SessionService } from "./auth/SessionService.js";
 import { OAuthService } from "./auth/OAuthService.js";
+import { PermissionVersionService } from "./auth/PermissionVersionService.js";
 
 export const services = {
   environment: "service.environment",
@@ -43,6 +44,7 @@ export const services = {
   userService: "service.user",
   sessionService: "service.session",
   oauthService: "service.oauth",
+  permissionVersion: "service.permissionVersion",
 };
 
 export const repositories = {
@@ -119,7 +121,8 @@ export const defaultDiContainer = (diContainer: ContainerBuilder) => {
     .addArgument(new Reference(services.db))
     .addArgument(new Reference(services.file));
 
-  diContainer.register(services.upload, UploadService)
+  diContainer
+    .register(services.upload, UploadService)
     .addArgument(new Reference(services.file))
     .addArgument(new Reference(services.document))
     .addArgument(new Reference(services.tag))
@@ -137,6 +140,10 @@ export const defaultDiContainer = (diContainer: ContainerBuilder) => {
   diContainer.register(services.accessScopeResolver, AccessScopeResolver);
 
   diContainer
+    .register(services.permissionVersion, PermissionVersionService)
+    .addArgument(new Reference(services.redis));
+
+  diContainer
     .register(repositories.role, RoleRepository)
     .addArgument(new Reference(services.db));
 
@@ -150,12 +157,14 @@ export const defaultDiContainer = (diContainer: ContainerBuilder) => {
 
   diContainer
     .register(services.roleService, RoleService)
-    .addArgument(new Reference(repositories.role));
+    .addArgument(new Reference(repositories.role))
+    .addArgument(new Reference(services.permissionVersion));
 
   diContainer
     .register(services.userService, UserService)
     .addArgument(new Reference(repositories.user))
-    .addArgument(new Reference(repositories.role));
+    .addArgument(new Reference(repositories.role))
+    .addArgument(new Reference(services.permissionVersion));
 
   diContainer
     .register(services.sessionService, SessionService)
@@ -163,7 +172,8 @@ export const defaultDiContainer = (diContainer: ContainerBuilder) => {
     .addArgument(new Reference(repositories.user))
     .addArgument(new Reference(repositories.role))
     .addArgument(new Reference(services.redis))
-    .addArgument(new Reference(services.environment));
+    .addArgument(new Reference(services.environment))
+    .addArgument(new Reference(services.permissionVersion));
 
   diContainer
     .register(services.oauthService, OAuthService)

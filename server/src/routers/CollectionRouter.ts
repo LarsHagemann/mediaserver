@@ -128,6 +128,7 @@ collectionRouter.put(
         filterExpression: body.filterExpression ?? "",
         isFavorite: body.isFavorite,
       },
+      identity,
       scope,
     );
     return { status: 200, body: collection };
@@ -146,7 +147,7 @@ collectionRouter.delete(
       const collectionService = diContainer.get<CollectionService>(
         services.collection,
       );
-      await collectionService.deleteCollection(id, scope);
+      await collectionService.deleteCollection(id, identity, scope);
       return { status: 204, body: {} };
     },
   ),
@@ -164,7 +165,7 @@ collectionRouter.post(
       const collectionService = diContainer.get<CollectionService>(
         services.collection,
       );
-      await collectionService.addMember(id, body.documentId, scope);
+      await collectionService.addMember(id, body.documentId, identity, scope);
       return { status: 204, body: {} };
     },
   ),
@@ -186,7 +187,7 @@ collectionRouter.delete(
     const collectionService = diContainer.get<CollectionService>(
       services.collection,
     );
-    await collectionService.removeMember(id, documentId, scope);
+    await collectionService.removeMember(id, documentId, identity, scope);
     return { status: 204, body: {} };
   }),
 );

@@ -1,6 +1,7 @@
 import { ApiError } from "../common/ApiError.js";
 import type { UserRepository, User } from "./UserRepository.js";
 import type { RoleRepository, Role } from "./RoleRepository.js";
+import type { PermissionVersionService } from "./PermissionVersionService.js";
 
 export type UserWithRoles = User & { roles: Role[] };
 
@@ -17,6 +18,7 @@ export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly roleRepository: RoleRepository,
+    private readonly permissionVersion: PermissionVersionService,
   ) {}
 
   async listUsers(): Promise<UserWithRoles[]> {
@@ -44,6 +46,8 @@ export class UserService {
     }
 
     await this.userRepository.setRoles(userId, roleIds);
+    // The user's permissions changed; invalidate any cached sessions.
+    await this.permissionVersion.bump();
     return this.withRoles(user);
   }
 

@@ -12,5 +12,8 @@
     "style:fix:backend": "cd server && npm run style:fix",
     "style:fix:frontend": "cd frontend && npm run style:fix",
     "style:fix": "npm run style:fix:backend && npm run style:fix:frontend"
+  },
+  "dependencies": {
+    "@lars_hagemann/tags": "^1.0.9"
   }
 }
