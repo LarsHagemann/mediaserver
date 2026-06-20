@@ -4,7 +4,7 @@
     "build": "tsc"
   },
   "devDependencies": {
-    "@lars_hagemann/mediaserver-backend-plugin-types": "^1.0.3",
+    "@lars_hagemann/mediaserver-backend-plugin-types": "file:../../backend-types",
     "@types/node": "^24.10.1",
     "typescript": "^5.9.3"
   }

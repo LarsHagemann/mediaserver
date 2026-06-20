@@ -23,7 +23,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: Install dependencies
         working-directory: ./server
@@ -46,7 +46,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: Install dependencies
         working-directory: ./frontend
@@ -70,7 +70,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: Install dependencies
         working-directory: ./server
@@ -94,7 +94,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: Install dependencies
         working-directory: ./frontend
@@ -113,7 +113,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: Install server dependencies
         working-directory: ./server
@@ -146,6 +146,46 @@ jobs:
       - name: Build create-plugin
         working-directory: ./plugin/create-plugin
         run: npm run build
+
+      - name: Verify create-plugin scaffold compiles against local types
+        env:
+          WS: ${{ github.workspace }}
+          CREATE_PLUGIN_NAME: scaffold
+          CREATE_PLUGIN_AUTHOR: ci
+          CREATE_PLUGIN_INIT_GIT: 'no'
+          CREATE_PLUGIN_CONFIRM: 'yes'
+        run: |
+          set -e
+          GEN_ROOT="$(mktemp -d)"
+          # Run the generator non-interactively (answers come from CREATE_PLUGIN_* env vars).
+          CREATE_PLUGIN_DIR="$GEN_ROOT" node "$WS/plugin/create-plugin/dist/index.js"
+          for sub in frontend backend theme; do
+            echo "::group::build scaffold/$sub"
+            cd "$GEN_ROOT/scaffold/$sub"
+            # Replace the published plugin-types dependency with the in-repo source
+            # so the scaffold is validated against the current (uncommitted) types.
+            if [ "$sub" = "backend" ]; then
+              npm install -D "file:$WS/plugin/backend-types"
+            else
+              npm install -D "file:$WS/plugin/frontend-types"
+            fi
+            npm run build
+            cd "$WS"
+            echo "::endgroup::"
+          done
+          rm -rf "$GEN_ROOT"
+
+      - name: Build sample backend plugin
+        working-directory: ./plugin/sample/backend
+        run: |
+          npm install
+          npm run build
+
+      - name: Build sample frontend plugin
+        working-directory: ./plugin/sample/frontend
+        run: |
+          npm install
+          npm run build
 
   docker-server:
     name: Docker Server (build)

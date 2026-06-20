@@ -4,14 +4,16 @@ import { FaCaretLeft, FaHashtag } from "react-icons/fa";
 import { SideBarButton } from "../components/SideBarButton";
 import { useNavigate } from "react-router";
 import { BiSolidServer } from "react-icons/bi";
-import { FaCaretRight } from "react-icons/fa6";
-import { useState } from "react";
+import { FaCaretRight, FaEllipsis } from "react-icons/fa6";
+import { useState, useRef, useEffect } from "react";
 import { twMerge } from "tailwind-merge";
 import { useTranslation } from "react-i18next";
 import { MdCollections, MdLogout } from "react-icons/md";
 import { useIdentity, usePermission } from "../hooks/usePermission";
 import { UserAvatar } from "../components/UserAvatar";
 import { AppIcon } from "../components/AppIcon";
+import { pluginRegistry } from "../plugins/pluginRegistry";
+import { reactIcons, type NavItem } from "../plugins/plugin";
 
 const getUsername = (email?: string | null, name?: string | null): string => {
   if (email) return "@" + email.split("@")[0];
@@ -25,6 +27,85 @@ const SectionLabel = ({ label }: { label: string }) => (
   </p>
 );
 
+const MAX_MOBILE_NAV = 5;
+
+const PluginNavItem = ({
+  item,
+  collapsed,
+  onClick,
+}: {
+  item: NavItem;
+  collapsed: boolean;
+  onClick: () => void;
+}) => {
+  const IconComponent = item.icon(reactIcons);
+  return (
+    <SideBarButton
+      Icon={IconComponent}
+      pathPrefix={item.path}
+      onClick={onClick}
+      collapsed={collapsed}
+      text={item.label}
+    />
+  );
+};
+
+const MobileMoreMenu = ({
+  items,
+  onNavigate,
+}: {
+  items: NavItem[];
+  onNavigate: (path: string) => void;
+}) => {
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    if (open) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [open]);
+
+  if (items.length === 0) return null;
+
+  return (
+    <div ref={menuRef} className="relative sm:hidden">
+      <div
+        onClick={() => setOpen(!open)}
+        className="cursor-pointer px-3 py-2.5 rounded-md transition-colors duration-200 flex flex-row items-center gap-3 hover:bg-surface-2"
+      >
+        <FaEllipsis className="w-5 h-5 text-text-secondary" />
+      </div>
+      {open && (
+        <div className="absolute bottom-full mb-2 right-0 bg-surface-2 rounded-md shadow-lg border border-border min-w-40 py-1">
+          {items.map((item) => {
+            const Icon = item.icon(reactIcons);
+            return (
+              <div
+                key={item.id}
+                onClick={() => {
+                  onNavigate(item.path);
+                  setOpen(false);
+                }}
+                className="flex items-center gap-3 px-3 py-2 hover:bg-surface-3 cursor-pointer text-text-secondary text-sm"
+              >
+                <Icon className="w-4 h-4" />
+                <span>{item.label}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export const SideBar = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -36,6 +117,15 @@ export const SideBar = () => {
 
   const username = getUsername(identity?.email, identity?.name);
   const showAuth = identity?.userId !== "system";
+
+  const pluginNavItems = pluginRegistry.getNavItems().filter((item) => {
+    if (!item.permission) return true;
+    return identity?.permissions?.includes(item.permission);
+  });
+
+  const allMobileItems = pluginNavItems;
+  const visibleMobileItems = allMobileItems.slice(0, MAX_MOBILE_NAV);
+  const overflowMobileItems = allMobileItems.slice(MAX_MOBILE_NAV);
 
   return (
     <div
@@ -106,6 +196,35 @@ export const SideBar = () => {
           text={t("sidebar.serverState")}
         />
       )}
+
+      {/* Plugin section - desktop */}
+      {pluginNavItems.length > 0 && !collapsed && (
+        <SectionLabel label={t("sidebar.plugins", "Plugins")} />
+      )}
+      <div className="hidden sm:block">
+        {pluginNavItems.map((item) => (
+          <PluginNavItem
+            key={item.id}
+            item={item}
+            collapsed={collapsed}
+            onClick={() => navigate(item.path)}
+          />
+        ))}
+      </div>
+
+      {/* Plugin section - mobile (with overflow) */}
+      <div className="flex sm:hidden">
+        {visibleMobileItems.map((item) => (
+          <PluginNavItem
+            key={item.id}
+            item={item}
+            collapsed={false}
+            onClick={() => navigate(item.path)}
+          />
+        ))}
+        <MobileMoreMenu items={overflowMobileItems} onNavigate={navigate} />
+      </div>
+
       {/* Collapse toggle */}
       {collapsed ? (
         <FaCaretRight

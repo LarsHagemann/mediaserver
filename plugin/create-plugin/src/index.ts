@@ -18,6 +18,7 @@ const frontendTsConfig = {
     moduleDetection: "force",
     noEmit: false,
     outDir: "dist",
+    rootDir: "src",
 
     /* Linting */
     strict: true,
@@ -38,6 +39,7 @@ const backendTsConfig = {
     module: "nodenext",
     skipLibCheck: true,
     outDir: "dist",
+    rootDir: "src",
     moduleResolution: "nodenext",
 
     /* Linting */
@@ -80,6 +82,7 @@ const themeTsConfig = {
     moduleDetection: "force",
     noEmit: false,
     outDir: "dist",
+    rootDir: "src",
     strict: true,
     noUnusedLocals: true,
     noUnusedParameters: true,
@@ -133,11 +136,11 @@ const backendSkeleton = `
 import { FileTypePlugin } from "@lars_hagemann/mediaserver-backend-plugin-types";
 
 export const plugin: FileTypePlugin = {
-  matcher: (file) => /* Your implementation here */ false,
-  thumbnailCreator: async (context) => {
+  matcher: (_file) => /* Your implementation here */ false,
+  thumbnailCreator: async (_context) => {
     throw new Error("Not implemented");
   },
-  initialTags: async (path) => {
+  initialTags: async (_path) => {
     return [];
   },
   description: "Your plugin description here",
@@ -147,23 +150,64 @@ export default plugin;
 `;
 
 const frontendSkeleton = `
-import type { FileTypePlugin } from "@lars_hagemann/mediaserver-frontend-plugin-types";
+import type { FrontendPlugin } from "@lars_hagemann/mediaserver-frontend-plugin-types";
 
-const plugin: FileTypePlugin = {
-  matcher: (fileType) => /* Your implementation here */ false,
-  icon: (ReactIcons) => /* Your implementation here */ ReactIcons.FaFile,
-  Render: (context) => {
-    context.React.useEffect(() => {
-      console.log("This worked!");
-    }, []);
-
-    return context.React.createElement("iframe", {
-      className: "w-full h-full",
-      src: context.objectUrl,
-    });
-  },
-  Diashow: () => null,
+const plugin: FrontendPlugin = {
+  id: "my-plugin",
+  name: "My Plugin",
   description: "Your plugin description here",
+
+  // Optional: Add navigation items to the sidebar
+  // navItems: [
+  //   {
+  //     id: "my-page",
+  //     path: "/my-plugin",
+  //     label: "My Plugin",
+  //     icon: (icons) => icons.FaPlug,
+  //     priority: 10,
+  //   },
+  // ],
+
+  // // Optional: Add custom routes
+  // routes: [
+  //   {
+  //     path: "/my-plugin",
+  //     Component: (context) => {
+  //       const { React, api } = context;
+  //
+  //       return React.createElement(
+  //         "div",
+  //         { className: "p-6" },
+  //         React.createElement(
+  //           "h1",
+  //           { className: "text-2xl font-bold text-text-primary mb-4" },
+  //           "My Plugin Page",
+  //         ),
+  //         React.createElement(
+  //           "p",
+  //           { className: "text-text-secondary" },
+  //           "This page is rendered by your plugin.",
+  //         ),
+  //       );
+  //     },
+  //   },
+  // ],
+
+  // Optional: Add a file type renderer
+  // fileType: {
+  //   matcher: (fileType) => false,
+  //   icon: (icons) => icons.FaFile,
+  //   Render: (context) => context.React.createElement("div", null, "Preview"),
+  //   Diashow: () => null,
+  //   description: "File type renderer",
+  // },
+
+  // Optional: Add a theme
+  // theme: {
+  //   name: "my-theme",
+  //   description: "My custom theme",
+  //   tokens: { "--color-accent": "#ff0000" },
+  // },
 };
 
 export default plugin;
@@ -209,6 +253,18 @@ const questionOrDefault = async (
   return answer.trim() === "" ? defaultValue : answer.trim();
 };
 
+// Allow the prompts to be answered non-interactively via environment
+// variables (used by CI to scaffold a plugin without a TTY). When the
+// variable is unset, fall back to the interactive prompt.
+const envOrPrompt = async (
+  envVar: string,
+  ask: () => Promise<string | undefined>
+): Promise<string | undefined> => {
+  const value = process.env[envVar];
+  if (value !== undefined && value.trim() !== "") return value.trim();
+  return ask();
+};
+
 const validateYesNo = (input: string | undefined, defaultValue?: boolean): boolean => {
   if (!input) return defaultValue || false;
   const trimmed = input.trim().toLowerCase();
@@ -237,19 +293,18 @@ const doExec = (command: string): Promise<string> => {
 }
 
 async function main() {
-  const folderPath = await questionOrDefault(
-    "Enter the plugin folder path",
-    path.resolve(".")
+  const folderPath = await envOrPrompt("CREATE_PLUGIN_DIR", () =>
+    questionOrDefault("Enter the plugin folder path", path.resolve("."))
   );
-  const pluginName = await questionOrDefault(
-    "Enter the plugin name",
-    "my-plugin"
+  const pluginName = await envOrPrompt("CREATE_PLUGIN_NAME", () =>
+    questionOrDefault("Enter the plugin name", "my-plugin")
   );
-  const authorName = await questionOrDefault(
-    "Enter the author name",
-    "Your Name"
+  const authorName = await envOrPrompt("CREATE_PLUGIN_AUTHOR", () =>
+    questionOrDefault("Enter the author name", "Your Name")
   );
-  const initGitString = await questionOrDefault("Initialize git? (Yes/no)");
+  const initGitString = await envOrPrompt("CREATE_PLUGIN_INIT_GIT", () =>
+    questionOrDefault("Initialize git? (Yes/no)")
+  );
   const initGit = validateYesNo(initGitString, true);
 
   console.log("\nPlugin Configuration:");
@@ -258,7 +313,9 @@ async function main() {
   console.log(`Author Name: ${authorName}`);
   console.log(`Initialize Git: ${initGit ? "Yes" : "No"}`);
 
-  const validateString = await questionOrDefault("Create plugin? (Yes/no)");
+  const validateString = await envOrPrompt("CREATE_PLUGIN_CONFIRM", () =>
+    questionOrDefault("Create plugin? (Yes/no)")
+  );
   const validate = validateYesNo(validateString, true);
 
   rl.close();

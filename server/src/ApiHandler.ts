@@ -112,6 +112,10 @@ export const apiHandler = <
         res
           .header("Content-Type", result.body.mimeType)
           .header("X-Content-Type-Options", "nosniff")
+          // Allow the file to be loaded cross-origin (frontend and backend are
+          // served from different origins). Without this, media elements making
+          // no-cors requests are blocked with ERR_BLOCKED_BY_RESPONSE.NotSameSite.
+          .header("Cross-Origin-Resource-Policy", "cross-origin")
           .download(result.body.filepath);
       } else if (result.body instanceof FileStream) {
         const disposition = isInlineSafeMime(result.body.mimeType)
@@ -132,6 +136,10 @@ export const apiHandler = <
             "Content-Length",
             (result.body.endByte - result.body.startByte + 1).toString(),
           )
+          // Allow the stream to be consumed by a cross-origin <video>/<audio>
+          // element. Without this, the browser blocks the range request with
+          // ERR_BLOCKED_BY_RESPONSE.NotSameSite.
+          .header("Cross-Origin-Resource-Policy", "cross-origin")
           .header("Accept-Ranges", "bytes");
 
         const videoStream = fs.createReadStream(result.body.filepath, {

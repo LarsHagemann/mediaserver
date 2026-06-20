@@ -2,6 +2,8 @@ import i18n from "i18next";
 import z from "zod";
 import { addFileTypePlugin } from "./addFileTypePlugin";
 import { addThemePlugin } from "./addThemePlugin";
+import { pluginRegistry } from "./pluginRegistry";
+import type { FileTypePlugin, FrontendPlugin } from "./plugin";
 
 const pluginManifestSchema = z.object({
   plugins: z.array(
@@ -53,11 +55,57 @@ async function loadPluginManifest(
   }
 }
 
+function isLegacyFileTypePlugin(obj: unknown): obj is FileTypePlugin {
+  return (
+    typeof obj === "object" &&
+    obj !== null &&
+    "matcher" in obj &&
+    typeof (obj as FileTypePlugin).matcher === "function"
+  );
+}
+
+function isFrontendPlugin(obj: unknown): obj is FrontendPlugin {
+  return (
+    typeof obj === "object" &&
+    obj !== null &&
+    "id" in obj &&
+    typeof (obj as FrontendPlugin).id === "string"
+  );
+}
+
+async function importPluginModule(url: string): Promise<{ default: unknown }> {
+  const response = await fetch(url);
+  if (!response.ok)
+    throw new Error(`Failed to fetch plugin: ${response.status}`);
+  const code = await response.text();
+  const blob = new Blob([code], { type: "application/javascript" });
+  const blobUrl = URL.createObjectURL(blob);
+  try {
+    return await import(/* @vite-ignore */ blobUrl);
+  } finally {
+    URL.revokeObjectURL(blobUrl);
+  }
+}
+
 async function loadPlugin(plugin: PluginEntry) {
   try {
-    const module = await import(/* @vite-ignore */ plugin.url);
-    addFileTypePlugin(module.default);
-    console.log(`Loaded plugin: ${plugin.name}`);
+    const module = await importPluginModule(plugin.url);
+    const exported = module.default;
+
+    if (isFrontendPlugin(exported)) {
+      pluginRegistry.register(exported);
+      if (exported.fileType) {
+        addFileTypePlugin(exported.fileType);
+      }
+      if (exported.theme) {
+        addThemePlugin(exported.theme);
+      }
+    } else if (isLegacyFileTypePlugin(exported)) {
+      addFileTypePlugin(exported);
+      console.log(`Loaded legacy plugin: ${plugin.name}`);
+    } else {
+      console.warn(`Unknown plugin format: ${plugin.name}`);
+    }
   } catch (error) {
     console.error(`Error loading plugin ${plugin.name}:`, error);
   }

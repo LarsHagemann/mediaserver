@@ -11,6 +11,8 @@ import { addFileTypePlugin } from "./plugins/addFileTypePlugin.ts";
 import { standardThemes } from "./plugins/standardThemes.ts";
 import { addThemePlugin, themePlugins } from "./plugins/addThemePlugin.ts";
 import { applyTheme, getPersistedThemeName } from "./plugins/applyTheme.ts";
+import { createAppRouter } from "./app/router.tsx";
+import { pluginRegistry } from "./plugins/pluginRegistry.ts";
 
 import "./i18n.ts";
 import { PersistGate } from "redux-persist/integration/react";
@@ -31,13 +33,15 @@ void loadExternalPlugins().then(() => {
     if (theme) applyTheme(theme);
   }
 
+  const router = createAppRouter(pluginRegistry.getRoutes());
+
   createRoot(document.getElementById("root")!).render(
     <StrictMode>
       <Provider store={store}>
         <PersistGate persistor={persistor}>
           <WebSocketContextProvider>
             <UploadContextProvider>
-              <App />
+              <App router={router} />
             </UploadContextProvider>
           </WebSocketContextProvider>
         </PersistGate>
