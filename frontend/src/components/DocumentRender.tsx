@@ -2,6 +2,8 @@ import React from "react";
 import { useDocument } from "../hooks/useDocument";
 import { useDocumentPlugin } from "../hooks/useDocumentPlugin";
 import { useDocumentUrl } from "../hooks/useDocumentUrl";
+import { pluginComponents } from "../plugins/pluginComponents";
+import { enhancedApi } from "../app/enhancedApi";
 
 type Props = {
   documentId: string;
@@ -24,5 +26,12 @@ export const DocumentRender = ({ documentId, mimeType }: Props) => {
     return null;
   }
 
-  return <plugin.Render objectUrl={objectUrl} React={React} />;
+  return (
+    <plugin.Render
+      objectUrl={objectUrl}
+      React={React}
+      components={pluginComponents}
+      dataApi={enhancedApi}
+    />
+  );
 };

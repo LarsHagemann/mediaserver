@@ -1,4 +1,15 @@
-import type { FrontendPlugin, NavItem, PluginRoute } from "./plugin";
+import type {
+  DocumentInfoPlugin,
+  FrontendPlugin,
+  NavItem,
+  PluginRoute,
+} from "./plugin";
+
+export type DocumentInfoContribution = {
+  pluginId: string;
+  pluginName: string;
+  documentInfo: DocumentInfoPlugin;
+};
 
 const plugins: FrontendPlugin[] = [];
 
@@ -24,5 +35,13 @@ export const pluginRegistry = {
 
   getRoutes(): PluginRoute[] {
     return plugins.flatMap((p) => p.routes ?? []);
+  },
+
+  getDocumentInfo(mime: string): DocumentInfoContribution[] {
+    return plugins.flatMap((p) =>
+      p.documentInfo && p.documentInfo.matcher(mime)
+        ? [{ pluginId: p.id, pluginName: p.name, documentInfo: p.documentInfo }]
+        : [],
+    );
   },
 };

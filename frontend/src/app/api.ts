@@ -2,7 +2,7 @@ import type { PaginatedResponse } from "../util/PaginatedResponse";
 import { tagToString } from "../util/tag";
 import { baseApi } from "./baseApi";
 
-type DocumentUpload = {
+export type DocumentUpload = {
   file: File;
   webSocketClientId: string;
   tags: ApiTag[];
@@ -37,7 +37,7 @@ export type DocumentWithTags = Document & {
   tags: ApiTag[];
 };
 
-interface StoreState {
+export interface StoreState {
   free: number;
   total: number;
   used: number;
@@ -45,13 +45,13 @@ interface StoreState {
   basePath: string;
 }
 
-interface BackendPlugin {
+export interface BackendPlugin {
   name: string;
   trusted: boolean;
   description: string;
 }
 
-interface BackendState {
+export interface BackendState {
   stores: StoreState[];
   uptime: number;
   plugins: BackendPlugin[];
@@ -92,11 +92,11 @@ export type CollectionAccess = {
   shares: CollectionShareEntry[];
 };
 
-type ApiTagWithCount = ApiTag & {
+export type ApiTagWithCount = ApiTag & {
   usageCount: number;
 };
 
-type BulkEditDocumentsRequest = {
+export type BulkEditDocumentsRequest = {
   documentIds: string[];
   tagsToAdd: ApiTag[];
   tagsToRemove: ApiTag[];

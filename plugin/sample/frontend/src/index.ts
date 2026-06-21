@@ -1,4 +1,6 @@
 import type { FrontendPlugin } from "@lars_hagemann/mediaserver-frontend-plugin-types";
+import { scorePanel } from "./scorePanel.js";
+import { samplePage } from "./samplePage.js";
 
 const plugin: FrontendPlugin = {
   id: "sample-plugin",
@@ -15,52 +17,9 @@ const plugin: FrontendPlugin = {
     },
   ],
 
-  routes: [
-    {
-      path: "/sample",
-      Component: (context) => {
-        const { React, api } = context;
-        const [health, setHealth] = React.useState<string>("loading...");
+  documentInfo: scorePanel,
 
-        React.useEffect(() => {
-          api
-            .fetch("/health")
-            .then((res) => res.json())
-            .then((data) => setHealth(JSON.stringify(data)))
-            .catch((err) => setHealth(`Error: ${err.message}`));
-        }, [api]);
-
-        return React.createElement(
-          "div",
-          { className: "p-6" },
-          React.createElement(
-            "h1",
-            { className: "text-2xl font-bold text-text-primary mb-4" },
-            "Sample Plugin Page",
-          ),
-          React.createElement(
-            "p",
-            { className: "text-text-secondary mb-2" },
-            "This page is rendered by a plugin.",
-          ),
-          React.createElement(
-            "div",
-            { className: "bg-surface-1 p-4 rounded-md" },
-            React.createElement(
-              "p",
-              { className: "text-text-muted text-sm" },
-              "Backend health: ",
-            ),
-            React.createElement(
-              "code",
-              { className: "text-text-primary" },
-              health,
-            ),
-          ),
-        );
-      },
-    },
-  ],
+  routes: [samplePage],
 };
 
 export default plugin;
