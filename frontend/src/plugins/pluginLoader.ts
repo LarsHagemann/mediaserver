@@ -3,7 +3,7 @@ import z from "zod";
 import { addFileTypePlugin } from "./addFileTypePlugin";
 import { addThemePlugin } from "./addThemePlugin";
 import { pluginRegistry } from "./pluginRegistry";
-import type { FileTypePlugin, FrontendPlugin } from "./plugin";
+import type { FileTypePlugin, FrontendPlugin, ThemePlugin } from "./plugin";
 
 const pluginManifestSchema = z.object({
   plugins: z.array(
@@ -74,7 +74,9 @@ function isFrontendPlugin(obj: unknown): obj is FrontendPlugin {
 }
 
 async function importPluginModule(url: string): Promise<{ default: unknown }> {
-  const response = await fetch(url);
+  // Revalidate against the server (like the manifest fetch) so a regenerated
+  // plugin file is picked up instead of a stale copy from the browser cache.
+  const response = await fetch(url, { cache: "no-cache" });
   if (!response.ok)
     throw new Error(`Failed to fetch plugin: ${response.status}`);
   const code = await response.text();
@@ -113,8 +115,11 @@ async function loadPlugin(plugin: PluginEntry) {
 
 async function loadThemePlugin(plugin: PluginEntry) {
   try {
-    const module = await import(/* @vite-ignore */ plugin.url);
-    addThemePlugin(module.default);
+    // Go through importPluginModule (fetch + blob import) rather than a bare
+    // dynamic import so theme files revalidate too; a bare import() is served
+    // straight from the browser's module/disk cache with no way to opt out.
+    const module = await importPluginModule(plugin.url);
+    addThemePlugin(module.default as ThemePlugin);
     console.log(`Loaded theme plugin: ${plugin.name}`);
   } catch (error) {
     console.error(`Error loading theme plugin ${plugin.name}:`, error);
@@ -122,7 +127,7 @@ async function loadThemePlugin(plugin: PluginEntry) {
 }
 
 async function loadTranslation(translation: TranslationEntry) {
-  const response = await fetch(translation.path);
+  const response = await fetch(translation.path, { cache: "no-cache" });
   if (!response.ok) throw new Error("Failed to load translation plugin");
   const language = await response.json();
   const langCode = translation.name;
