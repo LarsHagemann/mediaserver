@@ -132,7 +132,10 @@ export type PluginComponents = {
   >;
   // Generic over the tab id union (and whether deselection is allowed), so it
   // is a call signature rather than a `React.FC`.
-  Tabs: <TabId extends string, AllowNoSelection extends boolean = false>(props: {
+  Tabs: <
+    TabId extends string,
+    AllowNoSelection extends boolean = false,
+  >(props: {
     allowNoSelection?: AllowNoSelection;
     currentTab:
       | NoInfer<TabId>
