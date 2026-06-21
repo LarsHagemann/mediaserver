@@ -1,6 +1,7 @@
 import type { IconType } from "react-icons";
 import React from "react";
 import type { enhancedApi } from "../app/enhancedApi";
+import type { ApiTag, Document } from "../app/api";
 /**
  * The host's RTK Query API, injected into every plugin render context as
  * `dataApi`. Plugins call the generated hooks (e.g.
@@ -10065,6 +10066,65 @@ export type PluginComponents = {
         size: IconSize;
         className?: string;
         title?: string;
+    }>;
+    Dropdown: <T>(props: {
+        values: {
+            value: T;
+            key: string;
+            node: React.ReactNode;
+        }[];
+        className?: string;
+        direction?: "up" | "down";
+        onSelect?: (value: T) => void;
+    }) => React.ReactNode;
+    ButtonSelector: React.FC<{
+        options: {
+            label: string;
+            value: string;
+        }[];
+        className?: string;
+    } & ({
+        values: string[];
+        onSelected: (values: string[]) => void;
+        multiChoice: true;
+    } | {
+        value: string;
+        onSelected: (value: string) => void;
+        multiChoice: false;
+    })>;
+    Tabs: <TabId extends string, AllowNoSelection extends boolean = false>(props: {
+        allowNoSelection?: AllowNoSelection;
+        currentTab: NoInfer<TabId> | (AllowNoSelection extends true ? undefined : never);
+        onTabChange: (tab: NoInfer<TabId> | (AllowNoSelection extends true ? undefined : never)) => void;
+        tabs: {
+            tabId: TabId;
+            node: React.ReactNode;
+        }[];
+        className?: string;
+    }) => React.ReactNode;
+    Thumbnail: React.FC<{
+        document: Document;
+        onClick?: () => void;
+        className?: string;
+        highlighted?: boolean;
+        selected?: boolean;
+        layout?: "grid" | "list";
+        onSelect?: (selected: boolean) => void;
+    }>;
+    ThumbnailContainer: React.FC<{
+        thumbnails: Document[];
+        onClick?: (id: string) => void;
+        alignment?: "center" | "start";
+        direction?: "row" | "column";
+        wrap?: "wrap" | "nowrap";
+        layout?: "grid" | "list";
+        highlighted?: Set<string>;
+        selectedDocuments?: Set<string>;
+        className?: string;
+        variant?: "card" | "thumbnail";
+        onSelect?: (id: string, selected: boolean) => void;
+        tagsMap?: Record<string, ApiTag[]>;
+        popularTagKeys?: Set<string>;
     }>;
 };
 export type FileTypePlugin = {

@@ -1,9 +1,14 @@
 import { Badge } from "../components/Badge";
 import { Button } from "../components/Button";
+import { ButtonSelector } from "../components/ButtonSelector";
+import { Dropdown } from "../components/Dropdown";
 import { Icon } from "../components/Icon";
 import { IconButton } from "../components/IconButton";
 import { Modal } from "../components/Modal";
 import { ProgressBar } from "../components/ProgressBar";
+import { Tabs } from "../components/Tabs";
+import { ThumbnailContainer } from "../components/ThumbnailContainer";
+import { Thumbnail } from "../sections/Thumbnail";
 import type { PluginComponents } from "./plugin";
 
 /**
@@ -21,4 +26,9 @@ export const pluginComponents: PluginComponents = {
   Modal,
   ProgressBar,
   Icon,
+  Dropdown,
+  ButtonSelector,
+  Tabs,
+  ThumbnailContainer,
+  Thumbnail,
 };
