@@ -1,12 +1,14 @@
 {
   "name": "sample",
   "scripts": {
-    "build": "tsc"
+    "typecheck": "tsc",
+    "build": "esbuild src/index.ts --bundle --format=esm --outfile=dist/index.js"
   },
   "devDependencies": {
     "@lars_hagemann/mediaserver-frontend-plugin-types": "file:../../frontend-types",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
+    "esbuild": "^0.25.0",
     "typescript": "^5.9.3"
   }
 }

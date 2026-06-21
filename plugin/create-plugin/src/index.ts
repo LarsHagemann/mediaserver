@@ -16,8 +16,8 @@ const frontendTsConfig = {
     //"allowImportingTsExtensions": true,
     verbatimModuleSyntax: true,
     moduleDetection: "force",
-    noEmit: false,
-    outDir: "dist",
+    // tsc only typechecks; esbuild produces the bundle.
+    noEmit: true,
     rootDir: "src",
 
     /* Linting */
@@ -61,6 +61,7 @@ const backendDependencies = [
 
 const frontendDependencies = [
   "typescript",
+  "esbuild",
   "@types/react",
   "@types/react-dom",
   "@lars_hagemann/mediaserver-frontend-plugin-types",
@@ -68,6 +69,7 @@ const frontendDependencies = [
 
 const themeDependencies = [
   "typescript",
+  "esbuild",
   "@lars_hagemann/mediaserver-frontend-plugin-types",
 ];
 
@@ -80,8 +82,8 @@ const themeTsConfig = {
     moduleResolution: "bundler",
     verbatimModuleSyntax: true,
     moduleDetection: "force",
-    noEmit: false,
-    outDir: "dist",
+    // tsc only typechecks; esbuild produces the bundle.
+    noEmit: true,
     rootDir: "src",
     strict: true,
     noUnusedLocals: true,
@@ -218,21 +220,38 @@ const gitIgnoreContent = `
 **/node_modules/
 `;
 
+// Frontend and theme plugins are loaded into the browser as a single ESM
+// module, so they are bundled with esbuild: authors can split their code
+// across any number of files and the bundle inlines every local import.
+// tsc is kept purely for typechecking (noEmit). Backend plugins run under
+// Node, which resolves relative imports on disk, so plain tsc is enough.
+const bundledScripts = {
+  typecheck: "tsc",
+  build: "esbuild src/index.ts --bundle --format=esm --outfile=dist/index.js",
+};
+
+const tscScripts = {
+  build: "tsc",
+};
+
 const config = {
   frontend: {
     tsConfig: frontendTsConfig,
     dependencies: frontendDependencies,
     skeleton: frontendSkeleton,
+    scripts: bundledScripts,
   },
   backend: {
     tsConfig: backendTsConfig,
     dependencies: backendDependencies,
     skeleton: backendSkeleton,
+    scripts: tscScripts,
   },
   theme: {
     tsConfig: themeTsConfig,
     dependencies: themeDependencies,
     skeleton: themeSkeleton,
+    scripts: bundledScripts,
   },
 };
 
@@ -339,11 +358,11 @@ async function main() {
     const pluginSrcPath = `${pluginFolderPath}/src`;
     process.chdir(pluginFolderPath);
 
+    const pluginConfig = config[pluginType];
+
     const packageJsonContent = {
       name: `${pluginName}`,
-      scripts: {
-        build: "tsc",
-      },
+      scripts: pluginConfig.scripts,
     };
 
     console.log("Writing package.json");
@@ -352,7 +371,6 @@ async function main() {
       JSON.stringify(packageJsonContent, null, 2)
     );
 
-    const pluginConfig = config[pluginType];
     const tsConfigContent = pluginConfig.tsConfig;
 
     console.log("Writing tsconfig.json");
