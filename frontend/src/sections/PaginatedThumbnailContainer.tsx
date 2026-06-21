@@ -61,7 +61,6 @@ export const PaginatedThumbnailContainer = ({
           thumbnails={items}
           onClick={onThumbnailClick}
           layout={layoutType}
-          size="normal"
           onSelect={onSelect}
           selectedDocuments={selectedDocuments}
           tagsMap={tagsMap}

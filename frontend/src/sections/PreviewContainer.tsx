@@ -186,14 +186,14 @@ export const PreviewContainer = ({
 
       {/* Thumbnail strip */}
       {!diashowMode && (
-        <div className="flex-shrink-0 h-28 border-t border-border bg-surface-1 p-2 overflow-hidden flex items-center justify-center">
+        <div className="flex-shrink-0 h-36 border-t border-border bg-surface-1 p-2 overflow-hidden flex items-center justify-center">
           <ThumbnailContainer
             alignment="center"
             thumbnails={data?.items || []}
             onClick={onThumbnailClick}
             wrap="nowrap"
             highlighted={new Set([previewImageId])}
-            size="small"
+            variant="thumbnail"
           />
         </div>
       )}

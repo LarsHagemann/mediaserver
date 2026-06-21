@@ -28,7 +28,7 @@ type Props = {
   highlighted?: Set<string>;
   selectedDocuments?: Set<string>;
   className?: string;
-  size?: "normal" | "small";
+  variant?: "card" | "thumbnail";
   onSelect?: (id: string, selected: boolean) => void;
   tagsMap?: Record<string, ApiTag[]>;
   popularTagKeys?: Set<string>;
@@ -41,7 +41,7 @@ export const ThumbnailContainer = ({
   direction = "row",
   wrap = "wrap",
   layout = "grid",
-  size = "normal",
+  variant = "card",
   highlighted,
   selectedDocuments,
   className,
@@ -49,7 +49,7 @@ export const ThumbnailContainer = ({
   tagsMap,
   popularTagKeys,
 }: Props) => {
-  if (layout === "grid" && size === "normal") {
+  if (layout === "grid" && variant === "card") {
     return (
       <div
         className={twMerge(
@@ -91,7 +91,6 @@ export const ThumbnailContainer = ({
           highlighted={highlighted?.has(thumbnail.id)}
           selected={selectedDocuments?.has(thumbnail.id)}
           layout={layout}
-          size={size}
           onSelect={
             onSelect
               ? (selected) => onSelect(thumbnail.id, selected)

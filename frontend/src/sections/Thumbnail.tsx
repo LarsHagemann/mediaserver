@@ -17,7 +17,6 @@ type Props = {
   highlighted?: boolean;
   selected?: boolean;
   layout?: keyof typeof layouts;
-  size?: "normal" | "small";
   onSelect?: (selected: boolean) => void;
 };
 
@@ -28,7 +27,6 @@ export const Thumbnail = ({
   highlighted,
   selected,
   layout = "grid",
-  size = "normal",
   onSelect,
 }: Props) => {
   const { objectUrl, isLoading, error } = useThumbnail(document.id);
@@ -50,7 +48,6 @@ export const Thumbnail = ({
         <img
           className={twMerge(
             layouts[layout],
-            size === "small" && "w-full h-full",
             onClick && "cursor-pointer",
             highlighted && "border-accent-muted",
           )}
