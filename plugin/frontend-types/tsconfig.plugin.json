@@ -3,13 +3,19 @@
     "declaration": true,
     "emitDeclarationOnly": true,
     "outDir": "types",
+    "rootDir": "../../frontend/src",
     "declarationMap": false,
     "stripInternal": true,
     "skipLibCheck": true,
-    "module": "nodenext",
+    "strict": true,
+    "module": "preserve",
     "target": "ES2020",
-    "moduleResolution": "nodenext",
+    "moduleResolution": "bundler",
     "sourceMap": false,
+    "types": []
   },
-  "include": ["../../frontend/src/plugins/plugin.ts"]
+  "include": [
+    "../../frontend/src/plugins/plugin.ts",
+    "./vite-env-shim.d.ts"
+  ]
 }

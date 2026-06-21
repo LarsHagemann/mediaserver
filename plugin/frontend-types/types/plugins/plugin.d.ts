@@ -1,7 +1,23 @@
 import type { IconType } from "react-icons";
 import React from "react";
+import type { enhancedApi } from "../app/enhancedApi";
+/**
+ * The host's RTK Query API, injected into every plugin render context as
+ * `dataApi`. Plugins call the generated hooks (e.g.
+ * `dataApi.useGetDocumentTagsQuery(id)`,
+ * `dataApi.useAddTagToDocumentMutation()`) and share the host's cache, so
+ * reads stay consistent and writes invalidate/optimistically update the host
+ * UI automatically.
+ *
+ * Because this is the whole host API, it is a large, app-coupled surface: the
+ * endpoint set and response types are part of the published plugin type
+ * package and change whenever the host API changes. Plugins MUST use these
+ * injected hooks rather than importing `@reduxjs/toolkit`/`react-redux`
+ * themselves — a second copy of `react-redux` has a different store context
+ * and fails at runtime with "could not find store".
+ */
+export type PluginDataApi = typeof enhancedApi;
 export declare const reactIcons: {
-    default: typeof import("react-icons/gi");
     Gi3dGlasses: IconType;
     Gi3dHammer: IconType;
     Gi3dMeeple: IconType;
@@ -10000,6 +10016,7 @@ export type RenderContext = {
     objectUrl: string;
     React: typeof React;
     components: PluginComponents;
+    dataApi: PluginDataApi;
 };
 export type DiashowContext = RenderContext & {
     nextDocument: () => void;
@@ -10076,6 +10093,7 @@ export type RouteContext = {
     React: typeof React;
     api: PluginApi;
     components: PluginComponents;
+    dataApi: PluginDataApi;
 };
 /**
  * The subset of a document that is exposed to plugins rendering into the
@@ -10094,6 +10112,7 @@ export type DocumentInfoContext = {
     api: PluginApi;
     document: DocumentInfo;
     components: PluginComponents;
+    dataApi: PluginDataApi;
 };
 /**
  * Contributes a section to the document info panel. `matcher` decides which

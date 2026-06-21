@@ -3,6 +3,7 @@ import { useDocument } from "../hooks/useDocument";
 import { useDocumentPlugin } from "../hooks/useDocumentPlugin";
 import { useDocumentUrl } from "../hooks/useDocumentUrl";
 import { pluginComponents } from "../plugins/pluginComponents";
+import { enhancedApi } from "../app/enhancedApi";
 
 type Props = {
   documentId: string;
@@ -30,6 +31,7 @@ export const DocumentRender = ({ documentId, mimeType }: Props) => {
       objectUrl={objectUrl}
       React={React}
       components={pluginComponents}
+      dataApi={enhancedApi}
     />
   );
 };

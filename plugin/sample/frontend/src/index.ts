@@ -17,49 +17,30 @@ const plugin: FrontendPlugin = {
 
   documentInfo: {
     matcher: () => true,
-    Render: ({ React, api, document, components }) => {
-      const [score, setScore] = React.useState<number | null>(null);
-      const [busy, setBusy] = React.useState(false);
+    Render: ({ React, dataApi, document, components }) => {
+      // Share the host's RTK Query cache: this is the same query the host's
+      // tag panel uses, and the mutations below invalidate/optimistically
+      // update it, so both UIs stay in sync without any manual refetch.
+      const { data } = dataApi.useGetDocumentTagsQuery(document.id);
+      const [addTag, { isLoading: adding }] =
+        dataApi.useAddTagToDocumentMutation();
+      const [removeTag, { isLoading: removing }] =
+        dataApi.useRemoveTagFromDocumentMutation();
+      const busy = adding || removing;
 
-      React.useEffect(() => {
-        let cancelled = false;
-        api
-          .fetch(`/tags/${encodeURIComponent(document.id)}`)
-          .then((res) => res.json())
-          .then((data: { tags: { key: string; value?: string }[] }) => {
-            if (cancelled) return;
-            const tag = data.tags.find((t) => t.key === "score");
-            const parsed = tag?.value ? Number(tag.value) : NaN;
-            setScore(Number.isFinite(parsed) ? parsed : null);
-          })
-          .catch(() => {});
-        return () => {
-          cancelled = true;
-        };
-      }, [api, document.id]);
+      const scoreTag = data?.tags.find((t) => t.key === "score");
+      const score = scoreTag?.value ? Number(scoreTag.value) : null;
 
       const setRating = async (value: number) => {
         if (busy) return;
-        const previous = score;
-        setBusy(true);
-        setScore(value);
-        try {
-          if (previous != null) {
-            await api.fetch(`/tags/${encodeURIComponent(document.id)}/remove`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ tag: `score:${previous}` }),
-            });
-          }
-          await api.fetch(`/tags/${encodeURIComponent(document.id)}/add`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ tag: `score:${value}` }),
+        if (score != null) {
+          await removeTag({
+            documentId: document.id,
+            tag: `score:${score}`,
           });
-        } catch {
-          setScore(previous);
-        } finally {
-          setBusy(false);
+        }
+        if (value > 0) {
+          await addTag({ documentId: document.id, tag: `score:${value}` });
         }
       };
 

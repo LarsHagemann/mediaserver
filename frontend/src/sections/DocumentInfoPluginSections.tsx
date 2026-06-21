@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import type { Document } from "../app/api";
 import { PluginErrorBoundary } from "../components/PluginErrorBoundary";
+import { enhancedApi } from "../app/enhancedApi";
 import { pluginApi } from "../plugins/pluginApi";
 import { pluginComponents } from "../plugins/pluginComponents";
 import { pluginRegistry } from "../plugins/pluginRegistry";
@@ -45,6 +46,7 @@ export const DocumentInfoPluginSections = ({
               api={pluginApi}
               document={documentInfo}
               components={pluginComponents}
+              dataApi={enhancedApi}
             />
           </PluginErrorBoundary>
         );
