@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import type { Document } from "../app/api";
 import { PluginErrorBoundary } from "../components/PluginErrorBoundary";
 import { pluginApi } from "../plugins/pluginApi";
+import { pluginComponents } from "../plugins/pluginComponents";
 import { pluginRegistry } from "../plugins/pluginRegistry";
 import type { DocumentInfo } from "../plugins/plugin";
 
@@ -39,7 +40,12 @@ export const DocumentInfoPluginSections = ({
         const Render = plugin.Render;
         return (
           <PluginErrorBoundary key={pluginId} pluginName={pluginName}>
-            <Render React={React} api={pluginApi} document={documentInfo} />
+            <Render
+              React={React}
+              api={pluginApi}
+              document={documentInfo}
+              components={pluginComponents}
+            />
           </PluginErrorBoundary>
         );
       })}

@@ -15,6 +15,7 @@ export type ReactIcons = typeof reactIcons;
 export type RenderContext = {
   objectUrl: string;
   React: typeof React;
+  components: PluginComponents;
 };
 
 export type DiashowContext = RenderContext & {
@@ -23,6 +24,68 @@ export type DiashowContext = RenderContext & {
 };
 
 export type ThemeTokens = Record<string, string>;
+
+export type ButtonVariant =
+  | "primary"
+  | "ghost"
+  | "danger"
+  | "outline"
+  | "secondary";
+
+export type IconSize =
+  | "xsmall"
+  | "small"
+  | "medium"
+  | "large"
+  | "xlarge"
+  | "xxlarge";
+
+/**
+ * The host-owned UI kit handed to plugins through every render context, so
+ * plugins reuse the app's themed components instead of re-implementing them.
+ * This is a deliberately small, stable surface: it is part of the published
+ * plugin type package, so additions are cheap but changes/removals are
+ * breaking. Render entries with `context.components`, e.g.
+ * `React.createElement(components.Button, { variant: "primary" }, "Save")`.
+ */
+export type PluginComponents = {
+  Button: React.FC<
+    React.ButtonHTMLAttributes<HTMLButtonElement> & {
+      variant?: ButtonVariant;
+      children: React.ReactNode;
+    }
+  >;
+  IconButton: React.FC<
+    React.ButtonHTMLAttributes<HTMLButtonElement> & {
+      children: React.ReactNode;
+    }
+  >;
+  Badge: React.FC<{
+    children: React.ReactNode;
+    className?: string;
+    onClick?: () => void;
+    onDelete?: () => void;
+  }>;
+  Modal: React.FC<{
+    isOpen: boolean;
+    onClose: () => void;
+    title: string;
+    children: React.ReactNode;
+    className?: string;
+  }>;
+  ProgressBar: React.FC<{
+    min?: number;
+    max: number;
+    value: number;
+    color?: string;
+  }>;
+  Icon: React.FC<{
+    Icon: IconType;
+    size: IconSize;
+    className?: string;
+    title?: string;
+  }>;
+};
 
 export type FileTypePlugin = {
   matcher: (fileType: string) => boolean;
@@ -52,6 +115,7 @@ export type PluginApi = {
 export type RouteContext = {
   React: typeof React;
   api: PluginApi;
+  components: PluginComponents;
 };
 
 /**
@@ -71,6 +135,7 @@ export type DocumentInfoContext = {
   React: typeof React;
   api: PluginApi;
   document: DocumentInfo;
+  components: PluginComponents;
 };
 
 /**

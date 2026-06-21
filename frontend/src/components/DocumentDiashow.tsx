@@ -5,6 +5,7 @@ import { useDocumentUrl } from "../hooks/useDocumentUrl";
 import { useSwipeable } from "react-swipeable";
 import { DocumentDiashowControls } from "./DocumentDiashowControls";
 import React from "react";
+import { pluginComponents } from "../plugins/pluginComponents";
 
 type Props = {
   documentId: string;
@@ -83,6 +84,7 @@ export const DocumentDiashow = ({
         nextDocument={nextDocument}
         preventAutoAdvance={() => setAutoAdvance(false)}
         React={React}
+        components={pluginComponents}
       />
     </div>
   );

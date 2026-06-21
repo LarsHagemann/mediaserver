@@ -17,7 +17,7 @@ const plugin: FrontendPlugin = {
 
   documentInfo: {
     matcher: () => true,
-    Render: ({ React, api, document }) => {
+    Render: ({ React, api, document, components }) => {
       const [score, setScore] = React.useState<number | null>(null);
       const [busy, setBusy] = React.useState(false);
 
@@ -67,12 +67,22 @@ const plugin: FrontendPlugin = {
         "div",
         null,
         React.createElement(
-          "h3",
-          {
-            className:
-              "text-xs font-semibold text-text-muted uppercase tracking-wider mb-4",
-          },
-          "Score",
+          "div",
+          { className: "flex items-center gap-2 mb-4" },
+          React.createElement(
+            "h3",
+            {
+              className:
+                "text-xs font-semibold text-text-muted uppercase tracking-wider",
+            },
+            "Score",
+          ),
+          // Reuse the host's themed Badge instead of styling our own.
+          score != null &&
+            React.createElement(components.Badge, {
+              onDelete: () => setRating(0),
+              children: `${score} / 5`,
+            }),
         ),
         React.createElement(
           "div",
@@ -104,16 +114,21 @@ const plugin: FrontendPlugin = {
     {
       path: "/sample",
       Component: (context) => {
-        const { React, api } = context;
+        const { React, api, components } = context;
         const [health, setHealth] = React.useState<string>("loading...");
 
-        React.useEffect(() => {
+        const loadHealth = React.useCallback(() => {
+          setHealth("loading...");
           api
             .fetch("/health")
             .then((res) => res.json())
             .then((data) => setHealth(JSON.stringify(data)))
             .catch((err) => setHealth(`Error: ${err.message}`));
         }, [api]);
+
+        React.useEffect(() => {
+          loadHealth();
+        }, [loadHealth]);
 
         return React.createElement(
           "div",
@@ -128,6 +143,13 @@ const plugin: FrontendPlugin = {
             { className: "text-text-secondary mb-2" },
             "This page is rendered by a plugin.",
           ),
+          // Reuse the host's themed Button instead of styling our own.
+          React.createElement(components.Button, {
+            variant: "secondary",
+            onClick: loadHealth,
+            className: "mb-4",
+            children: "Refresh health",
+          }),
           React.createElement(
             "div",
             { className: "bg-surface-1 p-4 rounded-md" },

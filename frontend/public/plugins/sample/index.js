@@ -13,7 +13,7 @@ const plugin = {
     ],
     documentInfo: {
         matcher: () => true,
-        Render: ({ React, api, document }) => {
+        Render: ({ React, api, document, components }) => {
             const [score, setScore] = React.useState(null);
             const [busy, setBusy] = React.useState(false);
             React.useEffect(() => {
@@ -60,9 +60,15 @@ const plugin = {
                     setBusy(false);
                 }
             };
-            return React.createElement("div", null, React.createElement("h3", {
-                className: "text-xs font-semibold text-text-muted uppercase tracking-wider mb-4",
-            }, "Score"), React.createElement("div", { className: "flex gap-1" }, [1, 2, 3, 4, 5].map((star) => React.createElement("button", {
+            return React.createElement("div", null, React.createElement("div", { className: "flex items-center gap-2 mb-4" }, React.createElement("h3", {
+                className: "text-xs font-semibold text-text-muted uppercase tracking-wider",
+            }, "Score"), 
+            // Reuse the host's themed Badge instead of styling our own.
+            score != null &&
+                React.createElement(components.Badge, {
+                    onDelete: () => setRating(0),
+                    children: `${score} / 5`,
+                })), React.createElement("div", { className: "flex gap-1" }, [1, 2, 3, 4, 5].map((star) => React.createElement("button", {
                 key: star,
                 type: "button",
                 disabled: busy,
@@ -79,16 +85,27 @@ const plugin = {
         {
             path: "/sample",
             Component: (context) => {
-                const { React, api } = context;
+                const { React, api, components } = context;
                 const [health, setHealth] = React.useState("loading...");
-                React.useEffect(() => {
+                const loadHealth = React.useCallback(() => {
+                    setHealth("loading...");
                     api
                         .fetch("/health")
                         .then((res) => res.json())
                         .then((data) => setHealth(JSON.stringify(data)))
                         .catch((err) => setHealth(`Error: ${err.message}`));
                 }, [api]);
-                return React.createElement("div", { className: "p-6" }, React.createElement("h1", { className: "text-2xl font-bold text-text-primary mb-4" }, "Sample Plugin Page"), React.createElement("p", { className: "text-text-secondary mb-2" }, "This page is rendered by a plugin."), React.createElement("div", { className: "bg-surface-1 p-4 rounded-md" }, React.createElement("p", { className: "text-text-muted text-sm" }, "Backend health: "), React.createElement("code", { className: "text-text-primary" }, health)));
+                React.useEffect(() => {
+                    loadHealth();
+                }, [loadHealth]);
+                return React.createElement("div", { className: "p-6" }, React.createElement("h1", { className: "text-2xl font-bold text-text-primary mb-4" }, "Sample Plugin Page"), React.createElement("p", { className: "text-text-secondary mb-2" }, "This page is rendered by a plugin."), 
+                // Reuse the host's themed Button instead of styling our own.
+                React.createElement(components.Button, {
+                    variant: "secondary",
+                    onClick: loadHealth,
+                    className: "mb-4",
+                    children: "Refresh health",
+                }), React.createElement("div", { className: "bg-surface-1 p-4 rounded-md" }, React.createElement("p", { className: "text-text-muted text-sm" }, "Backend health: "), React.createElement("code", { className: "text-text-primary" }, health)));
             },
         },
     ],
