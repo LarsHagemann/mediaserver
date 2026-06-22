@@ -80,6 +80,16 @@ jobs:
         working-directory: ./server
         run: npm run build
 
+      - name: Pre-pull Postgres test image
+        run: |
+          for i in 1 2 3; do
+            docker pull postgres:16-alpine && exit 0
+            echo "pull failed, retrying in 10s ($i/3)..."
+            sleep 10
+          done
+          echo "Could not pull postgres:16-alpine after 3 attempts" >&2
+          exit 1
+
       - name: Run tests
         working-directory: ./server
         run: npm test
