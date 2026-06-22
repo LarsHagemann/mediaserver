@@ -51,9 +51,11 @@ export const PreviewContainer = ({
   const [wasFullscreen, setWasFullscreen] = useState(false);
 
   const { data: identity } = api.useGetMeQuery();
+  const { data: config } = api.useGetAppConfigQuery();
   const currentDocument = data?.items.find((d) => d.id === previewImageId);
   const SYSTEM_USER_ID = "00000000-0000-0000-0000-000000000000";
   const canManageAccess =
+    !!config?.idpEnabled &&
     !!identity &&
     (identity.permissions.includes("admin:users") ||
       (identity.userId !== null &&

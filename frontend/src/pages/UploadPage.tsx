@@ -7,7 +7,7 @@ import {
   MdLock,
   MdPublic,
 } from "react-icons/md";
-import type { ApiTag } from "../app/api";
+import { api, type ApiTag } from "../app/api";
 import { Button } from "../components/Button";
 import { stringToTag, tagToString } from "../util/tag";
 import { bytesToHumanReadable } from "../util/bytesToHumanReadable";
@@ -53,6 +53,7 @@ export const UploadPage = () => {
 
   const dispatch = useAppDispatch();
   const maxConcurrentUploads = useAppSelector(selectMaxConcurrentUploads);
+  const { data: config } = api.useGetAppConfigQuery();
 
   const addFiles = useCallback((files: File[]) => {
     const newItems: QueuedFile[] = files.map((file) => {
@@ -162,7 +163,11 @@ export const UploadPage = () => {
       </div>
 
       {/* Controls row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div
+        className={`grid grid-cols-1 gap-4 ${
+          config?.idpEnabled ? "md:grid-cols-2" : ""
+        }`}
+      >
         <BatchTagsControl
           tags={batchTags}
           inputValue={tagInputValue}
@@ -174,7 +179,9 @@ export const UploadPage = () => {
             )
           }
         />
-        <VisibilitySelector value={visibility} onChange={setVisibility} />
+        {config?.idpEnabled && (
+          <VisibilitySelector value={visibility} onChange={setVisibility} />
+        )}
       </div>
 
       <UploadDropZone
@@ -338,16 +345,18 @@ export const UploadPage = () => {
                 <> · {bytesToHumanReadable(totalQueuedSize)}</>
               )}
             </span>
-            <span className="flex items-center gap-1 px-2 py-0.5 rounded border border-border text-xs">
-              {visibility === "private" ? (
-                <MdLock size={11} />
-              ) : (
-                <MdPublic size={11} />
-              )}
-              {visibility === "private"
-                ? t("pages.upload.private")
-                : t("pages.upload.public")}
-            </span>
+            {config?.idpEnabled && (
+              <span className="flex items-center gap-1 px-2 py-0.5 rounded border border-border text-xs">
+                {visibility === "private" ? (
+                  <MdLock size={11} />
+                ) : (
+                  <MdPublic size={11} />
+                )}
+                {visibility === "private"
+                  ? t("pages.upload.private")
+                  : t("pages.upload.public")}
+              </span>
+            )}
             {batchTags.length > 0 && (
               <span className="flex items-center gap-1 text-xs">
                 <span className="w-2 h-2 rounded-full bg-success shrink-0" />
