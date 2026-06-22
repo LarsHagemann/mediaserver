@@ -1,3 +1,4 @@
+import { ZoomableImage } from "../components/ZoomableImage";
 import type { FileTypePlugin } from "./plugin";
 
 export const pdfPlugin: FileTypePlugin = {
@@ -23,18 +24,17 @@ export const imagePlugin: FileTypePlugin = {
   icon: (icons) => icons.FaImage,
   description: "Plugin for rendering image files",
   Render: ({ objectUrl }) => (
-    <img
-      className="w-full h-full object-contain"
-      src={objectUrl}
-      alt="Image Preview"
-    />
+    <ZoomableImage src={objectUrl} alt="Image Preview" />
   ),
   Diashow: (context) => {
     return (
-      <img
-        className="w-full h-full object-contain"
+      <ZoomableImage
         src={context.objectUrl}
         alt="Image Preview"
+        // Zooming into a slide pauses auto-advance so it doesn't move on.
+        onZoomedChange={(zoomed) => {
+          if (zoomed) context.preventAutoAdvance();
+        }}
       />
     );
   },
