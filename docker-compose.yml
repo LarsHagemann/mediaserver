@@ -32,7 +32,7 @@ services:
       REDIS_PORT: 6379
       CORS_ORIGIN: http://localhost:5173
       # IdP — set IDP_ENABLED=true to activate OIDC login (requires '127.0.0.1 keycloak' in /etc/hosts)
-      IDP_ENABLED: true
+      IDP_ENABLED: false
       IDP_OIDC_DISCOVERY_URL: http://keycloak:8100/realms/mediaserver/.well-known/openid-configuration
       IDP_CLIENT_ID: mediaserver-app
       IDP_CLIENT_SECRET: "dein-sicheres-secret-hier"

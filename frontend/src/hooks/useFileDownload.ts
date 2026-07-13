@@ -15,6 +15,8 @@ export const useFileDownload = (url: string, skip = false) => {
 
   useEffect(() => {
     if (skip) {
+      setObjectUrl(undefined);
+      setBlob(undefined);
       setIsLoading(false);
       return;
     }
@@ -27,6 +29,10 @@ export const useFileDownload = (url: string, skip = false) => {
       setIsLoading(false);
       return;
     }
+
+    setObjectUrl(undefined);
+    setBlob(undefined);
+    setIsLoading(true);
 
     fetch(url, { credentials: "include" })
       .then((data) => data.blob())

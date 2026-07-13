@@ -1,6 +1,6 @@
 import { twMerge } from "tailwind-merge";
 import { useThumbnail } from "../hooks/useThumbnail";
-import type { Document, ApiTag } from "../app/api";
+import { api, type Document, type ApiTag } from "../app/api";
 import { fileIconFromMimeType } from "../util/fileIconFromFile";
 import { SelectionIndicator } from "../components/SelectionIndicator";
 import { MdLock, MdPublic } from "react-icons/md";
@@ -50,6 +50,7 @@ export const DocumentCard = ({
   onSelect,
 }: Props) => {
   const { objectUrl, isLoading, error } = useThumbnail(document.id);
+  const { data: config } = api.useGetAppConfigQuery();
   const ext = mimeToExtLabel(document.mime);
   const Icon = fileIconFromMimeType(document.mime);
 
@@ -98,14 +99,16 @@ export const DocumentCard = ({
           {ext}
         </span>
 
-        {/* Visibility icon – top-right */}
-        <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/60 flex items-center justify-center backdrop-blur-sm">
-          {document.isPublic ? (
-            <MdPublic className="w-3.5 h-3.5 text-amber-400" title="Public" />
-          ) : (
-            <MdLock className="w-3.5 h-3.5 text-white/70" title="Private" />
-          )}
-        </div>
+        {/* Visibility icon – top-right (hidden when IDP disabled) */}
+        {config?.idpEnabled && (
+          <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/60 flex items-center justify-center backdrop-blur-sm">
+            {document.isPublic ? (
+              <MdPublic className="w-3.5 h-3.5 text-amber-400" title="Public" />
+            ) : (
+              <MdLock className="w-3.5 h-3.5 text-white/70" title="Private" />
+            )}
+          </div>
+        )}
 
         {/* Selection checkbox in edit mode */}
         {onSelect && (
