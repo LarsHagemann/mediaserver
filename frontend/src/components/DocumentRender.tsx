@@ -19,10 +19,11 @@ export const DocumentRender = ({
   const pluginFromProp = useDocumentPlugin(mimeType);
   const isStream = pluginFromProp.fetchMode === "stream";
 
-  const { objectUrl: blobUrl, blob, isLoading } = useDocument(
-    documentId,
-    isStream,
-  );
+  const {
+    objectUrl: blobUrl,
+    blob,
+    isLoading,
+  } = useDocument(documentId, isStream);
   const streamUrl = useDocumentUrl(documentId);
 
   const effectiveMimeType = mimeType ?? blob?.type;
