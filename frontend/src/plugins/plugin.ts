@@ -36,6 +36,7 @@ export type RenderContext = {
   React: typeof React;
   components: PluginComponents;
   dataApi: PluginDataApi;
+  onZoomedChange?: (zoomed: boolean) => void;
 };
 
 export type DiashowContext = RenderContext & {
