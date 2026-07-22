@@ -11,7 +11,8 @@
     "style": "npm run style:backend && npm run style:frontend",
     "style:fix:backend": "cd server && npm run style:fix",
     "style:fix:frontend": "cd frontend && npm run style:fix",
-    "style:fix": "npm run style:fix:backend && npm run style:fix:frontend"
+    "style:fix": "npm run style:fix:backend && npm run style:fix:frontend",
+    "prepare:plugin-types": "cd plugin/backend-types && npm run types && cd ../frontend-types && npm run types"
   },
   "dependencies": {
     "@lars_hagemann/tags": "^1.0.9"
