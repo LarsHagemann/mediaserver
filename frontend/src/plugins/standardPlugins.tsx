@@ -23,8 +23,12 @@ export const imagePlugin: FileTypePlugin = {
   matcher: (type) => type.startsWith("image"),
   icon: (icons) => icons.FaImage,
   description: "Plugin for rendering image files",
-  Render: ({ objectUrl }) => (
-    <ZoomableImage src={objectUrl} alt="Image Preview" />
+  Render: ({ objectUrl, onZoomedChange }) => (
+    <ZoomableImage
+      src={objectUrl}
+      alt="Image Preview"
+      onZoomedChange={onZoomedChange}
+    />
   ),
   Diashow: (context) => {
     return (

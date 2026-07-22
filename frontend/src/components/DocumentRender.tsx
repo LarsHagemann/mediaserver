@@ -9,12 +9,14 @@ type Props = {
   documentId: string;
   mimeType?: string;
   onLoadingChange?: (isLoading: boolean, documentId: string) => void;
+  onZoomedChange?: (zoomed: boolean) => void;
 };
 
 export const DocumentRender = ({
   documentId,
   mimeType,
   onLoadingChange,
+  onZoomedChange,
 }: Props) => {
   const pluginFromProp = useDocumentPlugin(mimeType);
   const isStream = pluginFromProp.fetchMode === "stream";
@@ -45,6 +47,7 @@ export const DocumentRender = ({
       React={React}
       components={pluginComponents}
       dataApi={enhancedApi}
+      onZoomedChange={onZoomedChange}
     />
   );
 };

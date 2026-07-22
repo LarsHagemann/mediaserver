@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { DocumentRender } from "../components/DocumentRender";
 import { IndeterminateProgressBar } from "../components/IndeterminateProgressBar";
 import { useSwipeable } from "react-swipeable";
@@ -17,6 +17,7 @@ export const DocumentPreview = ({
   previousPreviewImage,
 }: Props) => {
   const [isLoading, setIsLoading] = useState(true);
+  const [isZoomed, setIsZoomed] = useState(false);
   const loadingIdRef = useRef(id);
 
   const handleLoadingChange = useCallback(
@@ -31,11 +32,22 @@ export const DocumentPreview = ({
   if (id !== loadingIdRef.current) {
     loadingIdRef.current = id;
     setIsLoading(true);
+    setIsZoomed(false);
   }
 
+  const swipeHandlers = useMemo(
+    () =>
+      isZoomed
+        ? {}
+        : {
+            onSwipedLeft: nextPreviewImage,
+            onSwipedRight: previousPreviewImage,
+          },
+    [isZoomed, nextPreviewImage, previousPreviewImage],
+  );
+
   const handlers = useSwipeable({
-    onSwipedLeft: nextPreviewImage,
-    onSwipedRight: previousPreviewImage,
+    ...swipeHandlers,
     trackMouse: true,
     preventScrollOnSwipe: true,
     trackTouch: true,
@@ -52,6 +64,7 @@ export const DocumentPreview = ({
           documentId={id}
           mimeType={mimeType}
           onLoadingChange={handleLoadingChange}
+          onZoomedChange={setIsZoomed}
         />
       </div>
     </div>
