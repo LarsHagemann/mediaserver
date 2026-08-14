@@ -10,11 +10,13 @@ import { ApiError } from "../common/ApiError.js";
 import { stat } from "fs/promises";
 import type { Identity } from "../auth/Identity.js";
 import type { DocumentAccessScope } from "../auth/AccessScope.js";
+import type { FileService } from "../files/FileService.js";
 
 export class DocumentService {
   constructor(
     private readonly documentRepository: DocumentRepository,
     private readonly tagService: TagService,
+    private readonly fileService: FileService,
   ) {}
 
   public async createDocument(request: CreateDocumentRequest): Promise<void> {
@@ -135,7 +137,19 @@ export class DocumentService {
         "Only the document owner or a user with delete permission can delete documents",
       );
     }
+
+    // Read the on-disk location before the row disappears, then drop the row
+    // first and the files second. The reverse order would leave rows pointing
+    // at missing files (broken downloads and thumbnails) if the second step
+    // failed, whereas this order leaves at worst an unreferenced blob.
+    const document =
+      await this.documentRepository.getDocumentWithPathInfo(documentId);
     await this.documentRepository.deleteDocument(documentId);
+    await this.fileService.removeDocumentFiles(
+      document.base_path,
+      document.filename,
+      documentId,
+    );
   }
 }
 

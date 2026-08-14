@@ -25,6 +25,8 @@ import { UserService } from "./auth/UserService.js";
 import { SessionService } from "./auth/SessionService.js";
 import { OAuthService } from "./auth/OAuthService.js";
 import { PermissionVersionService } from "./auth/PermissionVersionService.js";
+import { DuplicateRepository } from "./duplicates/DuplicateRepository.js";
+import { DuplicateService } from "./duplicates/DuplicateService.js";
 
 export const services = {
   environment: "service.environment",
@@ -45,6 +47,7 @@ export const services = {
   sessionService: "service.session",
   oauthService: "service.oauth",
   permissionVersion: "service.permissionVersion",
+  duplicate: "service.duplicate",
 };
 
 export const repositories = {
@@ -56,6 +59,7 @@ export const repositories = {
   role: "repository.role",
   user: "repository.user",
   session: "repository.session",
+  duplicate: "repository.duplicate",
 };
 
 export const defaultDiContainer = (diContainer: ContainerBuilder) => {
@@ -79,7 +83,8 @@ export const defaultDiContainer = (diContainer: ContainerBuilder) => {
   diContainer
     .register(services.document, DocumentService)
     .addArgument(new Reference(repositories.document))
-    .addArgument(new Reference(services.tag));
+    .addArgument(new Reference(services.tag))
+    .addArgument(new Reference(services.file));
 
   diContainer
     .register(services.file, FileService)
@@ -174,6 +179,17 @@ export const defaultDiContainer = (diContainer: ContainerBuilder) => {
     .addArgument(new Reference(services.redis))
     .addArgument(new Reference(services.environment))
     .addArgument(new Reference(services.permissionVersion));
+
+  diContainer
+    .register(repositories.duplicate, DuplicateRepository)
+    .addArgument(new Reference(services.db));
+
+  diContainer
+    .register(services.duplicate, DuplicateService)
+    .addArgument(new Reference(repositories.duplicate))
+    .addArgument(new Reference(services.file))
+    .addArgument(new Reference(services.accessScopeResolver))
+    .addArgument(new Reference(services.logger));
 
   diContainer
     .register(services.oauthService, OAuthService)

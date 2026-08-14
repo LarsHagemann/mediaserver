@@ -9,6 +9,7 @@ import { useState, useRef, useEffect } from "react";
 import { twMerge } from "tailwind-merge";
 import { useTranslation } from "react-i18next";
 import { MdCollections, MdLogout } from "react-icons/md";
+import { HiOutlineDocumentDuplicate } from "react-icons/hi2";
 import { useIdentity, usePermission } from "../hooks/usePermission";
 import { UserAvatar } from "../components/UserAvatar";
 import { AppIcon } from "../components/AppIcon";
@@ -114,6 +115,10 @@ export const SideBar = () => {
   const canUpload = usePermission("document:upload");
   const canViewCollections = usePermission("collection:read");
   const canViewState = usePermission("admin:state");
+  // Duplicate resolution only ever operates on documents the user owns, so it
+  // has nothing to show an anonymous visitor browsing public documents.
+  const canFindDuplicates =
+    usePermission("document:read") && (identity?.isAuthenticated ?? false);
 
   const username = getUsername(identity?.email, identity?.name);
   const showAuth = identity?.userId !== "system";
@@ -180,6 +185,15 @@ export const SideBar = () => {
           onClick={() => navigate("/collections")}
           collapsed={collapsed}
           text={t("sidebar.collections")}
+        />
+      )}
+      {canFindDuplicates && (
+        <SideBarButton
+          Icon={HiOutlineDocumentDuplicate}
+          pathPrefix="/duplicates"
+          onClick={() => navigate("/duplicates")}
+          collapsed={collapsed}
+          text={t("sidebar.duplicates")}
         />
       )}
 

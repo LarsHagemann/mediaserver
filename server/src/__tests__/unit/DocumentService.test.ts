@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { DocumentService } from "../../documents/DocumentService.js";
 import type { DocumentRepository } from "../../documents/DocumentRepository.js";
 import type { TagService } from "../../tags/TagService.js";
+import type { FileService } from "../../files/FileService.js";
 import type { Identity } from "../../auth/Identity.js";
 
 vi.mock("fs/promises", () => ({
@@ -27,6 +28,11 @@ const makeTagService = (): TagService =>
     addTagToDocument: vi.fn(),
   }) as unknown as TagService;
 
+const makeFileService = (): FileService =>
+  ({
+    removeDocumentFiles: vi.fn(),
+  }) as unknown as FileService;
+
 const makeIdentity = (userId: string | null, permissions: string[] = []): Identity =>
   ({
     userId,
@@ -49,12 +55,18 @@ const mockDocWithPathInfo = {
 describe("DocumentService", () => {
   let documentRepository: ReturnType<typeof makeDocumentRepository>;
   let tagService: ReturnType<typeof makeTagService>;
+  let fileService: ReturnType<typeof makeFileService>;
   let documentService: DocumentService;
 
   beforeEach(() => {
     documentRepository = makeDocumentRepository();
     tagService = makeTagService();
-    documentService = new DocumentService(documentRepository, tagService);
+    fileService = makeFileService();
+    documentService = new DocumentService(
+      documentRepository,
+      tagService,
+      fileService,
+    );
     vi.clearAllMocks();
   });
 
@@ -68,6 +80,8 @@ describe("DocumentService", () => {
         type: "image/jpeg",
         ownerId: SYSTEM_USER_ID,
         isPublic: false,
+        contentHash: "a".repeat(64),
+        sizeBytes: 1024,
       };
 
       await documentService.createDocument(request);
@@ -91,6 +105,8 @@ describe("DocumentService", () => {
         type: "video/mp4",
         ownerId: SYSTEM_USER_ID,
         isPublic: false,
+        contentHash: "b".repeat(64),
+        sizeBytes: 2048,
       });
 
       expect(tagService.addTagToDocument).toHaveBeenCalledTimes(3);
@@ -305,6 +321,39 @@ describe("DocumentService", () => {
       await documentService.updateDocumentAccess("doc-1", identity, update);
 
       expect(documentRepository.updateDocumentAccess).toHaveBeenCalledWith("doc-1", update);
+    });
+  });
+
+  describe("deleteDocument", () => {
+    beforeEach(() => {
+      vi.mocked(documentRepository.getDocumentAccess).mockResolvedValue({
+        ownerId: OWNER_USER_ID,
+        isPublic: true,
+        shares: [],
+      });
+      vi.mocked(documentRepository.getDocumentWithPathInfo).mockResolvedValue(
+        mockDocWithPathInfo,
+      );
+    });
+
+    it("removes the stored blob and thumbnail alongside the row", async () => {
+      await documentService.deleteDocument("doc-1", makeIdentity(OWNER_USER_ID));
+
+      expect(documentRepository.deleteDocument).toHaveBeenCalledWith("doc-1");
+      expect(fileService.removeDocumentFiles).toHaveBeenCalledWith(
+        "/data/storage",
+        "photo.jpg",
+        "doc-1",
+      );
+    });
+
+    it("does not touch the files when the caller is not allowed to delete", async () => {
+      await expect(
+        documentService.deleteDocument("doc-1", makeIdentity(OTHER_USER_ID)),
+      ).rejects.toThrow();
+
+      expect(documentRepository.deleteDocument).not.toHaveBeenCalled();
+      expect(fileService.removeDocumentFiles).not.toHaveBeenCalled();
     });
   });
 });

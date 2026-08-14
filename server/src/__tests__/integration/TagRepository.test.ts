@@ -79,6 +79,9 @@ describe("TagRepository (integration)", () => {
       type: "image/jpeg",
       isPublic: true,
       ownerId: SYSTEM_USER_ID,
+      contentHash:
+        "0000000000000000000000000000000000000000000000000000000000000001",
+      sizeBytes: 1024,
     });
     await documentRepository.createDocument({
       id: DOC_ID_2,
@@ -88,6 +91,9 @@ describe("TagRepository (integration)", () => {
       type: "video/mp4",
       isPublic: true,
       ownerId: SYSTEM_USER_ID,
+      contentHash:
+        "0000000000000000000000000000000000000000000000000000000000000002",
+      sizeBytes: 1024,
     });
 
     // Seed documents for access scope tests
@@ -99,6 +105,9 @@ describe("TagRepository (integration)", () => {
       type: "image/jpeg",
       isPublic: true,
       ownerId: FOREIGN_OWNER_ID,
+      contentHash:
+        "0000000000000000000000000000000000000000000000000000000000000003",
+      sizeBytes: 1024,
     });
     await documentRepository.createDocument({
       id: DOC_VIEWER_PRIVATE,
@@ -108,6 +117,9 @@ describe("TagRepository (integration)", () => {
       type: "image/jpeg",
       isPublic: false,
       ownerId: VIEWER_USER_ID,
+      contentHash:
+        "0000000000000000000000000000000000000000000000000000000000000004",
+      sizeBytes: 1024,
     });
     await documentRepository.createDocument({
       id: DOC_FOREIGN_PRIVATE,
@@ -117,6 +129,9 @@ describe("TagRepository (integration)", () => {
       type: "image/jpeg",
       isPublic: false,
       ownerId: FOREIGN_OWNER_ID,
+      contentHash:
+        "0000000000000000000000000000000000000000000000000000000000000005",
+      sizeBytes: 1024,
     });
     await documentRepository.createDocument({
       id: DOC_SHARED_WITH_VIEWER,
@@ -126,6 +141,9 @@ describe("TagRepository (integration)", () => {
       type: "image/jpeg",
       isPublic: false,
       ownerId: FOREIGN_OWNER_ID,
+      contentHash:
+        "0000000000000000000000000000000000000000000000000000000000000006",
+      sizeBytes: 1024,
     });
     await dbService.none(
       "INSERT INTO document_shares (document_id, shared_with_user_id) VALUES ($docId, $userId)",
