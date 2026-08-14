@@ -102,6 +102,47 @@ export type BulkEditDocumentsRequest = {
   tagsToRemove: ApiTag[];
 };
 
+export type DuplicateGroupMember = {
+  id: string;
+  mime: string;
+  friendlyName: string;
+  ownerId: string;
+  ownerName?: string;
+  isPublic: boolean;
+  sizeBytes: number;
+  createdAt: string;
+  tags: ApiTag[];
+};
+
+export type DuplicateGroup = {
+  contentHash: string;
+  documentCount: number;
+  sizeBytes: number;
+  reclaimableBytes: number;
+  documents: DuplicateGroupMember[];
+};
+
+export type IndexingStatus = {
+  running: boolean;
+  processed: number;
+  failed: number;
+  pending: number;
+};
+
+export type ResolveDuplicateGroupRequest = {
+  contentHash: string;
+  keepId: string;
+  mergeIds: string[];
+  tagsToAdd: ApiTag[];
+  tagsToRemove: ApiTag[];
+};
+
+export type ResolveDuplicateGroupResult = {
+  keptId: string;
+  mergedCount: number;
+  reclaimedBytes: number;
+};
+
 export type Session = {
   id: string;
   createdAt: string;
@@ -400,6 +441,47 @@ export const api = baseApi.injectEndpoints({
         { type: "document", id: arg.documentId },
         "tag",
       ],
+    }),
+
+    // --- Duplicates ---
+
+    listDuplicates: build.query<
+      PaginatedResponse<DuplicateGroup>,
+      { limit?: number; offset?: number }
+    >({
+      query: ({ limit = 20, offset = 0 }) => ({
+        url: `/documents/duplicates?limit=${limit}&offset=${offset}`,
+        method: "GET",
+      }),
+      providesTags: (response) => [
+        "document",
+        "tag",
+        ...(response?.items.flatMap((group) =>
+          group.documents.map(
+            (doc) => ({ type: "document", id: doc.id }) as const,
+          ),
+        ) || []),
+      ],
+    }),
+
+    getDuplicateIndexingStatus: build.query<IndexingStatus, void>({
+      query: () => ({ url: "/documents/duplicates/indexing", method: "GET" }),
+    }),
+
+    startDuplicateIndexing: build.mutation<IndexingStatus, void>({
+      query: () => ({ url: "/documents/duplicates/indexing", method: "POST" }),
+    }),
+
+    resolveDuplicateGroup: build.mutation<
+      ResolveDuplicateGroupResult,
+      ResolveDuplicateGroupRequest
+    >({
+      query: (body) => ({
+        url: `/documents/duplicates/resolve`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["document", "tag"],
     }),
 
     // --- Auth ---

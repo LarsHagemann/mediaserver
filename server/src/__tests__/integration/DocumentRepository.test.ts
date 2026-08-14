@@ -32,6 +32,8 @@ describe("DocumentRepository (integration)", () => {
           type: "image/jpeg",
           ownerId: systemUserId,
           isPublic: true,
+          contentHash: "0000000000000000000000000000000000000000000000000000000000000001",
+          sizeBytes: 1024,
         }),
       ).resolves.toBeUndefined();
     });
@@ -45,6 +47,8 @@ describe("DocumentRepository (integration)", () => {
         type: "image/jpeg",
         ownerId: systemUserId,
         isPublic: true,
+        contentHash: "0000000000000000000000000000000000000000000000000000000000000002",
+        sizeBytes: 1024,
       });
 
       await expect(
@@ -56,6 +60,8 @@ describe("DocumentRepository (integration)", () => {
           type: "image/jpeg",
           ownerId: systemUserId,
           isPublic: true,
+          contentHash: "0000000000000000000000000000000000000000000000000000000000000003",
+          sizeBytes: 1024,
         }),
       ).rejects.toThrow();
     });
@@ -72,6 +78,8 @@ describe("DocumentRepository (integration)", () => {
         type: "image/jpeg",
         ownerId: systemUserId,
         isPublic: true,
+        contentHash: "0000000000000000000000000000000000000000000000000000000000000004",
+        sizeBytes: 1024,
       });
 
       const result = await repository.getDocumentWithPathInfo(id);
@@ -108,6 +116,8 @@ describe("DocumentRepository (integration)", () => {
         type: "image/jpeg",
         ownerId: systemUserId,
         isPublic: true,
+        contentHash: "0000000000000000000000000000000000000000000000000000000000000005",
+        sizeBytes: 1024,
       });
 
       await repository.updateFriendlyName(id, "Updated Name");
@@ -128,6 +138,8 @@ describe("DocumentRepository (integration)", () => {
         type: "image/jpeg",
         ownerId: systemUserId,
         isPublic: false,
+        contentHash: "0000000000000000000000000000000000000000000000000000000000000006",
+        sizeBytes: 1024,
       });
 
       const result = await repository.getDocumentWithPathInfo(id);
@@ -146,6 +158,8 @@ describe("DocumentRepository (integration)", () => {
         type: "image/jpeg",
         ownerId: systemUserId,
         isPublic: false,
+        contentHash: "0000000000000000000000000000000000000000000000000000000000000007",
+        sizeBytes: 1024,
       });
 
       const result = await repository.getDocumentWithPathInfo(id);
@@ -162,6 +176,8 @@ describe("DocumentRepository (integration)", () => {
         type: "image/jpeg",
         ownerId: systemUserId,
         isPublic: true,
+        contentHash: "0000000000000000000000000000000000000000000000000000000000000008",
+        sizeBytes: 1024,
       });
 
       const result = await repository.getDocumentWithPathInfo(id);
@@ -178,6 +194,8 @@ describe("DocumentRepository (integration)", () => {
         type: "image/jpeg",
         ownerId: systemUserId,
         isPublic: false,
+        contentHash: "0000000000000000000000000000000000000000000000000000000000000009",
+        sizeBytes: 1024,
       });
 
       await expect(
@@ -195,6 +213,8 @@ describe("DocumentRepository (integration)", () => {
         type: "image/jpeg",
         ownerId: systemUserId,
         isPublic: true,
+        contentHash: "000000000000000000000000000000000000000000000000000000000000000a",
+        sizeBytes: 1024,
       });
 
       const result = await repository.getDocumentWithPathInfo(id, { type: "public-only" });

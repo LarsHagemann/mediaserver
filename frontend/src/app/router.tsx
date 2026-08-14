@@ -7,6 +7,7 @@ import { NavigateToGalleryPage } from "../pages/NavigateToGalleryPage";
 import { StatePage } from "../pages/StatePage";
 import { SettingsPage } from "../pages/SettingsPage";
 import { CollectionsPage } from "../pages/CollectionsPage";
+import { DuplicatesPage } from "../pages/DuplicatesPage";
 import { LoginPage } from "../pages/LoginPage";
 import { PermissionGuard } from "../components/PermissionGuard";
 import type { PluginRoute } from "../plugins/plugin";
@@ -45,6 +46,14 @@ export function createAppRouter(pluginRoutes: PluginRoute[] = []) {
         {
           path: "tags",
           Component: TagsPage,
+        },
+        {
+          path: "duplicates",
+          element: (
+            <PermissionGuard action="document:read">
+              <DuplicatesPage />
+            </PermissionGuard>
+          ),
         },
         {
           path: "state",

@@ -84,6 +84,42 @@ export type BulkEditDocumentsRequest = {
     tagsToAdd: ApiTag[];
     tagsToRemove: ApiTag[];
 };
+export type DuplicateGroupMember = {
+    id: string;
+    mime: string;
+    friendlyName: string;
+    ownerId: string;
+    ownerName?: string;
+    isPublic: boolean;
+    sizeBytes: number;
+    createdAt: string;
+    tags: ApiTag[];
+};
+export type DuplicateGroup = {
+    contentHash: string;
+    documentCount: number;
+    sizeBytes: number;
+    reclaimableBytes: number;
+    documents: DuplicateGroupMember[];
+};
+export type IndexingStatus = {
+    running: boolean;
+    processed: number;
+    failed: number;
+    pending: number;
+};
+export type ResolveDuplicateGroupRequest = {
+    contentHash: string;
+    keepId: string;
+    mergeIds: string[];
+    tagsToAdd: ApiTag[];
+    tagsToRemove: ApiTag[];
+};
+export type ResolveDuplicateGroupResult = {
+    keptId: string;
+    mergedCount: number;
+    reclaimedBytes: number;
+};
 export type Session = {
     id: string;
     createdAt: string;
@@ -166,6 +202,13 @@ export declare const api: import("@reduxjs/toolkit/query").Api<import("@reduxjs/
         collectionId: string;
         documentId: string;
     }, import("@reduxjs/toolkit/query").BaseQueryFn<string | import("@reduxjs/toolkit/query").FetchArgs, unknown, import("@reduxjs/toolkit/query").FetchBaseQueryError, {}, import("@reduxjs/toolkit/query").FetchBaseQueryMeta>, "document" | "tag" | "collection" | "identity" | "role" | "user" | "authConfig" | "session", void, "api", unknown>;
+    listDuplicates: import("@reduxjs/toolkit/query").QueryDefinition<{
+        limit?: number;
+        offset?: number;
+    }, import("@reduxjs/toolkit/query").BaseQueryFn<string | import("@reduxjs/toolkit/query").FetchArgs, unknown, import("@reduxjs/toolkit/query").FetchBaseQueryError, {}, import("@reduxjs/toolkit/query").FetchBaseQueryMeta>, "document" | "tag" | "collection" | "identity" | "role" | "user" | "authConfig" | "session", PaginatedResponse<DuplicateGroup>, "api", unknown>;
+    getDuplicateIndexingStatus: import("@reduxjs/toolkit/query").QueryDefinition<void, import("@reduxjs/toolkit/query").BaseQueryFn<string | import("@reduxjs/toolkit/query").FetchArgs, unknown, import("@reduxjs/toolkit/query").FetchBaseQueryError, {}, import("@reduxjs/toolkit/query").FetchBaseQueryMeta>, "document" | "tag" | "collection" | "identity" | "role" | "user" | "authConfig" | "session", IndexingStatus, "api", unknown>;
+    startDuplicateIndexing: import("@reduxjs/toolkit/query").MutationDefinition<void, import("@reduxjs/toolkit/query").BaseQueryFn<string | import("@reduxjs/toolkit/query").FetchArgs, unknown, import("@reduxjs/toolkit/query").FetchBaseQueryError, {}, import("@reduxjs/toolkit/query").FetchBaseQueryMeta>, "document" | "tag" | "collection" | "identity" | "role" | "user" | "authConfig" | "session", IndexingStatus, "api", unknown>;
+    resolveDuplicateGroup: import("@reduxjs/toolkit/query").MutationDefinition<ResolveDuplicateGroupRequest, import("@reduxjs/toolkit/query").BaseQueryFn<string | import("@reduxjs/toolkit/query").FetchArgs, unknown, import("@reduxjs/toolkit/query").FetchBaseQueryError, {}, import("@reduxjs/toolkit/query").FetchBaseQueryMeta>, "document" | "tag" | "collection" | "identity" | "role" | "user" | "authConfig" | "session", ResolveDuplicateGroupResult, "api", unknown>;
     getAppConfig: import("@reduxjs/toolkit/query").QueryDefinition<void, import("@reduxjs/toolkit/query").BaseQueryFn<string | import("@reduxjs/toolkit/query").FetchArgs, unknown, import("@reduxjs/toolkit/query").FetchBaseQueryError, {}, import("@reduxjs/toolkit/query").FetchBaseQueryMeta>, "document" | "tag" | "collection" | "identity" | "role" | "user" | "authConfig" | "session", AppConfig, "api", unknown>;
     getMe: import("@reduxjs/toolkit/query").QueryDefinition<void, import("@reduxjs/toolkit/query").BaseQueryFn<string | import("@reduxjs/toolkit/query").FetchArgs, unknown, import("@reduxjs/toolkit/query").FetchBaseQueryError, {}, import("@reduxjs/toolkit/query").FetchBaseQueryMeta>, "document" | "tag" | "collection" | "identity" | "role" | "user" | "authConfig" | "session", Identity, "api", unknown>;
     listSessions: import("@reduxjs/toolkit/query").QueryDefinition<void, import("@reduxjs/toolkit/query").BaseQueryFn<string | import("@reduxjs/toolkit/query").FetchArgs, unknown, import("@reduxjs/toolkit/query").FetchBaseQueryError, {}, import("@reduxjs/toolkit/query").FetchBaseQueryMeta>, "document" | "tag" | "collection" | "identity" | "role" | "user" | "authConfig" | "session", {

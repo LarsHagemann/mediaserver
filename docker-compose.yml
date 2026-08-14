@@ -41,7 +41,7 @@ services:
       IDP_ADMIN_USER_IDS: ceac4763-4524-4961-8ec2-4e0ea15e241e
       IDP_REGISTRATION_ALLOWED: true
     volumes:
-      - ./server:/app
+      - ./server:/app:z
       - server_data:/store-0
       - /tmp:/tmp
     ports:
@@ -49,7 +49,7 @@ services:
       - ${WEBSOCKET_PORT}:${WEBSOCKET_PORT}
 
   frontend:
-    image: node:20
+    image: docker.io/library/node:20
     depends_on:
       server:
         condition: service_healthy
@@ -57,7 +57,7 @@ services:
     working_dir: /app
     command: npm run dev
     volumes:
-      - ./frontend:/app
+      - ./frontend:/app:z
     environment:
       VITE_BACKEND_URL: "http://localhost:${BACKEND_PORT}"
       VITE_WEBSOCKET_URL: "ws://localhost:${WEBSOCKET_PORT}"
@@ -65,7 +65,7 @@ services:
       - 5173:5173
 
   postgres:
-    image: postgres:16
+    image: docker.io/library/postgres:16
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "dev"]
       interval: 5s
@@ -93,13 +93,13 @@ services:
       KC_HTTP_PORT: 8100
     restart: always
     volumes:
-      - ./devops/keycloak:/opt/keycloak/data/import
+      - ./devops/keycloak:/opt/keycloak/data/import:z
       - keycloak_data:/opt/keycloak/data
     ports:
       - 8100:8100
 
   redis:
-    image: redis:latest
+    image: docker.io/library/redis:latest
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s

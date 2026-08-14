@@ -45,12 +45,13 @@ export class UploadService {
 
   async processUploadDocument(upload: ProcessUploadDocument): Promise<void> {
     try {
-      const { id, basePath, filename } = await this.fileService.moveDocument(
-        upload.file,
-        upload.mimeType,
-        upload.extension,
-        upload.size,
-      );
+      const { id, basePath, filename, contentHash, sizeBytes } =
+        await this.fileService.moveDocument(
+          upload.file,
+          upload.mimeType,
+          upload.extension,
+          upload.size,
+        );
 
       await this.documentService.createDocument({
         id,
@@ -60,6 +61,8 @@ export class UploadService {
         type: upload.mimeType,
         ownerId: upload.ownerId,
         isPublic: upload.isPublic,
+        contentHash,
+        sizeBytes,
       });
 
       const tags = upload.tags;

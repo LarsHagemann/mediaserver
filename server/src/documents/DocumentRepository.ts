@@ -12,6 +12,8 @@ export type CreateDocumentRequest = {
   type: string;
   ownerId: string;
   isPublic: boolean;
+  contentHash: string;
+  sizeBytes: number;
 };
 
 export type Document = {
@@ -55,7 +57,7 @@ export class DocumentRepository {
 
   public async createDocument(request: CreateDocumentRequest): Promise<void> {
     await this.dbService.none(
-      "INSERT INTO documents (id, base_path, filename, friendly_name, mime, owner_id, is_public) VALUES ($id, $basePath, $filename, $friendlyName, $type, $ownerId, $isPublic)",
+      "INSERT INTO documents (id, base_path, filename, friendly_name, mime, owner_id, is_public, content_hash, size_bytes) VALUES ($id, $basePath, $filename, $friendlyName, $type, $ownerId, $isPublic, $contentHash, $sizeBytes)",
       request,
     );
   }
@@ -178,19 +180,47 @@ export class DocumentRepository {
 }
 
 export function buildScopeClause(scope: DocumentAccessScope): string {
-  if (scope.type === "all") return "";
-  if (scope.type === "none") return " AND false";
-  if (scope.type === "public-only") return " AND is_public = true";
-  return " AND (is_public = true OR owner_id = $userId OR EXISTS (SELECT 1 FROM document_shares ds WHERE ds.document_id = id AND ds.shared_with_user_id = $userId))";
+  switch (scope.type) {
+    case "all":
+      return "";
+    case "none":
+      return " AND false";
+    case "public-only":
+      return " AND is_public = true";
+    case "owned-by":
+      return " AND owner_id = $userId";
+    case "accessible-by":
+      return " AND (is_public = true OR owner_id = $userId OR EXISTS (SELECT 1 FROM document_shares ds WHERE ds.document_id = id AND ds.shared_with_user_id = $userId))";
+  }
 }
 
 export function buildScopeHaving(
   scope: DocumentAccessScope,
   tableAlias: string,
 ): string {
-  if (scope.type === "all") return "";
-  if (scope.type === "none") return " AND false";
-  if (scope.type === "public-only")
-    return ` AND ${tableAlias}.is_public = true`;
-  return ` AND (${tableAlias}.is_public = true OR ${tableAlias}.owner_id = $userId OR EXISTS (SELECT 1 FROM document_shares ds WHERE ds.document_id = ${tableAlias}.id AND ds.shared_with_user_id = $userId))`;
+  switch (scope.type) {
+    case "all":
+      return "";
+    case "none":
+      return " AND false";
+    case "public-only":
+      return ` AND ${tableAlias}.is_public = true`;
+    case "owned-by":
+      return ` AND ${tableAlias}.owner_id = $userId`;
+    case "accessible-by":
+      return ` AND (${tableAlias}.is_public = true OR ${tableAlias}.owner_id = $userId OR EXISTS (SELECT 1 FROM document_shares ds WHERE ds.document_id = ${tableAlias}.id AND ds.shared_with_user_id = $userId))`;
+  }
+}
+
+/**
+ * Bind parameters required by the clause `buildScopeClause`/`buildScopeHaving`
+ * produce for this scope. Kept next to them so a scope that starts referencing
+ * `$userId` cannot be added without its parameter following along.
+ */
+export function buildScopeParams(
+  scope: DocumentAccessScope,
+): Record<string, unknown> {
+  return scope.type === "accessible-by" || scope.type === "owned-by"
+    ? { userId: scope.userId }
+    : {};
 }

@@ -1,4 +1,4 @@
-FROM node:20 AS builder
+FROM docker.io/library/node:20 AS builder
 
 WORKDIR /usr/src/app
 
@@ -17,7 +17,7 @@ ENV VITE_WEBSOCKET_URL=MEDIASERVER_WEBSOCKET_URL
 
 RUN npm run build
 
-FROM nginx:alpine
+FROM docker.io/library/nginx:alpine
 
 COPY frontend/nginx.conf /etc/nginx/nginx.conf
 

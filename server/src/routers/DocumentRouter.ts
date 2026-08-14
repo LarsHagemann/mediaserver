@@ -18,6 +18,13 @@ import { isValidExtension } from "../files/FileService.js";
 import type { ApiTag } from "../tags/TagRepository.js";
 import { requirePermission } from "../auth/requirePermission.js";
 import { SYSTEM_USER_ID } from "../auth/Identity.js";
+import type { DuplicateGroup } from "../duplicates/DuplicateRepository.js";
+import type {
+  DuplicateService,
+  IndexingStatus,
+  ResolveDuplicateGroupRequest,
+  ResolveDuplicateGroupResult,
+} from "../duplicates/DuplicateService.js";
 
 export const documentRouter = Router();
 
@@ -185,6 +192,92 @@ documentRouter.post(
       };
     },
   ),
+);
+
+// Registered ahead of the `/:id` routes below, which would otherwise swallow
+// `/duplicates` as a document id.
+documentRouter.get(
+  "/duplicates",
+  requirePermission("document:read"),
+  apiHandler<
+    PaginatedResponse<DuplicateGroup>,
+    { limit?: string; offset?: string }
+  >(async ({ diContainer, query, identity }) => {
+    const { limit, offset } = z
+      .object({
+        limit: z.coerce.number().int().min(1).max(100).default(20),
+        offset: z.coerce.number().int().min(0).default(0),
+      })
+      .parse(query);
+
+    const duplicateService = diContainer.get<DuplicateService>(
+      services.duplicate,
+    );
+    return {
+      status: 200,
+      body: await duplicateService.listDuplicates(identity, { limit, offset }),
+    };
+  }),
+);
+
+documentRouter.get(
+  "/duplicates/indexing",
+  requirePermission("document:read"),
+  apiHandler<IndexingStatus>(async ({ diContainer }) => {
+    const duplicateService = diContainer.get<DuplicateService>(
+      services.duplicate,
+    );
+    return { status: 200, body: await duplicateService.getIndexingStatus() };
+  }),
+);
+
+// Hashing the backlog touches every store and every user's files, so it is an
+// administrative action rather than something an individual user may kick off.
+documentRouter.post(
+  "/duplicates/indexing",
+  requirePermission("admin:state"),
+  apiHandler<IndexingStatus>(async ({ diContainer }) => {
+    const duplicateService = diContainer.get<DuplicateService>(
+      services.duplicate,
+    );
+    return { status: 202, body: await duplicateService.startIndexing() };
+  }),
+);
+
+// No `requirePermission` for deletion here on purpose, mirroring
+// `DELETE /:id`: resolving a group deletes documents, and the right to do so
+// comes from owning them. DuplicateService enforces that via the owned scope.
+documentRouter.post(
+  "/duplicates/resolve",
+  requirePermission("document:read"),
+  apiHandler<
+    ResolveDuplicateGroupResult,
+    EmptyObject,
+    ResolveDuplicateGroupRequest
+  >(async ({ diContainer, body, identity }) => {
+    const tagSchema = z.object({
+      key: z.string().min(1),
+      value: z.string().or(z.undefined()),
+      type: z.string(),
+    });
+    const request = z
+      .object({
+        contentHash: z.string().length(64),
+        keepId: z.string().uuid(),
+        mergeIds: z.array(z.string().uuid()).min(1),
+        tagsToAdd: z.array(tagSchema).default([]),
+        tagsToRemove: z.array(tagSchema).default([]),
+      })
+      .parse(body);
+
+    const duplicateService = diContainer.get<DuplicateService>(
+      services.duplicate,
+    );
+    return {
+      status: 200,
+      body: await duplicateService.resolveDuplicateGroup(identity, request),
+    };
+  }),
 );
 
 documentRouter.get(
